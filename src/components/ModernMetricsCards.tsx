@@ -75,19 +75,36 @@ export const ModernMetricsCards = () => {
     },
   ];
 
-  const handleCardClick = (index: number) => {
-    if (loadingCard !== null || expandedCard === index || clearingCard !== null) {
+  const handleCardClick = (index: number, event: React.MouseEvent) => {
+    // Evitar propagação se o clique for no botão de limpar
+    const target = event.target as HTMLElement;
+    if (target.closest('button')) {
+      return;
+    }
+
+    console.log('Card clicado:', index, 'Estado atual:', { expandedCard, loadingCard, clearingCard });
+
+    // Se já está expandido, fechar
+    if (expandedCard === index) {
       setExpandedCard(null);
       return;
     }
 
+    // Se está carregando ou limpando, ignorar
+    if (loadingCard !== null || clearingCard !== null) {
+      return;
+    }
+
+    // Iniciar carregamento
     setLoadingCard(index);
     setExpandedCard(null);
 
+    // Simular carregamento e expandir
     setTimeout(() => {
       setLoadingCard(null);
       setExpandedCard(index);
-    }, 1500);
+      console.log('Card expandido:', index);
+    }, 1000);
   };
 
   const handleClearData = async (index: number, event: React.MouseEvent) => {
@@ -129,7 +146,7 @@ export const ModernMetricsCards = () => {
               expandedCard === index ? `border-${metric.color}-500/50 shadow-xl shadow-${metric.color}-500/25` : ''
             }`}
             style={{ animationDelay: `${index * 100}ms` }}
-            onClick={() => handleCardClick(index)}
+            onClick={(e) => handleCardClick(index, e)}
           >
             <CardContent className="p-4 relative overflow-hidden">
               {/* Background gradient effect */}
@@ -152,6 +169,7 @@ export const ModernMetricsCards = () => {
                         size="sm"
                         className="text-gray-400 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all duration-300 p-1"
                         disabled={clearingCard === index}
+                        onClick={(e) => e.stopPropagation()}
                       >
                         {clearingCard === index ? (
                           <div className="h-3 w-3 animate-spin rounded-full border border-red-400 border-t-transparent"></div>
