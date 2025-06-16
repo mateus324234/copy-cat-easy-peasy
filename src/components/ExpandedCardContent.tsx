@@ -248,13 +248,13 @@ export const ExpandedCardContent = ({ cardType }: ExpandedCardContentProps) => {
       <div className="space-y-6">
         {renderHeader("Detalhes das Visitas", Globe, totalItems)}
         
-        <div className="grid gap-1 min-h-[800px]">
+        <div className="grid gap-3 min-h-[800px]">
           {currentItems.map((visit) => {
             const countryCode = getCountryCode(visit.country);
             return (
-              <div key={visit.id} className="bg-gray-700/50 rounded-lg px-3 py-2">
+              <div key={visit.id} className="bg-gray-700/50 rounded-lg p-4">
                 {/* Primeira linha: Bandeira + País/Cidade + Status + Horário */}
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center space-x-3">
                     {countryCode && (
                       <CountryFlag 
@@ -335,21 +335,21 @@ export const ExpandedCardContent = ({ cardType }: ExpandedCardContentProps) => {
       <div className="space-y-6">
         {renderHeader("Usuários Online", Users, totalItems)}
         
-        <div className="grid gap-1 min-h-[600px]">
+        <div className="grid gap-4 min-h-[600px]">
           {currentItems.map((user) => {
             const countryCode = getCountryCode(user.country);
             return (
-              <div key={user.id} className="bg-gray-700/50 rounded-lg px-3 py-2 space-y-1">
+              <div key={user.id} className="bg-gray-700/50 rounded-lg p-4 space-y-2">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-3">
-                    <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center">
-                      <span className="text-white font-semibold text-xs">
+                    <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center">
+                      <span className="text-white font-semibold text-sm">
                         {user.city.charAt(0).toUpperCase()}
                       </span>
                     </div>
                     <div>
-                      <p className="text-white font-medium text-sm">Usuário #{user.id.slice(-6)}</p>
-                      <p className="text-gray-400 text-xs flex items-center space-x-1">
+                      <p className="text-white font-medium">Usuário #{user.id.slice(-6)}</p>
+                      <p className="text-gray-400 text-sm flex items-center space-x-1">
                         <MapPin className="h-3 w-3" />
                         <span>{user.city}</span>
                       </p>
@@ -357,7 +357,7 @@ export const ExpandedCardContent = ({ cardType }: ExpandedCardContentProps) => {
                   </div>
                   <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
                 </div>
-                <div className="grid grid-cols-2 gap-4 text-xs pt-1 border-t border-gray-600">
+                <div className="grid grid-cols-2 gap-4 text-sm pt-2 border-t border-gray-600">
                   <div>
                     {countryCode && (
                       <CountryFlag 
@@ -410,9 +410,9 @@ export const ExpandedCardContent = ({ cardType }: ExpandedCardContentProps) => {
       <div className="space-y-6">
         {renderHeader("Pagamentos", CreditCard, totalItems)}
         
-        <div className="grid gap-2 min-h-[1000px]">
+        <div className="grid gap-4 min-h-[1000px]">
           {currentItems.map((payment) => (
-            <div key={payment.id} className="bg-gray-700/50 rounded-lg px-3 py-3 space-y-2">
+            <div key={payment.id} className="bg-gray-700/50 rounded-lg p-6 space-y-3">
               <div className="flex items-center justify-between">
                 <div className="text-2xl font-bold text-white">
                   {payment.amount || 'R$ 0,00'}
@@ -475,9 +475,9 @@ export const ExpandedCardContent = ({ cardType }: ExpandedCardContentProps) => {
       <div className="space-y-6">
         {renderHeader("QR Codes", QrCode, totalItems)}
         
-        <div className="grid gap-2 min-h-[900px]">
+        <div className="grid gap-4 min-h-[900px]">
           {currentItems.map((qr) => (
-            <div key={qr.id} className="bg-gray-700/50 rounded-lg px-3 py-3 space-y-2">
+            <div key={qr.id} className="bg-gray-700/50 rounded-lg p-5 space-y-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-2">
                   <QrCode className="h-5 w-5 text-cyan-400" />
