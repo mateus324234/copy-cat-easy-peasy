@@ -59,7 +59,7 @@ export const ModernMetricsCards = () => {
     },
     {
       title: "PAYMENTS",
-      value: formatCurrency(metrics.paymentTotal),
+      value: formatCurrency(Number(metrics.paymentTotal) || 0),
       icon: CreditCard,
       color: "purple",
       gradient: "from-purple-600 to-violet-600",
