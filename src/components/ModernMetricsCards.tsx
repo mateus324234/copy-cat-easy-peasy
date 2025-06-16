@@ -6,49 +6,51 @@ import { useState } from "react";
 import { LoadingSpinner } from "./LoadingSpinner";
 import { ExpandedCardContent } from "./ExpandedCardContent";
 import { Skeleton } from "@/components/ui/skeleton";
-
-const metricsData = [
-  {
-    title: "VISITAS",
-    value: "38",
-    icon: Eye,
-    color: "blue",
-    gradient: "from-blue-600 to-cyan-600",
-    bgGradient: "from-blue-500/20 to-cyan-500/20",
-    cardType: "visits" as const
-  },
-  {
-    title: "USER ONLINE",
-    value: "14,592",
-    icon: Users,
-    color: "green",
-    gradient: "from-green-600 to-emerald-600",
-    bgGradient: "from-green-500/20 to-emerald-500/20",
-    cardType: "userOnline" as const
-  },
-  {
-    title: "PAYMENTS",
-    value: "347",
-    icon: CreditCard,
-    color: "purple",
-    gradient: "from-purple-600 to-violet-600",
-    bgGradient: "from-purple-500/20 to-violet-500/20",
-    cardType: "payments" as const
-  },
-  {
-    title: "QR CODE COPIADOS",
-    value: "26,842",
-    icon: QrCode,
-    color: "orange",
-    gradient: "from-orange-600 to-red-600",
-    bgGradient: "from-orange-500/20 to-red-500/20",
-    cardType: "qrCode" as const
-  },
-];
+import { useRealtimeData } from "@/hooks/useRealtimeData";
 
 export const ModernMetricsCards = () => {
   const [expandedCard, setExpandedCard] = useState<number | null>(null);
   const [loadingCard, setLoadingCard] = useState<number | null>(null);
+  const { metrics } = useRealtimeData();
+
+  const metricsData = [
+    {
+      title: "VISITAS",
+      value: metrics.totalVisits.toString(),
+      icon: Eye,
+      color: "blue",
+      gradient: "from-blue-600 to-cyan-600",
+      bgGradient: "from-blue-500/20 to-cyan-500/20",
+      cardType: "visits" as const
+    },
+    {
+      title: "USER ONLINE",
+      value: metrics.onlineUsers.toString(),
+      icon: Users,
+      color: "green",
+      gradient: "from-green-600 to-emerald-600",
+      bgGradient: "from-green-500/20 to-emerald-500/20",
+      cardType: "userOnline" as const
+    },
+    {
+      title: "PAYMENTS",
+      value: metrics.totalPayments.toString(),
+      icon: CreditCard,
+      color: "purple",
+      gradient: "from-purple-600 to-violet-600",
+      bgGradient: "from-purple-500/20 to-violet-500/20",
+      cardType: "payments" as const
+    },
+    {
+      title: "QR CODE COPIADOS",
+      value: metrics.totalQRCodes.toString(),
+      icon: QrCode,
+      color: "orange",
+      gradient: "from-orange-600 to-red-600",
+      bgGradient: "from-orange-500/20 to-red-500/20",
+      cardType: "qrCode" as const
+    },
+  ];
 
   const handleCardClick = (index: number) => {
     if (loadingCard !== null || expandedCard === index) {

@@ -2,194 +2,249 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { CountryFlag } from "./CountryFlag";
 import { Clock, Globe, Monitor, CreditCard, QrCode, Users, MapPin, Mail } from "lucide-react";
+import { useRealtimeData } from "@/hooks/useRealtimeData";
 
 interface ExpandedCardContentProps {
   cardType: 'visits' | 'userOnline' | 'payments' | 'qrCode';
 }
 
-const mockData = {
-  visits: [
-    { id: 1, country: 'Brazil', countryCode: 'br', city: 'São Paulo', state: 'SP', ip: '192.168.1.100', time: '14:32:15', browser: 'Chrome 120.0' },
-    { id: 2, country: 'United States', countryCode: 'us', city: 'New York', state: 'NY', ip: '10.0.0.55', time: '09:15:42', browser: 'Firefox 119.0' },
-    { id: 3, country: 'Canada', countryCode: 'ca', city: 'Toronto', state: 'ON', ip: '172.16.0.23', time: '11:28:07', browser: 'Safari 17.1' },
-  ],
-  userOnline: [
-    { id: 1, name: 'João Silva', email: 'joao@email.com', ip: '192.168.1.100', country: 'Brazil', countryCode: 'br', city: 'São Paulo' },
-    { id: 2, name: 'Maria Santos', email: 'maria@email.com', ip: '10.0.0.55', country: 'United States', countryCode: 'us', city: 'Miami' },
-    { id: 3, name: 'Carlos Lima', email: 'carlos@email.com', ip: '172.16.0.23', country: 'Portugal', countryCode: 'pt', city: 'Lisboa' },
-  ],
-  payments: [
-    { id: 1, amount: 'R$ 299,90', status: 'Aprovado', client: 'João Silva', date: '15/01/2024', country: 'Brazil', countryCode: 'br' },
-    { id: 2, amount: 'US$ 99,99', status: 'Pendente', client: 'John Doe', date: '15/01/2024', country: 'United States', countryCode: 'us' },
-    { id: 3, amount: 'EUR 79,50', status: 'Aprovado', client: 'Pierre Martin', date: '14/01/2024', country: 'France', countryCode: 'fr' },
-  ],
-  qrCode: [
-    { id: 1, content: 'https://mysite.com/product/123', date: '15/01/2024 14:32', country: 'Brazil', countryCode: 'br', city: 'São Paulo', state: 'SP' },
-    { id: 2, content: 'https://mysite.com/promo/winter', date: '15/01/2024 12:15', country: 'Argentina', countryCode: 'ar', city: 'Buenos Aires', state: 'BA' },
-    { id: 3, content: 'https://mysite.com/contact', date: '14/01/2024 18:45', country: 'Chile', countryCode: 'cl', city: 'Santiago', state: 'RM' },
-  ],
-};
-
 export const ExpandedCardContent = ({ cardType }: ExpandedCardContentProps) => {
-  const renderVisits = () => (
-    <div className="space-y-4">
-      <h3 className="text-xl font-bold text-white flex items-center space-x-2">
-        <Globe className="h-5 w-5 text-blue-400" />
-        <span>Detalhes das Visitas</span>
-      </h3>
-      <div className="grid gap-4">
-        {mockData.visits.map((visit) => (
-          <div key={visit.id} className="bg-gray-700/50 rounded-lg p-4 space-y-2">
-            <div className="flex items-center justify-between">
-              <CountryFlag countryCode={visit.countryCode} countryName={visit.country} />
-              <div className="flex items-center space-x-2 text-gray-400">
-                <Clock className="h-4 w-4" />
-                <span className="text-sm">{visit.time}</span>
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4 text-sm">
-              <div>
-                <span className="text-gray-400">Localização:</span>
-                <p className="text-white">{visit.city}, {visit.state}</p>
-              </div>
-              <div>
-                <span className="text-gray-400">IP:</span>
-                <p className="text-white font-mono">{visit.ip}</p>
-              </div>
-              <div className="col-span-2">
-                <span className="text-gray-400">Navegador:</span>
-                <p className="text-white flex items-center space-x-2">
-                  <Monitor className="h-4 w-4" />
-                  <span>{visit.browser}</span>
-                </p>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
+  const { visitors, payments, qrcodes } = useRealtimeData();
 
-  const renderUserOnline = () => (
-    <div className="space-y-4">
-      <h3 className="text-xl font-bold text-white flex items-center space-x-2">
-        <Users className="h-5 w-5 text-green-400" />
-        <span>Usuários Online</span>
-      </h3>
-      <div className="grid gap-4">
-        {mockData.userOnline.map((user) => (
-          <div key={user.id} className="bg-gray-700/50 rounded-lg p-4 space-y-2">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center">
-                  <span className="text-white font-semibold text-sm">{user.name.charAt(0)}</span>
+  const renderVisits = () => {
+    const visitorsArray = Object.entries(visitors).map(([id, visitor]: [string, any]) => ({
+      id,
+      ...visitor
+    }));
+
+    if (visitorsArray.length === 0) {
+      return (
+        <div className="text-center py-8">
+          <Globe className="h-12 w-12 text-gray-600 mx-auto mb-3" />
+          <p className="text-gray-400">Nenhuma visita registrada ainda</p>
+          <p className="text-gray-500 text-sm">Acesse outras páginas para gerar dados</p>
+        </div>
+      );
+    }
+
+    return (
+      <div className="space-y-4">
+        <h3 className="text-xl font-bold text-white flex items-center space-x-2">
+          <Globe className="h-5 w-5 text-blue-400" />
+          <span>Detalhes das Visitas ({visitorsArray.length})</span>
+        </h3>
+        <div className="grid gap-4 max-h-96 overflow-y-auto">
+          {visitorsArray.slice(0, 10).map((visit) => (
+            <div key={visit.id} className="bg-gray-700/50 rounded-lg p-4 space-y-2">
+              <div className="flex items-center justify-between">
+                <CountryFlag 
+                  countryCode={visit.country === 'Brazil' ? 'br' : 'us'} 
+                  countryName={visit.country || 'Brasil'} 
+                />
+                <div className="flex items-center space-x-2 text-gray-400">
+                  <Clock className="h-4 w-4" />
+                  <span className="text-sm">
+                    {visit.firstVisit ? new Date(visit.firstVisit).toLocaleTimeString('pt-BR') : 'Agora'}
+                  </span>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <span className="text-gray-400">Localização:</span>
+                  <p className="text-white">{visit.city || 'São Paulo'}, {visit.state || 'SP'}</p>
                 </div>
                 <div>
-                  <p className="text-white font-medium">{user.name}</p>
-                  <p className="text-gray-400 text-sm flex items-center space-x-1">
-                    <Mail className="h-3 w-3" />
-                    <span>{user.email}</span>
+                  <span className="text-gray-400">IP:</span>
+                  <p className="text-white font-mono">{visit.ip || 'N/A'}</p>
+                </div>
+                <div className="col-span-2">
+                  <span className="text-gray-400">Status:</span>
+                  <p className="text-white flex items-center space-x-2">
+                    <div className={`w-2 h-2 rounded-full ${visit.status === 'online' ? 'bg-green-500' : 'bg-gray-500'}`}></div>
+                    <span>{visit.status === 'online' ? 'Online' : 'Offline'}</span>
                   </p>
                 </div>
               </div>
-              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
             </div>
-            <div className="grid grid-cols-2 gap-4 text-sm pt-2 border-t border-gray-600">
-              <div>
-                <CountryFlag countryCode={user.countryCode} countryName={user.country} />
-              </div>
-              <div>
-                <span className="text-gray-400">IP:</span>
-                <p className="text-white font-mono">{user.ip}</p>
-              </div>
-              <div className="col-span-2">
-                <span className="text-gray-400">Cidade:</span>
-                <p className="text-white flex items-center space-x-1">
-                  <MapPin className="h-4 w-4" />
-                  <span>{user.city}</span>
-                </p>
-              </div>
-            </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
 
-  const renderPayments = () => (
-    <div className="space-y-4">
-      <h3 className="text-xl font-bold text-white flex items-center space-x-2">
-        <CreditCard className="h-5 w-5 text-purple-400" />
-        <span>Informações de Pagamentos</span>
-      </h3>
-      <div className="grid gap-4">
-        {mockData.payments.map((payment) => (
-          <div key={payment.id} className="bg-gray-700/50 rounded-lg p-4 space-y-2">
-            <div className="flex items-center justify-between">
-              <div className="text-2xl font-bold text-white">{payment.amount}</div>
-              <div className={`px-3 py-1 rounded-full text-xs font-medium ${
-                payment.status === 'Aprovado' 
-                  ? 'bg-green-500/20 text-green-400' 
-                  : 'bg-yellow-500/20 text-yellow-400'
-              }`}>
-                {payment.status}
+  const renderUserOnline = () => {
+    const onlineVisitors = Object.entries(visitors).filter(([_, visitor]: [string, any]) => 
+      visitor.status === 'online'
+    ).map(([id, visitor]: [string, any]) => ({
+      id,
+      ...visitor
+    }));
+
+    if (onlineVisitors.length === 0) {
+      return (
+        <div className="text-center py-8">
+          <Users className="h-12 w-12 text-gray-600 mx-auto mb-3" />
+          <p className="text-gray-400">Nenhum usuário online no momento</p>
+          <p className="text-gray-500 text-sm">Acesse outras páginas para aparecer aqui</p>
+        </div>
+      );
+    }
+
+    return (
+      <div className="space-y-4">
+        <h3 className="text-xl font-bold text-white flex items-center space-x-2">
+          <Users className="h-5 w-5 text-green-400" />
+          <span>Usuários Online ({onlineVisitors.length})</span>
+        </h3>
+        <div className="grid gap-4 max-h-96 overflow-y-auto">
+          {onlineVisitors.map((user) => (
+            <div key={user.id} className="bg-gray-700/50 rounded-lg p-4 space-y-2">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center">
+                    <span className="text-white font-semibold text-sm">
+                      {(user.city || 'U').charAt(0).toUpperCase()}
+                    </span>
+                  </div>
+                  <div>
+                    <p className="text-white font-medium">Usuário #{user.id.slice(-6)}</p>
+                    <p className="text-gray-400 text-sm flex items-center space-x-1">
+                      <MapPin className="h-3 w-3" />
+                      <span>{user.city || 'São Paulo'}</span>
+                    </p>
+                  </div>
+                </div>
+                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
               </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4 text-sm">
-              <div>
-                <span className="text-gray-400">Cliente:</span>
-                <p className="text-white font-medium">{payment.client}</p>
-              </div>
-              <div>
-                <span className="text-gray-400">Data:</span>
-                <p className="text-white">{payment.date}</p>
-              </div>
-              <div className="col-span-2">
-                <span className="text-gray-400">País do Cliente:</span>
-                <div className="mt-1">
-                  <CountryFlag countryCode={payment.countryCode} countryName={payment.country} />
+              <div className="grid grid-cols-2 gap-4 text-sm pt-2 border-t border-gray-600">
+                <div>
+                  <CountryFlag 
+                    countryCode={user.country === 'Brazil' ? 'br' : 'us'} 
+                    countryName={user.country || 'Brasil'} 
+                  />
+                </div>
+                <div>
+                  <span className="text-gray-400">IP:</span>
+                  <p className="text-white font-mono">{user.ip || 'N/A'}</p>
                 </div>
               </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
 
-  const renderQrCode = () => (
-    <div className="space-y-4">
-      <h3 className="text-xl font-bold text-white flex items-center space-x-2">
-        <QrCode className="h-5 w-5 text-cyan-400" />
-        <span>QR Codes Copiados</span>
-      </h3>
-      <div className="grid gap-4">
-        {mockData.qrCode.map((qr) => (
-          <div key={qr.id} className="bg-gray-700/50 rounded-lg p-4 space-y-2">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <QrCode className="h-5 w-5 text-cyan-400" />
-                <span className="text-gray-400 text-sm">Conteúdo copiado</span>
+  const renderPayments = () => {
+    const paymentsArray = Object.entries(payments).map(([id, payment]: [string, any]) => ({
+      id,
+      ...payment
+    }));
+
+    if (paymentsArray.length === 0) {
+      return (
+        <div className="text-center py-8">
+          <CreditCard className="h-12 w-12 text-gray-600 mx-auto mb-3" />
+          <p className="text-gray-400">Nenhum pagamento registrado ainda</p>
+          <p className="text-gray-500 text-sm">Vá para /payments para testar</p>
+        </div>
+      );
+    }
+
+    return (
+      <div className="space-y-4">
+        <h3 className="text-xl font-bold text-white flex items-center space-x-2">
+          <CreditCard className="h-5 w-5 text-purple-400" />
+          <span>Pagamentos ({paymentsArray.length})</span>
+        </h3>
+        <div className="grid gap-4 max-h-96 overflow-y-auto">
+          {paymentsArray.slice(0, 10).map((payment) => (
+            <div key={payment.id} className="bg-gray-700/50 rounded-lg p-4 space-y-2">
+              <div className="flex items-center justify-between">
+                <div className="text-2xl font-bold text-white">
+                  {payment.amount || 'R$ 0,00'}
+                </div>
+                <div className="px-3 py-1 rounded-full text-xs font-medium bg-green-500/20 text-green-400">
+                  {payment.status || 'Aprovado'}
+                </div>
               </div>
-              <span className="text-gray-400 text-sm">{qr.date}</span>
-            </div>
-            <div className="bg-gray-800 rounded p-3 mb-3">
-              <code className="text-cyan-400 text-sm break-all">{qr.content}</code>
-            </div>
-            <div className="grid grid-cols-2 gap-4 text-sm">
-              <div>
-                <CountryFlag countryCode={qr.countryCode} countryName={qr.country} />
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <span className="text-gray-400">Método:</span>
+                  <p className="text-white font-medium">{payment.method || 'PIX'}</p>
+                </div>
+                <div>
+                  <span className="text-gray-400">Produto:</span>
+                  <p className="text-white">{payment.product || 'Produto'}</p>
+                </div>
+                <div className="col-span-2">
+                  <span className="text-gray-400">Data:</span>
+                  <p className="text-white">
+                    {payment.date ? new Date(payment.date).toLocaleString('pt-BR') : 'Agora'}
+                  </p>
+                </div>
               </div>
-              <div>
-                <span className="text-gray-400">Localização:</span>
-                <p className="text-white">{qr.city}, {qr.state}</p>
-              </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
+
+  const renderQrCode = () => {
+    const qrcodesArray = Object.entries(qrcodes).map(([id, qr]: [string, any]) => ({
+      id,
+      ...qr
+    }));
+
+    if (qrcodesArray.length === 0) {
+      return (
+        <div className="text-center py-8">
+          <QrCode className="h-12 w-12 text-gray-600 mx-auto mb-3" />
+          <p className="text-gray-400">Nenhum QR Code registrado ainda</p>
+          <p className="text-gray-500 text-sm">Vá para /qrcode para testar</p>
+        </div>
+      );
+    }
+
+    return (
+      <div className="space-y-4">
+        <h3 className="text-xl font-bold text-white flex items-center space-x-2">
+          <QrCode className="h-5 w-5 text-cyan-400" />
+          <span>QR Codes ({qrcodesArray.length})</span>
+        </h3>
+        <div className="grid gap-4 max-h-96 overflow-y-auto">
+          {qrcodesArray.slice(0, 10).map((qr) => (
+            <div key={qr.id} className="bg-gray-700/50 rounded-lg p-4 space-y-2">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <QrCode className="h-5 w-5 text-cyan-400" />
+                  <span className="text-gray-400 text-sm">QR Code</span>
+                </div>
+                <span className="text-gray-400 text-sm">
+                  {qr.date ? new Date(qr.date).toLocaleString('pt-BR') : 'Agora'}
+                </span>
+              </div>
+              <div className="space-y-2">
+                <div>
+                  <span className="text-gray-400 text-sm">Produto:</span>
+                  <p className="text-white font-medium">{qr.product || 'QR Code'}</p>
+                </div>
+                <div>
+                  <span className="text-gray-400 text-sm">Valor:</span>
+                  <p className="text-white">{qr.value || 'N/A'}</p>
+                </div>
+                <div>
+                  <span className="text-gray-400 text-sm">Tipo:</span>
+                  <p className="text-white">{qr.type || 'produto'}</p>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
 
   return (
     <Card className="bg-gray-800/80 backdrop-blur-lg border-gray-700 animate-fade-in">
