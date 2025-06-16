@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
@@ -56,7 +55,7 @@ const Dashboard = () => {
             <div className="mb-6 flex items-center justify-between">
               <div>
                 <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-cyan-400 bg-clip-text text-transparent">
-                  Dashboard em Tempo Real
+                  Queridos
                 </h1>
                 <p className="text-gray-400 mt-1">
                   Monitoramento de visitantes, pagamentos e QR codes

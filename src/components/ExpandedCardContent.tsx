@@ -1,6 +1,7 @@
+
 import { Card, CardContent } from "@/components/ui/card";
 import { CountryFlag } from "./CountryFlag";
-import { Clock, Globe, Monitor, CreditCard, QrCode, Users, MapPin, Mail, Trash2 } from "lucide-react";
+import { Clock, Globe, Monitor, CreditCard, QrCode, Users, MapPin, Mail, Trash2, ChevronLeft, ChevronRight } from "lucide-react";
 import { useRealtimeData } from "@/hooks/useRealtimeData";
 import { Button } from "@/components/ui/button";
 import { clearData } from "@/services/firebase";
@@ -17,6 +18,14 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 
 interface ExpandedCardContentProps {
   cardType: 'visits' | 'userOnline' | 'payments' | 'qrCode';
@@ -26,6 +35,8 @@ export const ExpandedCardContent = ({ cardType }: ExpandedCardContentProps) => {
   const { visitors, payments, qrcodes } = useRealtimeData();
   const { toast } = useToast();
   const [isClearing, setIsClearing] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 20;
 
   const handleClearData = async () => {
     setIsClearing(true);
@@ -52,6 +63,7 @@ export const ExpandedCardContent = ({ cardType }: ExpandedCardContentProps) => {
       
       if (clearFunction) {
         await clearFunction();
+        setCurrentPage(1); // Reset to first page after clearing
         toast({
           title: successMessage,
           description: "Os dados foram removidos do sistema.",
@@ -72,7 +84,7 @@ export const ExpandedCardContent = ({ cardType }: ExpandedCardContentProps) => {
   const renderHeader = (title: string, icon: any, count: number) => {
     const Icon = icon;
     return (
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center justify-between mb-6">
         <h3 className="text-xl font-bold text-white flex items-center space-x-2">
           <Icon className="h-5 w-5 text-blue-400" />
           <span>{title} ({count})</span>
@@ -118,15 +130,79 @@ export const ExpandedCardContent = ({ cardType }: ExpandedCardContentProps) => {
     );
   };
 
+  const renderPagination = (totalItems: number) => {
+    const totalPages = Math.ceil(totalItems / itemsPerPage);
+    
+    if (totalPages <= 1) return null;
+
+    return (
+      <div className="mt-6 flex justify-center">
+        <Pagination>
+          <PaginationContent>
+            <PaginationItem>
+              <PaginationPrevious 
+                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                className={`${
+                  currentPage === 1 
+                    ? 'pointer-events-none opacity-50' 
+                    : 'cursor-pointer hover:bg-gray-700'
+                } text-white border-gray-600`}
+              />
+            </PaginationItem>
+            
+            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+              const pageNumber = i + 1;
+              return (
+                <PaginationItem key={pageNumber}>
+                  <PaginationLink
+                    onClick={() => setCurrentPage(pageNumber)}
+                    isActive={currentPage === pageNumber}
+                    className={`cursor-pointer ${
+                      currentPage === pageNumber 
+                        ? 'bg-blue-600 text-white border-blue-600' 
+                        : 'text-white border-gray-600 hover:bg-gray-700'
+                    }`}
+                  >
+                    {pageNumber}
+                  </PaginationLink>
+                </PaginationItem>
+              );
+            })}
+            
+            <PaginationItem>
+              <PaginationNext 
+                onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                className={`${
+                  currentPage === totalPages 
+                    ? 'pointer-events-none opacity-50' 
+                    : 'cursor-pointer hover:bg-gray-700'
+                } text-white border-gray-600`}
+              />
+            </PaginationItem>
+          </PaginationContent>
+        </Pagination>
+      </div>
+    );
+  };
+
   const renderVisits = () => {
     const visitorsArray = Object.entries(visitors).map(([id, visitor]: [string, any]) => ({
       id,
       ...visitor
-    }));
+    })).sort((a, b) => {
+      const timeA = new Date(a.firstVisit || a.timestamp || 0).getTime();
+      const timeB = new Date(b.firstVisit || b.timestamp || 0).getTime();
+      return timeB - timeA; // Most recent first
+    });
+
+    const totalItems = visitorsArray.length;
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const currentItems = visitorsArray.slice(startIndex, endIndex);
 
     if (visitorsArray.length === 0) {
       return (
-        <div className="text-center py-8">
+        <div className="text-center py-12">
           <Globe className="h-12 w-12 text-gray-600 mx-auto mb-3" />
           <p className="text-gray-400">Nenhuma visita registrada ainda</p>
           <p className="text-gray-500 text-sm">Acesse outras páginas para gerar dados</p>
@@ -135,10 +211,11 @@ export const ExpandedCardContent = ({ cardType }: ExpandedCardContentProps) => {
     }
 
     return (
-      <div className="space-y-4">
-        {renderHeader("Detalhes das Visitas", Globe, visitorsArray.length)}
-        <div className="grid gap-4 max-h-96 overflow-y-auto">
-          {visitorsArray.slice(0, 10).map((visit) => (
+      <div className="space-y-6">
+        {renderHeader("Detalhes das Visitas", Globe, totalItems)}
+        
+        <div className="grid gap-4 min-h-[800px]">
+          {currentItems.map((visit) => (
             <div key={visit.id} className="bg-gray-700/50 rounded-lg p-4 space-y-2">
               <div className="flex items-center justify-between">
                 <CountryFlag 
@@ -172,6 +249,8 @@ export const ExpandedCardContent = ({ cardType }: ExpandedCardContentProps) => {
             </div>
           ))}
         </div>
+        
+        {renderPagination(totalItems)}
       </div>
     );
   };
@@ -182,11 +261,20 @@ export const ExpandedCardContent = ({ cardType }: ExpandedCardContentProps) => {
     ).map(([id, visitor]: [string, any]) => ({
       id,
       ...visitor
-    }));
+    })).sort((a, b) => {
+      const timeA = new Date(a.lastSeen || a.timestamp || 0).getTime();
+      const timeB = new Date(b.lastSeen || b.timestamp || 0).getTime();
+      return timeB - timeA; // Most recent first
+    });
+
+    const totalItems = onlineVisitors.length;
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const currentItems = onlineVisitors.slice(startIndex, endIndex);
 
     if (onlineVisitors.length === 0) {
       return (
-        <div className="text-center py-8">
+        <div className="text-center py-12">
           <Users className="h-12 w-12 text-gray-600 mx-auto mb-3" />
           <p className="text-gray-400">Nenhum usuário online no momento</p>
           <p className="text-gray-500 text-sm">Acesse outras páginas para aparecer aqui</p>
@@ -195,10 +283,11 @@ export const ExpandedCardContent = ({ cardType }: ExpandedCardContentProps) => {
     }
 
     return (
-      <div className="space-y-4">
-        {renderHeader("Usuários Online", Users, onlineVisitors.length)}
-        <div className="grid gap-4 max-h-96 overflow-y-auto">
-          {onlineVisitors.map((user) => (
+      <div className="space-y-6">
+        {renderHeader("Usuários Online", Users, totalItems)}
+        
+        <div className="grid gap-4 min-h-[600px]">
+          {currentItems.map((user) => (
             <div key={user.id} className="bg-gray-700/50 rounded-lg p-4 space-y-2">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
@@ -232,6 +321,8 @@ export const ExpandedCardContent = ({ cardType }: ExpandedCardContentProps) => {
             </div>
           ))}
         </div>
+        
+        {renderPagination(totalItems)}
       </div>
     );
   };
@@ -240,11 +331,20 @@ export const ExpandedCardContent = ({ cardType }: ExpandedCardContentProps) => {
     const paymentsArray = Object.entries(payments).map(([id, payment]: [string, any]) => ({
       id,
       ...payment
-    }));
+    })).sort((a, b) => {
+      const timeA = new Date(a.date || a.timestamp || 0).getTime();
+      const timeB = new Date(b.date || b.timestamp || 0).getTime();
+      return timeB - timeA; // Most recent first
+    });
+
+    const totalItems = paymentsArray.length;
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const currentItems = paymentsArray.slice(startIndex, endIndex);
 
     if (paymentsArray.length === 0) {
       return (
-        <div className="text-center py-8">
+        <div className="text-center py-12">
           <CreditCard className="h-12 w-12 text-gray-600 mx-auto mb-3" />
           <p className="text-gray-400">Nenhum pagamento registrado ainda</p>
           <p className="text-gray-500 text-sm">Vá para /payments para testar</p>
@@ -253,11 +353,12 @@ export const ExpandedCardContent = ({ cardType }: ExpandedCardContentProps) => {
     }
 
     return (
-      <div className="space-y-4">
-        {renderHeader("Pagamentos", CreditCard, paymentsArray.length)}
-        <div className="grid gap-4 max-h-96 overflow-y-auto">
-          {paymentsArray.slice(0, 10).map((payment) => (
-            <div key={payment.id} className="bg-gray-700/50 rounded-lg p-4 space-y-2">
+      <div className="space-y-6">
+        {renderHeader("Pagamentos", CreditCard, totalItems)}
+        
+        <div className="grid gap-4 min-h-[1000px]">
+          {currentItems.map((payment) => (
+            <div key={payment.id} className="bg-gray-700/50 rounded-lg p-6 space-y-3">
               <div className="flex items-center justify-between">
                 <div className="text-2xl font-bold text-white">
                   {payment.amount || 'R$ 0,00'}
@@ -285,6 +386,8 @@ export const ExpandedCardContent = ({ cardType }: ExpandedCardContentProps) => {
             </div>
           ))}
         </div>
+        
+        {renderPagination(totalItems)}
       </div>
     );
   };
@@ -293,11 +396,20 @@ export const ExpandedCardContent = ({ cardType }: ExpandedCardContentProps) => {
     const qrcodesArray = Object.entries(qrcodes).map(([id, qr]: [string, any]) => ({
       id,
       ...qr
-    }));
+    })).sort((a, b) => {
+      const timeA = new Date(a.date || a.timestamp || 0).getTime();
+      const timeB = new Date(b.date || b.timestamp || 0).getTime();
+      return timeB - timeA; // Most recent first
+    });
+
+    const totalItems = qrcodesArray.length;
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const currentItems = qrcodesArray.slice(startIndex, endIndex);
 
     if (qrcodesArray.length === 0) {
       return (
-        <div className="text-center py-8">
+        <div className="text-center py-12">
           <QrCode className="h-12 w-12 text-gray-600 mx-auto mb-3" />
           <p className="text-gray-400">Nenhum QR Code registrado ainda</p>
           <p className="text-gray-500 text-sm">Vá para /qrcode para testar</p>
@@ -306,11 +418,12 @@ export const ExpandedCardContent = ({ cardType }: ExpandedCardContentProps) => {
     }
 
     return (
-      <div className="space-y-4">
-        {renderHeader("QR Codes", QrCode, qrcodesArray.length)}
-        <div className="grid gap-4 max-h-96 overflow-y-auto">
-          {qrcodesArray.slice(0, 10).map((qr) => (
-            <div key={qr.id} className="bg-gray-700/50 rounded-lg p-4 space-y-2">
+      <div className="space-y-6">
+        {renderHeader("QR Codes", QrCode, totalItems)}
+        
+        <div className="grid gap-4 min-h-[900px]">
+          {currentItems.map((qr) => (
+            <div key={qr.id} className="bg-gray-700/50 rounded-lg p-5 space-y-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-2">
                   <QrCode className="h-5 w-5 text-cyan-400" />
@@ -337,6 +450,8 @@ export const ExpandedCardContent = ({ cardType }: ExpandedCardContentProps) => {
             </div>
           ))}
         </div>
+        
+        {renderPagination(totalItems)}
       </div>
     );
   };
