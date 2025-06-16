@@ -1,5 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card";
-import { CountryFlag } from "./CountryFlag";
+import { CompactVisitCard } from "./CompactVisitCard";
+import { CompactPaymentCard } from "./CompactPaymentCard";
+import { CompactQRCard } from "./CompactQRCard";
 import { Clock, Globe, Monitor, CreditCard, QrCode, Users, MapPin, Mail, Trash2, ChevronLeft, ChevronRight } from "lucide-react";
 import { useRealtimeData } from "@/hooks/useRealtimeData";
 import { Button } from "@/components/ui/button";
@@ -37,32 +39,6 @@ export const ExpandedCardContent = ({ cardType }: ExpandedCardContentProps) => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 20;
 
-  // Função para mapear país para código da bandeira
-  const getCountryCode = (country: string) => {
-    if (!country) return null;
-    const countryMap: { [key: string]: string } = {
-      'Brazil': 'br',
-      'Brasil': 'br',
-      'United States': 'us',
-      'USA': 'us',
-      'Canada': 'ca',
-      'United Kingdom': 'gb',
-      'Germany': 'de',
-      'France': 'fr',
-      'Spain': 'es',
-      'Italy': 'it',
-      'Portugal': 'pt',
-      'Argentina': 'ar',
-      'Chile': 'cl',
-      'Mexico': 'mx',
-      'Japan': 'jp',
-      'China': 'cn',
-      'India': 'in',
-      'Australia': 'au'
-    };
-    return countryMap[country] || country.toLowerCase().slice(0, 2);
-  };
-
   const handleClearData = async () => {
     setIsClearing(true);
     
@@ -88,7 +64,7 @@ export const ExpandedCardContent = ({ cardType }: ExpandedCardContentProps) => {
       
       if (clearFunction) {
         await clearFunction();
-        setCurrentPage(1); // Reset to first page after clearing
+        setCurrentPage(1);
         toast({
           title: successMessage,
           description: "Os dados foram removidos do sistema.",
@@ -211,22 +187,20 @@ export const ExpandedCardContent = ({ cardType }: ExpandedCardContentProps) => {
   };
 
   const renderVisits = () => {
-    // Filtrar apenas visitas com dados reais (não simulados)
     const visitorsArray = Object.entries(visitors).map(([id, visitor]: [string, any]) => ({
       id,
       ...visitor
     })).filter((visitor) => {
-      // Filtrar visitas que têm dados reais (IP válido, país real, etc.)
       return visitor.ip && 
              visitor.ip !== 'N/A' && 
              visitor.country && 
              visitor.city &&
              visitor.firstVisit &&
-             !visitor.sessionId?.includes('dashboard'); // Evitar visitas do próprio dashboard
+             !visitor.sessionId?.includes('dashboard');
     }).sort((a, b) => {
       const timeA = new Date(a.firstVisit || a.timestamp || 0).getTime();
       const timeB = new Date(b.firstVisit || b.timestamp || 0).getTime();
-      return timeB - timeA; // Most recent first
+      return timeB - timeA;
     });
 
     const totalItems = visitorsArray.length;
@@ -248,49 +222,10 @@ export const ExpandedCardContent = ({ cardType }: ExpandedCardContentProps) => {
       <div className="space-y-6">
         {renderHeader("Detalhes das Visitas", Globe, totalItems)}
         
-        <div className="grid gap-3 min-h-[800px]">
-          {currentItems.map((visit) => {
-            const countryCode = getCountryCode(visit.country);
-            return (
-              <div key={visit.id} className="bg-gray-700/50 rounded-lg p-4">
-                {/* Primeira linha: Bandeira + País/Cidade + Status + Horário */}
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center space-x-3">
-                    {countryCode && (
-                      <CountryFlag 
-                        countryCode={countryCode} 
-                        countryName={visit.country} 
-                      />
-                    )}
-                    <div className="flex items-center space-x-2">
-                      <div className={`w-2 h-2 rounded-full ${visit.status === 'online' ? 'bg-green-500' : 'bg-gray-500'}`}></div>
-                      <span className="text-white text-sm font-medium">
-                        {visit.status === 'online' ? 'Online' : 'Offline'}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="flex items-center space-x-2 text-gray-400">
-                    <Clock className="h-4 w-4" />
-                    <span className="text-sm">
-                      {new Date(visit.firstVisit).toLocaleTimeString('pt-BR')}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Segunda linha: IP + Localização completa */}
-                <div className="flex items-center justify-between text-sm">
-                  <div className="text-gray-300">
-                    <span className="text-gray-400">IP:</span>
-                    <span className="text-white font-mono ml-2">{visit.ip}</span>
-                  </div>
-                  <div className="text-gray-300">
-                    <span className="text-gray-400">Local:</span>
-                    <span className="text-white ml-2">{visit.city}, {visit.state}</span>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
+        <div className="space-y-1 min-h-[600px]">
+          {currentItems.map((visit) => (
+            <CompactVisitCard key={visit.id} visit={visit} />
+          ))}
         </div>
         
         {renderPagination(totalItems)}
@@ -299,21 +234,20 @@ export const ExpandedCardContent = ({ cardType }: ExpandedCardContentProps) => {
   };
 
   const renderUserOnline = () => {
-    // Filtrar usuários online com dados reais apenas
     const onlineVisitors = Object.entries(visitors).filter(([_, visitor]: [string, any]) => 
       visitor.status === 'online' &&
       visitor.ip && 
       visitor.ip !== 'N/A' && 
       visitor.country && 
       visitor.city &&
-      !visitor.sessionId?.includes('dashboard') // Evitar visitas do próprio dashboard
+      !visitor.sessionId?.includes('dashboard')
     ).map(([id, visitor]: [string, any]) => ({
       id,
       ...visitor
     })).sort((a, b) => {
       const timeA = new Date(a.lastSeen || a.timestamp || 0).getTime();
       const timeB = new Date(b.lastSeen || b.timestamp || 0).getTime();
-      return timeB - timeA; // Most recent first
+      return timeB - timeA;
     });
 
     const totalItems = onlineVisitors.length;
@@ -335,45 +269,10 @@ export const ExpandedCardContent = ({ cardType }: ExpandedCardContentProps) => {
       <div className="space-y-6">
         {renderHeader("Usuários Online", Users, totalItems)}
         
-        <div className="grid gap-4 min-h-[600px]">
-          {currentItems.map((user) => {
-            const countryCode = getCountryCode(user.country);
-            return (
-              <div key={user.id} className="bg-gray-700/50 rounded-lg p-4 space-y-2">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center">
-                      <span className="text-white font-semibold text-sm">
-                        {user.city.charAt(0).toUpperCase()}
-                      </span>
-                    </div>
-                    <div>
-                      <p className="text-white font-medium">Usuário #{user.id.slice(-6)}</p>
-                      <p className="text-gray-400 text-sm flex items-center space-x-1">
-                        <MapPin className="h-3 w-3" />
-                        <span>{user.city}</span>
-                      </p>
-                    </div>
-                  </div>
-                  <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                </div>
-                <div className="grid grid-cols-2 gap-4 text-sm pt-2 border-t border-gray-600">
-                  <div>
-                    {countryCode && (
-                      <CountryFlag 
-                        countryCode={countryCode} 
-                        countryName={user.country} 
-                      />
-                    )}
-                  </div>
-                  <div>
-                    <span className="text-gray-400">IP:</span>
-                    <p className="text-white font-mono">{user.ip}</p>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
+        <div className="space-y-1 min-h-[600px]">
+          {currentItems.map((user) => (
+            <CompactVisitCard key={user.id} visit={user} />
+          ))}
         </div>
         
         {renderPagination(totalItems)}
@@ -388,7 +287,7 @@ export const ExpandedCardContent = ({ cardType }: ExpandedCardContentProps) => {
     })).sort((a, b) => {
       const timeA = new Date(a.date || a.timestamp || 0).getTime();
       const timeB = new Date(b.date || b.timestamp || 0).getTime();
-      return timeB - timeA; // Most recent first
+      return timeB - timeA;
     });
 
     const totalItems = paymentsArray.length;
@@ -410,34 +309,9 @@ export const ExpandedCardContent = ({ cardType }: ExpandedCardContentProps) => {
       <div className="space-y-6">
         {renderHeader("Pagamentos", CreditCard, totalItems)}
         
-        <div className="grid gap-4 min-h-[1000px]">
+        <div className="space-y-1 min-h-[600px]">
           {currentItems.map((payment) => (
-            <div key={payment.id} className="bg-gray-700/50 rounded-lg p-6 space-y-3">
-              <div className="flex items-center justify-between">
-                <div className="text-2xl font-bold text-white">
-                  {payment.amount || 'R$ 0,00'}
-                </div>
-                <div className="px-3 py-1 rounded-full text-xs font-medium bg-green-500/20 text-green-400">
-                  {payment.status || 'Aprovado'}
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <div>
-                  <span className="text-gray-400">Método:</span>
-                  <p className="text-white font-medium">{payment.method || 'PIX'}</p>
-                </div>
-                <div>
-                  <span className="text-gray-400">Produto:</span>
-                  <p className="text-white">{payment.product || 'Produto'}</p>
-                </div>
-                <div className="col-span-2">
-                  <span className="text-gray-400">Data:</span>
-                  <p className="text-white">
-                    {payment.date ? new Date(payment.date).toLocaleString('pt-BR') : 'Agora'}
-                  </p>
-                </div>
-              </div>
-            </div>
+            <CompactPaymentCard key={payment.id} payment={payment} />
           ))}
         </div>
         
@@ -453,7 +327,7 @@ export const ExpandedCardContent = ({ cardType }: ExpandedCardContentProps) => {
     })).sort((a, b) => {
       const timeA = new Date(a.date || a.timestamp || 0).getTime();
       const timeB = new Date(b.date || b.timestamp || 0).getTime();
-      return timeB - timeA; // Most recent first
+      return timeB - timeA;
     });
 
     const totalItems = qrcodesArray.length;
@@ -475,33 +349,9 @@ export const ExpandedCardContent = ({ cardType }: ExpandedCardContentProps) => {
       <div className="space-y-6">
         {renderHeader("QR Codes", QrCode, totalItems)}
         
-        <div className="grid gap-4 min-h-[900px]">
+        <div className="space-y-1 min-h-[600px]">
           {currentItems.map((qr) => (
-            <div key={qr.id} className="bg-gray-700/50 rounded-lg p-5 space-y-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <QrCode className="h-5 w-5 text-cyan-400" />
-                  <span className="text-gray-400 text-sm">QR Code</span>
-                </div>
-                <span className="text-gray-400 text-sm">
-                  {qr.date ? new Date(qr.date).toLocaleString('pt-BR') : 'Agora'}
-                </span>
-              </div>
-              <div className="space-y-2">
-                <div>
-                  <span className="text-gray-400 text-sm">Produto:</span>
-                  <p className="text-white font-medium">{qr.product || 'QR Code'}</p>
-                </div>
-                <div>
-                  <span className="text-gray-400 text-sm">Valor:</span>
-                  <p className="text-white">{qr.value || 'N/A'}</p>
-                </div>
-                <div>
-                  <span className="text-gray-400 text-sm">Tipo:</span>
-                  <p className="text-white">{qr.type || 'produto'}</p>
-                </div>
-              </div>
-            </div>
+            <CompactQRCard key={qr.id} qr={qr} />
           ))}
         </div>
         
