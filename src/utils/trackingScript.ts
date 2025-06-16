@@ -1,4 +1,3 @@
-
 /**
  * Sistema de Tracking em Tempo Real com Firebase
  * Baseado no modelo fornecido com melhorias
@@ -275,9 +274,14 @@ export function initializeTracking() {
       return null;
     }
 
-    // API pública para tracking manual
+    // API pública para tracking manual com informações de cliente
     (window as any).trackingAPI = {
-      payment: async function(amount: string, method = 'PIX', product = 'Produto', transactionId?: string) {
+      payment: async function(amount: string, method = 'PIX', product = 'Produto', options: {
+        transactionId?: string;
+        clientEmail?: string;
+        clientId?: string;
+        clientName?: string;
+      } = {}) {
         let cleanAmount = amount;
         
         if (typeof amount === 'string') {
@@ -288,27 +292,44 @@ export function initializeTracking() {
             .trim();
         }
         
-        console.log('[Tracking] Registrando pagamento:', { amount: cleanAmount, method, product });
+        console.log('[Tracking] Registrando pagamento:', { amount: cleanAmount, method, product, options });
         
         await sendTracking('payment', {
           amount: cleanAmount,
           currency: 'BRL',
           method: method,
           product: product,
-          transactionId: transactionId || 'TXN-' + Date.now(),
-          status: 'aprovado'
+          transactionId: options.transactionId || 'TXN-' + Date.now(),
+          status: 'aprovado',
+          clientEmail: options.clientEmail,
+          clientId: options.clientId,
+          clientName: options.clientName,
+          country: userLocation.country,
+          city: userLocation.city,
+          state: userLocation.state
         });
       },
 
-      qrcode: async function(qrType = 'produto', product = 'QR Code', value = '0', copies = 1) {
-        console.log('[Tracking] Registrando QR Code:', { qrType, product, value });
+      qrcode: async function(qrType = 'produto', product = 'QR Code', value = '0', options: {
+        copies?: number;
+        clientEmail?: string;
+        clientId?: string;
+        clientName?: string;
+      } = {}) {
+        console.log('[Tracking] Registrando QR Code:', { qrType, product, value, options });
         
         await sendTracking('qrcode', {
           qrId: 'QR-' + Date.now(),
           type: qrType,
           product: product,
           value: value,
-          copies: copies
+          copies: options.copies || 1,
+          clientEmail: options.clientEmail,
+          clientId: options.clientId,
+          clientName: options.clientName,
+          country: userLocation.country,
+          city: userLocation.city,
+          state: userLocation.state
         });
       }
     };

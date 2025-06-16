@@ -1,4 +1,3 @@
-
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Eye, Users, CreditCard, QrCode, Trash2 } from "lucide-react";
@@ -28,6 +27,13 @@ export const ModernMetricsCards = () => {
   const { metrics } = useRealtimeData();
   const { toast } = useToast();
 
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL'
+    }).format(value);
+  };
+
   const metricsData = [
     {
       title: "VISITAS",
@@ -53,7 +59,7 @@ export const ModernMetricsCards = () => {
     },
     {
       title: "PAYMENTS",
-      value: metrics.totalPayments.toString(),
+      value: formatCurrency(metrics.paymentTotal),
       icon: CreditCard,
       color: "purple",
       gradient: "from-purple-600 to-violet-600",
@@ -76,35 +82,27 @@ export const ModernMetricsCards = () => {
   ];
 
   const handleCardClick = (index: number, event: React.MouseEvent) => {
-    // Evitar propagação se o clique for no botão de limpar
     const target = event.target as HTMLElement;
     if (target.closest('button')) {
       return;
     }
 
-    console.log('Card clicado:', index, 'Estado atual:', { expandedCard, loadingCard, clearingCard });
-
-    // Se já está expandido, fechar
     if (expandedCard === index) {
       setExpandedCard(null);
       return;
     }
 
-    // Se está carregando ou limpando, ignorar
     if (loadingCard !== null || clearingCard !== null) {
       return;
     }
 
-    // Iniciar carregamento
     setLoadingCard(index);
     setExpandedCard(null);
 
-    // Simular carregamento e expandir
     setTimeout(() => {
       setLoadingCard(null);
       setExpandedCard(index);
-      console.log('Card expandido:', index);
-    }, 1000);
+    }, 800);
   };
 
   const handleClearData = async (index: number, event: React.MouseEvent) => {
@@ -120,7 +118,6 @@ export const ModernMetricsCards = () => {
         description: `${metricsData[index].title} foram removidos do sistema.`,
       });
       
-      // Fechar card expandido se estiver aberto
       if (expandedCard === index) {
         setExpandedCard(null);
       }
@@ -149,7 +146,6 @@ export const ModernMetricsCards = () => {
             onClick={(e) => handleCardClick(index, e)}
           >
             <CardContent className="p-4 relative overflow-hidden">
-              {/* Background gradient effect */}
               <div className={`absolute inset-0 bg-gradient-to-br ${metric.bgGradient} opacity-0 group-hover:opacity-100 transition-opacity duration-500 ${
                 expandedCard === index ? 'opacity-100' : ''
               }`}></div>
@@ -212,7 +208,6 @@ export const ModernMetricsCards = () => {
         ))}
       </div>
 
-      {/* Loading State */}
       {loadingCard !== null && (
         <div className="animate-fade-in">
           <Card className="bg-gray-800/50 backdrop-blur-lg border-gray-700">
@@ -234,7 +229,6 @@ export const ModernMetricsCards = () => {
         </div>
       )}
 
-      {/* Expanded Card Content */}
       {expandedCard !== null && loadingCard === null && (
         <div className="animate-fade-in">
           <ExpandedCardContent cardType={metricsData[expandedCard].cardType} />
