@@ -1,8 +1,22 @@
-
 import { Card, CardContent } from "@/components/ui/card";
 import { CountryFlag } from "./CountryFlag";
-import { Clock, Globe, Monitor, CreditCard, QrCode, Users, MapPin, Mail } from "lucide-react";
+import { Clock, Globe, Monitor, CreditCard, QrCode, Users, MapPin, Mail, Trash2 } from "lucide-react";
 import { useRealtimeData } from "@/hooks/useRealtimeData";
+import { Button } from "@/components/ui/button";
+import { clearData } from "@/services/firebase";
+import { useToast } from "@/hooks/use-toast";
+import { useState } from "react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 interface ExpandedCardContentProps {
   cardType: 'visits' | 'userOnline' | 'payments' | 'qrCode';
@@ -10,6 +24,99 @@ interface ExpandedCardContentProps {
 
 export const ExpandedCardContent = ({ cardType }: ExpandedCardContentProps) => {
   const { visitors, payments, qrcodes } = useRealtimeData();
+  const { toast } = useToast();
+  const [isClearing, setIsClearing] = useState(false);
+
+  const handleClearData = async () => {
+    setIsClearing(true);
+    
+    try {
+      let clearFunction;
+      let successMessage;
+      
+      switch (cardType) {
+        case 'visits':
+        case 'userOnline':
+          clearFunction = clearData.clearVisitors;
+          successMessage = 'Visitas limpas com sucesso!';
+          break;
+        case 'payments':
+          clearFunction = clearData.clearPayments;
+          successMessage = 'Pagamentos limpos com sucesso!';
+          break;
+        case 'qrCode':
+          clearFunction = clearData.clearQRCodes;
+          successMessage = 'QR Codes limpos com sucesso!';
+          break;
+      }
+      
+      if (clearFunction) {
+        await clearFunction();
+        toast({
+          title: successMessage,
+          description: "Os dados foram removidos do sistema.",
+        });
+      }
+    } catch (error) {
+      console.error('Erro ao limpar dados:', error);
+      toast({
+        title: "Erro ao limpar dados",
+        description: "Ocorreu um erro ao tentar limpar os dados.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsClearing(false);
+    }
+  };
+
+  const renderHeader = (title: string, icon: any, count: number) => {
+    const Icon = icon;
+    return (
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-xl font-bold text-white flex items-center space-x-2">
+          <Icon className="h-5 w-5 text-blue-400" />
+          <span>{title} ({count})</span>
+        </h3>
+        
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <Button
+              variant="outline"
+              size="sm"
+              className="text-red-400 border-red-400/30 hover:bg-red-400/10 hover:border-red-400"
+              disabled={isClearing}
+            >
+              {isClearing ? (
+                <div className="h-4 w-4 animate-spin rounded-full border border-red-400 border-t-transparent mr-2"></div>
+              ) : (
+                <Trash2 className="h-4 w-4 mr-2" />
+              )}
+              Limpar Tudo
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent className="bg-gray-800 border-gray-700">
+            <AlertDialogHeader>
+              <AlertDialogTitle className="text-white">Confirmar Limpeza</AlertDialogTitle>
+              <AlertDialogDescription className="text-gray-300">
+                Tem certeza que deseja limpar todos os dados desta categoria? Esta ação não pode ser desfeita.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel className="bg-gray-700 text-white border-gray-600 hover:bg-gray-600">
+                Cancelar
+              </AlertDialogCancel>
+              <AlertDialogAction
+                className="bg-red-600 hover:bg-red-700"
+                onClick={handleClearData}
+              >
+                Limpar Tudo
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </div>
+    );
+  };
 
   const renderVisits = () => {
     const visitorsArray = Object.entries(visitors).map(([id, visitor]: [string, any]) => ({
@@ -29,10 +136,7 @@ export const ExpandedCardContent = ({ cardType }: ExpandedCardContentProps) => {
 
     return (
       <div className="space-y-4">
-        <h3 className="text-xl font-bold text-white flex items-center space-x-2">
-          <Globe className="h-5 w-5 text-blue-400" />
-          <span>Detalhes das Visitas ({visitorsArray.length})</span>
-        </h3>
+        {renderHeader("Detalhes das Visitas", Globe, visitorsArray.length)}
         <div className="grid gap-4 max-h-96 overflow-y-auto">
           {visitorsArray.slice(0, 10).map((visit) => (
             <div key={visit.id} className="bg-gray-700/50 rounded-lg p-4 space-y-2">
@@ -92,10 +196,7 @@ export const ExpandedCardContent = ({ cardType }: ExpandedCardContentProps) => {
 
     return (
       <div className="space-y-4">
-        <h3 className="text-xl font-bold text-white flex items-center space-x-2">
-          <Users className="h-5 w-5 text-green-400" />
-          <span>Usuários Online ({onlineVisitors.length})</span>
-        </h3>
+        {renderHeader("Usuários Online", Users, onlineVisitors.length)}
         <div className="grid gap-4 max-h-96 overflow-y-auto">
           {onlineVisitors.map((user) => (
             <div key={user.id} className="bg-gray-700/50 rounded-lg p-4 space-y-2">
@@ -153,10 +254,7 @@ export const ExpandedCardContent = ({ cardType }: ExpandedCardContentProps) => {
 
     return (
       <div className="space-y-4">
-        <h3 className="text-xl font-bold text-white flex items-center space-x-2">
-          <CreditCard className="h-5 w-5 text-purple-400" />
-          <span>Pagamentos ({paymentsArray.length})</span>
-        </h3>
+        {renderHeader("Pagamentos", CreditCard, paymentsArray.length)}
         <div className="grid gap-4 max-h-96 overflow-y-auto">
           {paymentsArray.slice(0, 10).map((payment) => (
             <div key={payment.id} className="bg-gray-700/50 rounded-lg p-4 space-y-2">
@@ -209,10 +307,7 @@ export const ExpandedCardContent = ({ cardType }: ExpandedCardContentProps) => {
 
     return (
       <div className="space-y-4">
-        <h3 className="text-xl font-bold text-white flex items-center space-x-2">
-          <QrCode className="h-5 w-5 text-cyan-400" />
-          <span>QR Codes ({qrcodesArray.length})</span>
-        </h3>
+        {renderHeader("QR Codes", QrCode, qrcodesArray.length)}
         <div className="grid gap-4 max-h-96 overflow-y-auto">
           {qrcodesArray.slice(0, 10).map((qr) => (
             <div key={qr.id} className="bg-gray-700/50 rounded-lg p-4 space-y-2">

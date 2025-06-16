@@ -1,17 +1,32 @@
 
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Eye, Users, CreditCard, QrCode, MoreHorizontal } from "lucide-react";
+import { Eye, Users, CreditCard, QrCode, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { LoadingSpinner } from "./LoadingSpinner";
 import { ExpandedCardContent } from "./ExpandedCardContent";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useRealtimeData } from "@/hooks/useRealtimeData";
+import { clearData } from "@/services/firebase";
+import { useToast } from "@/hooks/use-toast";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 export const ModernMetricsCards = () => {
   const [expandedCard, setExpandedCard] = useState<number | null>(null);
   const [loadingCard, setLoadingCard] = useState<number | null>(null);
+  const [clearingCard, setClearingCard] = useState<number | null>(null);
   const { metrics } = useRealtimeData();
+  const { toast } = useToast();
 
   const metricsData = [
     {
@@ -21,7 +36,9 @@ export const ModernMetricsCards = () => {
       color: "blue",
       gradient: "from-blue-600 to-cyan-600",
       bgGradient: "from-blue-500/20 to-cyan-500/20",
-      cardType: "visits" as const
+      cardType: "visits" as const,
+      clearFunction: clearData.clearVisitors,
+      clearMessage: "Limpar todas as visitas registradas?"
     },
     {
       title: "USER ONLINE",
@@ -30,7 +47,9 @@ export const ModernMetricsCards = () => {
       color: "green",
       gradient: "from-green-600 to-emerald-600",
       bgGradient: "from-green-500/20 to-emerald-500/20",
-      cardType: "userOnline" as const
+      cardType: "userOnline" as const,
+      clearFunction: clearData.clearVisitors,
+      clearMessage: "Limpar todos os usuários online?"
     },
     {
       title: "PAYMENTS",
@@ -39,7 +58,9 @@ export const ModernMetricsCards = () => {
       color: "purple",
       gradient: "from-purple-600 to-violet-600",
       bgGradient: "from-purple-500/20 to-violet-500/20",
-      cardType: "payments" as const
+      cardType: "payments" as const,
+      clearFunction: clearData.clearPayments,
+      clearMessage: "Limpar todos os pagamentos registrados?"
     },
     {
       title: "QR CODE COPIADOS",
@@ -48,12 +69,14 @@ export const ModernMetricsCards = () => {
       color: "orange",
       gradient: "from-orange-600 to-red-600",
       bgGradient: "from-orange-500/20 to-red-500/20",
-      cardType: "qrCode" as const
+      cardType: "qrCode" as const,
+      clearFunction: clearData.clearQRCodes,
+      clearMessage: "Limpar todos os QR codes registrados?"
     },
   ];
 
   const handleCardClick = (index: number) => {
-    if (loadingCard !== null || expandedCard === index) {
+    if (loadingCard !== null || expandedCard === index || clearingCard !== null) {
       setExpandedCard(null);
       return;
     }
@@ -65,6 +88,35 @@ export const ModernMetricsCards = () => {
       setLoadingCard(null);
       setExpandedCard(index);
     }, 1500);
+  };
+
+  const handleClearData = async (index: number, event: React.MouseEvent) => {
+    event.stopPropagation();
+    
+    setClearingCard(index);
+    
+    try {
+      await metricsData[index].clearFunction();
+      
+      toast({
+        title: "Dados limpos com sucesso!",
+        description: `${metricsData[index].title} foram removidos do sistema.`,
+      });
+      
+      // Fechar card expandido se estiver aberto
+      if (expandedCard === index) {
+        setExpandedCard(null);
+      }
+    } catch (error) {
+      console.error('Erro ao limpar dados:', error);
+      toast({
+        title: "Erro ao limpar dados",
+        description: "Ocorreu um erro ao tentar limpar os dados.",
+        variant: "destructive",
+      });
+    } finally {
+      setClearingCard(null);
+    }
   };
 
   return (
@@ -92,13 +144,42 @@ export const ModernMetricsCards = () => {
                   }`}>
                     <metric.icon className="h-5 w-5 text-white" />
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="text-gray-400 hover:text-white opacity-0 group-hover:opacity-100 transition-all duration-300 p-1"
-                  >
-                    <MoreHorizontal className="h-3 w-3" />
-                  </Button>
+                  
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-gray-400 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all duration-300 p-1"
+                        disabled={clearingCard === index}
+                      >
+                        {clearingCard === index ? (
+                          <div className="h-3 w-3 animate-spin rounded-full border border-red-400 border-t-transparent"></div>
+                        ) : (
+                          <Trash2 className="h-3 w-3" />
+                        )}
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent className="bg-gray-800 border-gray-700">
+                      <AlertDialogHeader>
+                        <AlertDialogTitle className="text-white">Confirmar Limpeza</AlertDialogTitle>
+                        <AlertDialogDescription className="text-gray-300">
+                          {metric.clearMessage} Esta ação não pode ser desfeita.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel className="bg-gray-700 text-white border-gray-600 hover:bg-gray-600">
+                          Cancelar
+                        </AlertDialogCancel>
+                        <AlertDialogAction
+                          className="bg-red-600 hover:bg-red-700"
+                          onClick={(e) => handleClearData(index, e)}
+                        >
+                          Limpar Dados
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
                 </div>
                 
                 <div className="space-y-1">

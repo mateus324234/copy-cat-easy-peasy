@@ -1,6 +1,5 @@
-
 import { initializeApp } from 'firebase/app';
-import { getDatabase, ref, set, update, onValue, push, serverTimestamp } from 'firebase/database';
+import { getDatabase, ref, set, update, onValue, push, serverTimestamp, remove } from 'firebase/database';
 
 const firebaseConfig = {
   apiKey: "AIzaSyDsGz4eMdK4AvSotMRubBA6hLZ9wLdTWlY",
@@ -16,7 +15,6 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 export const database = getDatabase(app);
 
-// API Endpoints simulados que gravam no Firebase
 export const trackingAPI = {
   async visit(data: any) {
     const visitRef = ref(database, `visitors/${data.sessionId}`);
@@ -72,7 +70,27 @@ export const trackingAPI = {
   }
 };
 
-// Função para escutar dados em tempo real
+// Funções para limpar dados
+export const clearData = {
+  async clearVisitors() {
+    const visitorsRef = ref(database, 'visitors');
+    await remove(visitorsRef);
+    console.log('[Firebase] Visitantes limpos');
+  },
+
+  async clearPayments() {
+    const paymentsRef = ref(database, 'payments');
+    await remove(paymentsRef);
+    console.log('[Firebase] Pagamentos limpos');
+  },
+
+  async clearQRCodes() {
+    const qrcodesRef = ref(database, 'qrcodes');
+    await remove(qrcodesRef);
+    console.log('[Firebase] QR Codes limpos');
+  }
+};
+
 export function listenToRealtimeData(callback: (data: any) => void) {
   const visitorsRef = ref(database, 'visitors');
   const paymentsRef = ref(database, 'payments');
