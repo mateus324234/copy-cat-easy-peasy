@@ -2,7 +2,6 @@
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { UserDetails } from "./UserDetails";
 
 export const ModernClientsSection = () => {
   const [activeTab, setActiveTab] = useState("online");
@@ -39,9 +38,12 @@ export const ModernClientsSection = () => {
         </TabsList>
 
         <TabsContent value="online" className="mt-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            <UserDetails />
-            {/* Additional user cards would go here */}
+          <div className="bg-gray-800/50 backdrop-blur-lg border border-gray-700 rounded-lg p-8 text-center">
+            <div className="w-16 h-16 bg-gradient-to-br from-blue-600 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
+              <div className="w-8 h-8 bg-green-500 rounded-full animate-pulse"></div>
+            </div>
+            <p className="text-white text-lg font-medium">Todos os clientes estão ativos</p>
+            <p className="text-gray-400 text-sm mt-2">Sistema funcionando perfeitamente</p>
           </div>
         </TabsContent>
 

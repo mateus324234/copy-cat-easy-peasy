@@ -1,5 +1,5 @@
 
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { ModernDashboardHeader } from "@/components/ModernDashboardHeader";
 import { ModernMetricsCards } from "@/components/ModernMetricsCards";
@@ -7,7 +7,7 @@ import { ModernClientsSection } from "@/components/ModernClientsSection";
 
 const Dashboard = () => {
   return (
-    <SidebarProvider>
+    <SidebarProvider defaultOpen={false}>
       <div className="min-h-screen flex w-full bg-gradient-to-br from-gray-900 via-slate-900 to-black">
         <AppSidebar />
         <main className="flex-1 overflow-hidden">
@@ -19,9 +19,7 @@ const Dashboard = () => {
           </div>
           
           <div className="relative z-10 p-6 space-y-6">
-            <div className="flex items-center space-x-4 mb-8">
-              <SidebarTrigger className="bg-gray-800/50 hover:bg-gray-700 border-gray-700 text-white transition-all duration-200 hover:scale-105" />
-              <div className="h-6 w-px bg-gray-700"></div>
+            <div className="mb-8">
               <ModernDashboardHeader />
             </div>
             
