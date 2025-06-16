@@ -3,7 +3,6 @@ import { SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { ModernDashboardHeader } from "@/components/ModernDashboardHeader";
 import { ModernMetricsCards } from "@/components/ModernMetricsCards";
-import { ModernClientsSection } from "@/components/ModernClientsSection";
 
 const Dashboard = () => {
   return (
@@ -25,10 +24,6 @@ const Dashboard = () => {
             
             <div className="animate-fade-in">
               <ModernMetricsCards />
-            </div>
-            
-            <div className="animate-fade-in delay-300">
-              <ModernClientsSection />
             </div>
           </div>
         </main>
