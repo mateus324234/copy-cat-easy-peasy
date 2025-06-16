@@ -1,7 +1,6 @@
 
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
-import { ModernDashboardHeader } from "@/components/ModernDashboardHeader";
 import { ModernMetricsCards } from "@/components/ModernMetricsCards";
 
 const Dashboard = () => {
@@ -17,11 +16,7 @@ const Dashboard = () => {
             <div className="absolute top-1/2 left-1/2 w-64 h-64 bg-cyan-500/5 rounded-full blur-3xl animate-pulse delay-2000"></div>
           </div>
           
-          <div className="relative z-10 p-6 space-y-6">
-            <div className="mb-8">
-              <ModernDashboardHeader />
-            </div>
-            
+          <div className="relative z-10 p-6">
             <div className="animate-fade-in">
               <ModernMetricsCards />
             </div>
