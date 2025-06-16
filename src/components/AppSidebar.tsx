@@ -61,7 +61,7 @@ function SidebarContent_() {
 
   return (
     <div 
-      className="h-full fixed left-0 top-0 z-40"
+      className="h-full fixed left-0 top-0 z-50"
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
@@ -127,9 +127,9 @@ function SidebarContent_() {
 export function AppSidebar() {
   return (
     <>
-      {/* Invisible trigger area - increased width for better UX */}
+      {/* Área de trigger expandida para melhor UX */}
       <div 
-        className="fixed left-0 top-0 w-8 h-full z-50 bg-transparent"
+        className="fixed left-0 top-0 w-12 h-full z-50 bg-transparent"
         onMouseEnter={() => {
           const sidebar = document.querySelector('[data-sidebar="sidebar"]');
           if (sidebar) {

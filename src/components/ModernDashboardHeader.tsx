@@ -1,5 +1,4 @@
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 
 export const ModernDashboardHeader = () => {
@@ -16,7 +15,7 @@ export const ModernDashboardHeader = () => {
   });
 
   return (
-    <div className="flex justify-between items-center w-full">
+    <div className="w-full">
       <div className="space-y-2">
         <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-cyan-400 bg-clip-text text-transparent animate-pulse">
           Dashboard
@@ -29,22 +28,6 @@ export const ModernDashboardHeader = () => {
             {currentTime}
           </Badge>
         </div>
-      </div>
-      
-      <div className="flex items-center space-x-4">
-        <div className="text-right space-y-1">
-          <p className="text-white font-medium text-lg">Admin User</p>
-          <div className="flex items-center space-x-2">
-            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-            <p className="text-green-400 text-sm font-medium">Online</p>
-          </div>
-        </div>
-        <Avatar className="h-12 w-12 ring-2 ring-blue-500/30 hover:ring-blue-500/60 transition-all duration-300 hover:scale-110">
-          <AvatarImage src="/placeholder.svg" />
-          <AvatarFallback className="bg-gradient-to-br from-blue-600 to-purple-600 text-white font-bold">
-            AU
-          </AvatarFallback>
-        </Avatar>
       </div>
     </div>
   );
