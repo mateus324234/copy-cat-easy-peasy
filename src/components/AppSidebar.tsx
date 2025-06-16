@@ -54,18 +54,18 @@ export function AppSidebar() {
       onMouseLeave={() => setOpen(false)}
     >
       <Sidebar 
-        className="bg-gray-900/95 backdrop-blur-xl shadow-2xl border-r border-gray-700/30"
+        className="!bg-black/20 !backdrop-blur-xl !shadow-2xl !border-r !border-white/10"
         collapsible="offcanvas"
       >
-        <SidebarContent className="px-2 py-4">
-          <SidebarGroup>
-            <SidebarGroupContent>
+        <SidebarContent className="px-2 py-4 !bg-transparent">
+          <SidebarGroup className="!bg-transparent">
+            <SidebarGroupContent className="!bg-transparent">
               <SidebarMenu className="space-y-1">
                 {menuItems.map((item) => (
                   <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton 
                       asChild 
-                      className="text-gray-300 hover:text-white hover:bg-blue-600/30 transition-all duration-300 rounded-lg group border border-transparent hover:border-blue-500/30 hover:shadow-lg hover:shadow-blue-500/20"
+                      className="text-white/80 hover:text-white hover:bg-white/10 transition-all duration-300 rounded-lg group border border-transparent hover:border-white/20 hover:shadow-lg hover:shadow-blue-500/20 !bg-transparent"
                     >
                       <a href={item.url} className="flex items-center space-x-3 p-3">
                         <item.icon className="h-5 w-5 group-hover:text-blue-400 transition-colors group-hover:scale-110 transform duration-200" />
