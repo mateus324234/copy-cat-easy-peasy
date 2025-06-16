@@ -1,7 +1,7 @@
 
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Users, Info, Shield, MousePointer, MoreHorizontal, TrendingUp } from "lucide-react";
+import { Eye, Users, CreditCard, QrCode, MoreHorizontal } from "lucide-react";
 import { useState } from "react";
 import { LoadingSpinner } from "./LoadingSpinner";
 import { ExpandedCardContent } from "./ExpandedCardContent";
@@ -11,49 +11,37 @@ const metricsData = [
   {
     title: "VISITAS",
     value: "38",
-    subtitle: "38 Online",
-    icon: Users,
+    icon: Eye,
     color: "blue",
     gradient: "from-blue-600 to-cyan-600",
     bgGradient: "from-blue-500/20 to-cyan-500/20",
-    change: "+5.2%",
-    trend: "up",
     cardType: "visits" as const
   },
   {
     title: "USER ONLINE",
     value: "14,592",
-    subtitle: "+12.8%",
-    icon: Info,
+    icon: Users,
     color: "green",
     gradient: "from-green-600 to-emerald-600",
     bgGradient: "from-green-500/20 to-emerald-500/20",
-    change: "+12.8%",
-    trend: "up",
     cardType: "userOnline" as const
   },
   {
     title: "PAYMENTS",
     value: "347",
-    subtitle: "Crítico",
-    icon: Shield,
-    color: "red",
-    gradient: "from-red-600 to-pink-600",
-    bgGradient: "from-red-500/20 to-pink-500/20",
-    change: "-2.1%",
-    trend: "down",
+    icon: CreditCard,
+    color: "purple",
+    gradient: "from-purple-600 to-violet-600",
+    bgGradient: "from-purple-500/20 to-violet-500/20",
     cardType: "payments" as const
   },
   {
     title: "QR CODE COPIADOS",
     value: "26,842",
-    subtitle: "CTR médio +7.4%",
-    icon: MousePointer,
-    color: "purple",
-    gradient: "from-purple-600 to-violet-600",
-    bgGradient: "from-purple-500/20 to-violet-500/20",
-    change: "+7.4%",
-    trend: "up",
+    icon: QrCode,
+    color: "orange",
+    gradient: "from-orange-600 to-red-600",
+    bgGradient: "from-orange-500/20 to-red-500/20",
     cardType: "qrCode" as const
   },
 ];
@@ -89,41 +77,33 @@ export const ModernMetricsCards = () => {
             style={{ animationDelay: `${index * 100}ms` }}
             onClick={() => handleCardClick(index)}
           >
-            <CardContent className="p-6 relative overflow-hidden">
+            <CardContent className="p-4 relative overflow-hidden">
               {/* Background gradient effect */}
               <div className={`absolute inset-0 bg-gradient-to-br ${metric.bgGradient} opacity-0 group-hover:opacity-100 transition-opacity duration-500 ${
                 expandedCard === index ? 'opacity-100' : ''
               }`}></div>
               
               <div className="relative z-10">
-                <div className="flex items-center justify-between mb-4">
-                  <div className={`p-3 rounded-xl bg-gradient-to-br ${metric.gradient} shadow-lg group-hover:scale-110 transition-transform duration-300 ${
+                <div className="flex items-center justify-between mb-3">
+                  <div className={`p-2.5 rounded-xl bg-gradient-to-br ${metric.gradient} shadow-lg group-hover:scale-110 transition-transform duration-300 ${
                     expandedCard === index ? 'scale-110' : ''
                   }`}>
-                    <metric.icon className="h-6 w-6 text-white animate-pulse" />
+                    <metric.icon className="h-5 w-5 text-white" />
                   </div>
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="text-gray-400 hover:text-white opacity-0 group-hover:opacity-100 transition-all duration-300"
+                    className="text-gray-400 hover:text-white opacity-0 group-hover:opacity-100 transition-all duration-300 p-1"
                   >
-                    <MoreHorizontal className="h-4 w-4" />
+                    <MoreHorizontal className="h-3 w-3" />
                   </Button>
                 </div>
                 
-                <div className="space-y-2">
-                  <p className="text-gray-400 text-sm font-medium">{metric.title}</p>
-                  <p className="text-3xl font-bold text-white group-hover:scale-105 transition-transform duration-300">
+                <div className="space-y-1">
+                  <p className="text-gray-400 text-xs font-medium">{metric.title}</p>
+                  <p className="text-2xl font-bold text-white group-hover:scale-105 transition-transform duration-300">
                     {metric.value}
                   </p>
-                  
-                  <div className="flex items-center justify-between">
-                    <span className={`text-sm ${metric.trend === 'up' ? 'text-green-400' : 'text-red-400'} flex items-center space-x-1`}>
-                      <TrendingUp className={`h-3 w-3 ${metric.trend === 'down' ? 'rotate-180' : ''}`} />
-                      <span>{metric.change}</span>
-                    </span>
-                    <span className="text-gray-400 text-sm">{metric.subtitle}</span>
-                  </div>
                 </div>
               </div>
             </CardContent>
