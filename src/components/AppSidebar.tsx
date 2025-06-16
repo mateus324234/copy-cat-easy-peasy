@@ -1,5 +1,4 @@
 
-import { useEffect } from "react";
 import {
   Sidebar,
   SidebarContent,
@@ -45,28 +44,19 @@ const menuItems = [
   },
 ];
 
-function SidebarContent_() {
-  const { setOpen, open } = useSidebar();
-
-  const handleMouseEnter = () => {
-    setOpen(true);
-  };
-
-  const handleMouseLeave = () => {
-    setOpen(false);
-  };
+export function AppSidebar() {
+  const { setOpen } = useSidebar();
 
   return (
     <div 
-      className="h-full fixed left-0 top-0 z-50"
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
+      className="fixed left-0 top-0 h-full w-4 z-[9999] bg-transparent"
+      onMouseEnter={() => setOpen(true)}
+      onMouseLeave={() => setOpen(false)}
     >
-      <Sidebar className={`border-r border-gray-700/30 bg-gray-900/95 backdrop-blur-xl shadow-2xl transition-transform duration-300 ease-out ${
-        open 
-          ? 'translate-x-0' 
-          : '-translate-x-full'
-      }`}>
+      <Sidebar 
+        className="bg-gray-900/95 backdrop-blur-xl shadow-2xl border-r border-gray-700/30"
+        collapsible="offcanvas"
+      >
         <SidebarContent className="px-2 py-4">
           <SidebarGroup>
             <SidebarGroupContent>
@@ -79,9 +69,7 @@ function SidebarContent_() {
                     >
                       <a href={item.url} className="flex items-center space-x-3 p-3">
                         <item.icon className="h-5 w-5 group-hover:text-blue-400 transition-colors group-hover:scale-110 transform duration-200" />
-                        <span className={`font-medium transition-all duration-300 ${
-                          open ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-4'
-                        }`}>
+                        <span className="font-medium transition-all duration-300">
                           {item.title}
                         </span>
                       </a>
@@ -94,23 +82,5 @@ function SidebarContent_() {
         </SidebarContent>
       </Sidebar>
     </div>
-  );
-}
-
-export function AppSidebar() {
-  return (
-    <>
-      {/* Área de trigger expandida para melhor UX */}
-      <div 
-        className="fixed left-0 top-0 w-16 h-full z-40 bg-transparent"
-        onMouseEnter={() => {
-          const sidebar = document.querySelector('[data-sidebar="sidebar"]');
-          if (sidebar) {
-            sidebar.dispatchEvent(new MouseEvent('mouseenter', { bubbles: true }));
-          }
-        }}
-      />
-      <SidebarContent_ />
-    </>
   );
 }

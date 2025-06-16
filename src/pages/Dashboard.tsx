@@ -6,9 +6,9 @@ import { ModernMetricsCards } from "@/components/ModernMetricsCards";
 const Dashboard = () => {
   return (
     <SidebarProvider defaultOpen={false}>
-      <div className="min-h-screen w-full bg-gradient-to-br from-gray-900 via-slate-900 to-black">
+      <div className="min-h-screen w-full bg-gradient-to-br from-gray-900 via-slate-900 to-black flex">
         <AppSidebar />
-        <main className="w-full min-h-screen overflow-hidden">
+        <main className="flex-1 min-h-screen overflow-hidden">
           {/* Animated background effects */}
           <div className="absolute inset-0 overflow-hidden pointer-events-none">
             <div className="absolute top-20 left-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl animate-pulse"></div>
