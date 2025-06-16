@@ -1,9 +1,27 @@
 
+import { useEffect } from "react";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { ModernMetricsCards } from "@/components/ModernMetricsCards";
+import { initializeTracking } from "@/utils/trackingScript";
+import { listenToRealtimeData } from "@/services/firebase";
 
 const Dashboard = () => {
+  useEffect(() => {
+    // Inicializar tracking do dashboard (mas não contar visitas)
+    initializeTracking();
+
+    // Escutar dados em tempo real do Firebase
+    const unsubscribe = listenToRealtimeData((update) => {
+      console.log('[Dashboard] Dados atualizados em tempo real:', update);
+      // Os componentes de métricas serão atualizados automaticamente
+    });
+
+    return () => {
+      // Cleanup se necessário
+    };
+  }, []);
+
   return (
     <SidebarProvider defaultOpen={false}>
       <div className="min-h-screen w-full bg-gradient-to-br from-gray-900 via-slate-900 to-black flex">

@@ -1,4 +1,3 @@
-
 import {
   Sidebar,
   SidebarContent,
@@ -9,7 +8,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { Settings, FileText, PlusCircle, Globe, Home, Users } from "lucide-react";
+import { Settings, FileText, PlusCircle, Globe, Home, Users, CreditCard, QrCode } from "lucide-react";
 
 const menuItems = [
   {
@@ -21,6 +20,16 @@ const menuItems = [
     title: "Clientes",
     url: "/dashboard",
     icon: Users,
+  },
+  {
+    title: "Payments Test",
+    url: "/payments",
+    icon: CreditCard,
+  },
+  {
+    title: "QR Code Test",
+    url: "/qrcode",
+    icon: QrCode,
   },
   {
     title: "Configurações",
