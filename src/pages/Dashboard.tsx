@@ -1,0 +1,42 @@
+
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { AppSidebar } from "@/components/AppSidebar";
+import { ModernDashboardHeader } from "@/components/ModernDashboardHeader";
+import { ModernMetricsCards } from "@/components/ModernMetricsCards";
+import { ModernClientsSection } from "@/components/ModernClientsSection";
+
+const Dashboard = () => {
+  return (
+    <SidebarProvider>
+      <div className="min-h-screen flex w-full bg-gradient-to-br from-gray-900 via-slate-900 to-black">
+        <AppSidebar />
+        <main className="flex-1 overflow-hidden">
+          {/* Animated background effects */}
+          <div className="absolute inset-0 overflow-hidden pointer-events-none">
+            <div className="absolute top-20 left-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl animate-pulse"></div>
+            <div className="absolute bottom-20 right-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
+            <div className="absolute top-1/2 left-1/2 w-64 h-64 bg-cyan-500/5 rounded-full blur-3xl animate-pulse delay-2000"></div>
+          </div>
+          
+          <div className="relative z-10 p-6 space-y-6">
+            <div className="flex items-center space-x-4 mb-8">
+              <SidebarTrigger className="bg-gray-800/50 hover:bg-gray-700 border-gray-700 text-white transition-all duration-200 hover:scale-105" />
+              <div className="h-6 w-px bg-gray-700"></div>
+              <ModernDashboardHeader />
+            </div>
+            
+            <div className="animate-fade-in">
+              <ModernMetricsCards />
+            </div>
+            
+            <div className="animate-fade-in delay-300">
+              <ModernClientsSection />
+            </div>
+          </div>
+        </main>
+      </div>
+    </SidebarProvider>
+  );
+};
+
+export default Dashboard;

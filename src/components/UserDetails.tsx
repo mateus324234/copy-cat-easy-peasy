@@ -21,124 +21,137 @@ export const UserDetails = () => {
   }, []);
 
   return (
-    <Card className="bg-gray-800 border-gray-700 w-full max-w-md">
-      <CardContent className="p-3">
+    <Card className="bg-gray-800/50 backdrop-blur-lg border-gray-700 hover:border-blue-500/50 transition-all duration-500 hover:shadow-2xl hover:shadow-blue-500/25 hover:-translate-y-1 w-full max-w-sm animate-fade-in">
+      <CardContent className="p-4">
         {/* Header - Username e Status */}
-        <div className="flex items-center justify-between mb-3">
-          <h3 className="text-white font-bold text-sm">carlos74</h3>
-          <div className="flex items-center space-x-1">
-            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-            <span className="text-green-400 text-xs">Online</span>
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-white font-bold text-base">carlos74</h3>
+          <div className="flex items-center space-x-2">
+            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+            <span className="text-green-400 text-sm font-medium">Online</span>
           </div>
         </div>
 
         {/* Grid Principal - Informações */}
-        <div className="grid grid-cols-2 gap-2 mb-3">
-          <div className="bg-gray-700 rounded p-2">
-            <div className="flex items-center space-x-1 mb-1">
-              <User className="h-2 w-2 text-gray-400" />
-              <span className="text-gray-300 text-xs">Usuário</span>
+        <div className="grid grid-cols-2 gap-3 mb-4">
+          <div className="bg-gray-700/50 rounded-lg p-3 hover:bg-gray-700/70 transition-colors">
+            <div className="flex items-center space-x-2 mb-2">
+              <User className="h-3 w-3 text-blue-400" />
+              <span className="text-gray-300 text-xs font-medium">Usuário</span>
             </div>
-            <span className="text-white text-xs">carlos74</span>
+            <span className="text-white text-sm">carlos74</span>
           </div>
 
-          <div className="bg-gray-700 rounded p-2">
-            <div className="flex items-center space-x-1 mb-1">
-              <Lock className="h-2 w-2 text-gray-400" />
-              <span className="text-gray-300 text-xs">Senha</span>
+          <div className="bg-gray-700/50 rounded-lg p-3 hover:bg-gray-700/70 transition-colors">
+            <div className="flex items-center space-x-2 mb-2">
+              <Lock className="h-3 w-3 text-purple-400" />
+              <span className="text-gray-300 text-xs font-medium">Senha</span>
             </div>
-            <span className="text-white text-xs">pass123!</span>
+            <span className="text-white text-sm">pass123!</span>
           </div>
 
-          <div className="bg-gray-700 rounded p-2">
-            <div className="flex items-center space-x-1 mb-1">
-              <Globe className="h-2 w-2 text-gray-400" />
-              <span className="text-gray-300 text-xs">IP</span>
+          <div className="bg-gray-700/50 rounded-lg p-3 hover:bg-gray-700/70 transition-colors">
+            <div className="flex items-center space-x-2 mb-2">
+              <Globe className="h-3 w-3 text-cyan-400" />
+              <span className="text-gray-300 text-xs font-medium">IP</span>
             </div>
-            <span className="text-white text-xs">192.168.1.104</span>
+            <span className="text-white text-sm">192.168.1.104</span>
           </div>
 
-          <div className="bg-gray-700 rounded p-2">
-            <div className="flex items-center space-x-1 mb-1">
+          <div className="bg-gray-700/50 rounded-lg p-3 hover:bg-gray-700/70 transition-colors">
+            <div className="flex items-center space-x-2 mb-2">
               {countryData && (
                 <img 
                   src={countryData.flags.svg} 
                   alt="Brazil flag" 
-                  className="h-2 w-3 object-cover rounded-sm"
+                  className="h-3 w-4 object-cover rounded-sm"
                 />
               )}
-              <span className="text-gray-300 text-xs">País</span>
+              <span className="text-gray-300 text-xs font-medium">País</span>
             </div>
-            <span className="text-white text-xs">Brasil</span>
+            <span className="text-white text-sm">Brasil</span>
           </div>
 
-          <div className="bg-gray-700 rounded p-2">
-            <div className="flex items-center space-x-1 mb-1">
-              <MapPin className="h-2 w-2 text-gray-400" />
-              <span className="text-gray-300 text-xs">Cidade</span>
+          <div className="bg-gray-700/50 rounded-lg p-3 hover:bg-gray-700/70 transition-colors">
+            <div className="flex items-center space-x-2 mb-2">
+              <MapPin className="h-3 w-3 text-green-400" />
+              <span className="text-gray-300 text-xs font-medium">Cidade</span>
             </div>
-            <span className="text-white text-xs">São Paulo</span>
+            <span className="text-white text-sm">São Paulo</span>
           </div>
 
-          <div className="bg-gray-700 rounded p-2">
-            <div className="flex items-center space-x-1 mb-1">
-              <Monitor className="h-2 w-2 text-gray-400" />
-              <span className="text-gray-300 text-xs">Dispositivo</span>
+          <div className="bg-gray-700/50 rounded-lg p-3 hover:bg-gray-700/70 transition-colors">
+            <div className="flex items-center space-x-2 mb-2">
+              <Monitor className="h-3 w-3 text-orange-400" />
+              <span className="text-gray-300 text-xs font-medium">Dispositivo</span>
             </div>
-            <span className="text-white text-xs">iPhone</span>
+            <span className="text-white text-sm">iPhone</span>
           </div>
         </div>
 
         {/* Grid Respostas */}
-        <div className="mb-3">
-          <h4 className="text-white text-xs font-medium mb-2">Respostas</h4>
-          <div className="grid grid-cols-3 gap-1 mb-2">
-            {['SMS', 'AUTH', '2FA', 'EMAIL', 'TEL'].map((item, index) => (
-              <div key={index} className="bg-gray-600 rounded p-1">
-                <div className="text-xs text-gray-300 mb-1">{item}</div>
+        <div className="mb-4">
+          <h4 className="text-white text-sm font-medium mb-3">Respostas</h4>
+          <div className="grid grid-cols-3 gap-2 mb-3">
+            {['SMS', 'AUTH', '2FA', 'EMAIL', 'TEL'].slice(0, 3).map((item, index) => (
+              <div key={index} className="bg-gray-600/50 rounded-lg p-2 hover:bg-gray-600/70 transition-colors">
+                <div className="text-xs text-gray-300 mb-1 font-medium">{item}</div>
                 <input 
                   type="text" 
-                  className="w-full bg-gray-800 text-white text-xs p-1 rounded border-gray-500"
+                  className="w-full bg-gray-800/70 text-white text-xs p-1.5 rounded border border-gray-600 focus:border-blue-500 transition-colors"
                   placeholder="..."
                 />
-                <div className="text-xs text-red-400 mt-1">Incorreto</div>
+                <div className="text-xs text-red-400 mt-1 font-medium">Incorreto</div>
+              </div>
+            ))}
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            {['EMAIL', 'TEL'].map((item, index) => (
+              <div key={index} className="bg-gray-600/50 rounded-lg p-2 hover:bg-gray-600/70 transition-colors">
+                <div className="text-xs text-gray-300 mb-1 font-medium">{item}</div>
+                <input 
+                  type="text" 
+                  className="w-full bg-gray-800/70 text-white text-xs p-1.5 rounded border border-gray-600 focus:border-blue-500 transition-colors"
+                  placeholder="..."
+                />
+                <div className="text-xs text-red-400 mt-1 font-medium">Incorreto</div>
               </div>
             ))}
           </div>
         </div>
 
         {/* Senhas Adicionais Compactas */}
-        <div className="mb-3">
-          <h5 className="text-white text-xs font-medium mb-1">Senhas</h5>
-          <div className="space-y-1">
+        <div className="mb-4">
+          <h5 className="text-white text-sm font-medium mb-2">Senhas</h5>
+          <div className="space-y-2">
             {['4', '6', '8'].map((num, index) => (
-              <div key={index} className="flex items-center justify-between bg-gray-600 rounded p-1">
-                <span className="text-gray-300 text-xs">SENHA {num}:</span>
-                <div className="flex items-center space-x-1">
+              <div key={index} className="flex items-center justify-between bg-gray-600/50 rounded-lg p-2 hover:bg-gray-600/70 transition-colors">
+                <span className="text-gray-300 text-xs font-medium">SENHA {num}:</span>
+                <div className="flex items-center space-x-2">
                   <input 
                     type="text" 
-                    className="bg-gray-800 text-white text-xs p-1 rounded border-gray-500 w-12"
+                    className="bg-gray-800/70 text-white text-xs p-1.5 rounded border border-gray-600 focus:border-blue-500 transition-colors w-16"
                     placeholder="****"
                   />
-                  <span className="text-red-400 text-xs">Incorreto</span>
+                  <span className="text-red-400 text-xs font-medium">Incorreto</span>
                 </div>
               </div>
             ))}
           </div>
         </div>
 
-        {/* Botões de Ação Compactos */}
-        <div className="space-y-1">
-          <Button className="w-full bg-red-600 hover:bg-red-700 text-white h-6 text-xs" size="sm">
-            <Shield className="h-2 w-2 mr-1" />
+        {/* Botões de Ação Modernos */}
+        <div className="space-y-2">
+          <Button className="w-full bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white h-8 text-xs transition-all duration-300 hover:scale-105" size="sm">
+            <Shield className="h-3 w-3 mr-2" />
             Bloquear
           </Button>
-          <Button className="w-full bg-red-800 hover:bg-red-900 text-white h-6 text-xs" size="sm">
-            <Trash2 className="h-2 w-2 mr-1" />
+          <Button className="w-full bg-gradient-to-r from-red-800 to-red-900 hover:from-red-900 hover:to-red-950 text-white h-8 text-xs transition-all duration-300 hover:scale-105" size="sm">
+            <Trash2 className="h-3 w-3 mr-2" />
             Excluir
           </Button>
-          <Button className="w-full bg-yellow-600 hover:bg-yellow-700 text-white h-6 text-xs" size="sm">
-            <Clock className="h-2 w-2 mr-1" />
+          <Button className="w-full bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-700 hover:to-orange-700 text-white h-8 text-xs transition-all duration-300 hover:scale-105" size="sm">
+            <Clock className="h-3 w-3 mr-2" />
             Aguardar
           </Button>
         </div>
