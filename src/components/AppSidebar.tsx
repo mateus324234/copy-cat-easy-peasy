@@ -5,12 +5,9 @@ import {
   SidebarContent,
   SidebarGroup,
   SidebarGroupContent,
-  SidebarGroupLabel,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarHeader,
-  SidebarFooter,
   useSidebar,
 } from "@/components/ui/sidebar";
 import { Settings, FileText, PlusCircle, Globe, Home, Users } from "lucide-react";
@@ -65,30 +62,13 @@ function SidebarContent_() {
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
-      <Sidebar className={`border-r border-gray-700/30 bg-gray-900/95 backdrop-blur-xl shadow-2xl transition-all duration-500 ease-out ${
+      <Sidebar className={`border-r border-gray-700/30 bg-gray-900/95 backdrop-blur-xl shadow-2xl transition-transform duration-300 ease-out ${
         open 
-          ? 'translate-x-0 opacity-100' 
-          : '-translate-x-full opacity-0 blur-sm'
+          ? 'translate-x-0' 
+          : '-translate-x-full'
       }`}>
-        <SidebarHeader className="p-4 border-b border-gray-700/30">
-          <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center shadow-lg">
-              <Settings className="h-4 w-4 text-white" />
-            </div>
-            <div className={`transition-all duration-300 ${open ? 'opacity-100' : 'opacity-0'}`}>
-              <h2 className="text-white font-bold text-lg">Dashboard</h2>
-              <p className="text-gray-400 text-xs">Painel de Controle</p>
-            </div>
-          </div>
-        </SidebarHeader>
-        
-        <SidebarContent className="px-2">
+        <SidebarContent className="px-2 py-4">
           <SidebarGroup>
-            <SidebarGroupLabel className={`text-gray-400 text-xs uppercase tracking-wider mb-2 transition-all duration-300 ${
-              open ? 'opacity-100' : 'opacity-0'
-            }`}>
-              Menu Principal
-            </SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu className="space-y-1">
                 {menuItems.map((item) => (
@@ -98,7 +78,7 @@ function SidebarContent_() {
                       className="text-gray-300 hover:text-white hover:bg-blue-600/30 transition-all duration-300 rounded-lg group border border-transparent hover:border-blue-500/30 hover:shadow-lg hover:shadow-blue-500/20"
                     >
                       <a href={item.url} className="flex items-center space-x-3 p-3">
-                        <item.icon className="h-4 w-4 group-hover:text-blue-400 transition-colors group-hover:scale-110 transform duration-200" />
+                        <item.icon className="h-5 w-5 group-hover:text-blue-400 transition-colors group-hover:scale-110 transform duration-200" />
                         <span className={`font-medium transition-all duration-300 ${
                           open ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-4'
                         }`}>
@@ -112,13 +92,6 @@ function SidebarContent_() {
             </SidebarGroupContent>
           </SidebarGroup>
         </SidebarContent>
-        
-        <SidebarFooter className="p-4 border-t border-gray-700/30">
-          <div className={`text-center transition-all duration-300 ${open ? 'opacity-100' : 'opacity-0'}`}>
-            <p className="text-gray-400 text-xs">v1.0.0</p>
-            <p className="text-gray-500 text-xs">Admin Panel</p>
-          </div>
-        </SidebarFooter>
       </Sidebar>
     </div>
   );
@@ -129,7 +102,7 @@ export function AppSidebar() {
     <>
       {/* Área de trigger expandida para melhor UX */}
       <div 
-        className="fixed left-0 top-0 w-12 h-full z-50 bg-transparent"
+        className="fixed left-0 top-0 w-16 h-full z-40 bg-transparent"
         onMouseEnter={() => {
           const sidebar = document.querySelector('[data-sidebar="sidebar"]');
           if (sidebar) {
