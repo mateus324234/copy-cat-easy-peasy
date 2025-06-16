@@ -1,20 +1,40 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { CreditCard, Shuffle, CheckCircle } from "lucide-react";
-import { useEffect } from "react";
+import { CreditCard, Shuffle, CheckCircle, Activity, Wifi } from "lucide-react";
 import { initializeTracking } from "@/utils/trackingScript";
+import { useRealtimeData } from "@/hooks/useRealtimeData";
 
 const Payments = () => {
   const [customAmount, setCustomAmount] = useState("");
   const [lastPayment, setLastPayment] = useState<any>(null);
+  const [trackingStatus, setTrackingStatus] = useState("Inicializando...");
+  const { metrics } = useRealtimeData();
 
   useEffect(() => {
-    // Inicializar tracking nesta página
-    initializeTracking();
+    console.log('[Payments] Inicializando tracking...');
+    setTrackingStatus("Conectando...");
+    
+    try {
+      initializeTracking();
+      setTrackingStatus("Conectado ✓");
+      
+      // Verificar se APIs estão disponíveis
+      setTimeout(() => {
+        if ((window as any).trackingAPI) {
+          setTrackingStatus("APIs carregadas ✓");
+          console.log('[Payments] trackingAPI disponível:', (window as any).trackingAPI);
+        } else {
+          setTrackingStatus("Erro: APIs não carregadas");
+        }
+      }, 2000);
+    } catch (error) {
+      console.error('[Payments] Erro ao inicializar:', error);
+      setTrackingStatus("Erro na inicialização");
+    }
   }, []);
 
   const generateRandomAmount = () => {
@@ -26,6 +46,15 @@ const Payments = () => {
     const finalAmount = amount || generateRandomAmount();
     
     try {
+      console.log('[Payments] Simulando pagamento:', finalAmount);
+      
+      // Verificar se a API está disponível
+      if (!(window as any).trackingAPI) {
+        console.error('[Payments] trackingAPI não está disponível');
+        setTrackingStatus("Erro: API não disponível");
+        return;
+      }
+
       // Chamar a API de tracking
       await (window as any).trackingAPI.payment(
         `R$ ${finalAmount}`,
@@ -41,19 +70,32 @@ const Payments = () => {
         id: `TXN-${Date.now()}`
       });
 
-      console.log('[Test] Pagamento simulado:', finalAmount);
+      console.log('[Payments] Pagamento registrado com sucesso');
+      setTrackingStatus("Pagamento enviado ✓");
     } catch (error) {
-      console.error('[Test] Erro ao simular pagamento:', error);
+      console.error('[Payments] Erro ao simular pagamento:', error);
+      setTrackingStatus("Erro no pagamento");
     }
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-slate-900 to-black p-6">
       <div className="max-w-4xl mx-auto space-y-6">
+        {/* Header com Status */}
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent mb-4">
-            Simulação de Pagamentos
+            Teste de Pagamentos
           </h1>
+          <div className="flex items-center justify-center space-x-4 mb-4">
+            <Badge variant="outline" className={`${trackingStatus.includes('✓') ? 'bg-green-500/20 border-green-500/30 text-green-300' : 'bg-yellow-500/20 border-yellow-500/30 text-yellow-300'}`}>
+              <Activity className="h-3 w-3 mr-1" />
+              {trackingStatus}
+            </Badge>
+            <Badge variant="outline" className="bg-blue-500/20 border-blue-500/30 text-blue-300">
+              <Wifi className="h-3 w-3 mr-1" />
+              {metrics.totalPayments} pagamentos
+            </Badge>
+          </div>
           <p className="text-gray-400">
             Teste o sistema de tracking de pagamentos em tempo real
           </p>
@@ -145,8 +187,33 @@ const Payments = () => {
           </Card>
         )}
 
-        {/* Instruções */}
+        {/* Métricas em Tempo Real */}
         <Card className="bg-blue-900/20 border-blue-500/30">
+          <CardContent className="p-6">
+            <h3 className="text-white font-semibold mb-3">Status do Sistema:</h3>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+              <div>
+                <span className="text-gray-400">Usuários Online:</span>
+                <p className="text-blue-300 font-semibold">{metrics.onlineUsers}</p>
+              </div>
+              <div>
+                <span className="text-gray-400">Total Visitas:</span>
+                <p className="text-blue-300 font-semibold">{metrics.totalVisits}</p>
+              </div>
+              <div>
+                <span className="text-gray-400">Pagamentos:</span>
+                <p className="text-green-300 font-semibold">{metrics.totalPayments}</p>
+              </div>
+              <div>
+                <span className="text-gray-400">QR Codes:</span>
+                <p className="text-purple-300 font-semibold">{metrics.totalQRCodes}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Instruções */}
+        <Card className="bg-yellow-900/20 border-yellow-500/30">
           <CardContent className="p-6">
             <h3 className="text-white font-semibold mb-3">Como Testar:</h3>
             <ul className="text-gray-300 space-y-2 text-sm">
@@ -154,6 +221,7 @@ const Payments = () => {
               <li>• Simule pagamentos aqui e veja aparecer no dashboard instantaneamente</li>
               <li>• O sistema detecta automaticamente elementos com classe .payment-success</li>
               <li>• Use a API manual: trackingAPI.payment('R$ 299,00', 'PIX', 'Produto')</li>
+              <li>• Verifique o console para logs detalhados do sistema</li>
             </ul>
           </CardContent>
         </Card>

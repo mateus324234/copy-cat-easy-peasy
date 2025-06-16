@@ -10,7 +10,6 @@ export function initializeTracking() {
     // Configuração
     const SITE = 'dashboard-app';
     const REF = 'direct';
-    const API_BASE = '/api/tracking'; // Usaremos nossa API interna
     
     // Gerar session ID único
     const SESSION_ID = 'sess_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
@@ -92,6 +91,8 @@ export function initializeTracking() {
           ...data
         };
 
+        console.log(`[Tracking] Enviando ${endpoint}:`, payload);
+
         // Chamar a função correspondente do Firebase
         switch (endpoint) {
           case 'visit':
@@ -111,7 +112,7 @@ export function initializeTracking() {
             break;
         }
       } catch (error) {
-        console.log('[Tracking] Erro ao enviar dados:', error);
+        console.error('[Tracking] Erro ao enviar dados:', error);
       }
     }
 
@@ -217,18 +218,22 @@ export function initializeTracking() {
     async function setOffline() {
       if (isOnline) {
         isOnline = false;
-        clearInterval(pingInterval!);
+        stopOnlinePing();
         
-        // Usar sendBeacon para garantir envio
-        const payload = JSON.stringify({
-          sessionId: SESSION_ID,
-          status: 'offline'
-        });
-        
-        if (navigator.sendBeacon) {
-          navigator.sendBeacon('/api/tracking/offline', payload);
-        } else {
+        try {
+          // Usar sendBeacon para garantir envio
+          if (navigator.sendBeacon) {
+            const payload = JSON.stringify({
+              sessionId: SESSION_ID,
+              status: 'offline'
+            });
+            navigator.sendBeacon('/api/tracking/offline', payload);
+          }
+          
+          // Fallback para fetch normal
           await sendTracking('offline', { sessionId: SESSION_ID });
+        } catch (error) {
+          console.error('[Tracking] Erro ao marcar offline:', error);
         }
       }
     }
@@ -283,6 +288,8 @@ export function initializeTracking() {
             .trim();
         }
         
+        console.log('[Tracking] Registrando pagamento:', { amount: cleanAmount, method, product });
+        
         await sendTracking('payment', {
           amount: cleanAmount,
           currency: 'BRL',
@@ -294,6 +301,8 @@ export function initializeTracking() {
       },
 
       qrcode: async function(qrType = 'produto', product = 'QR Code', value = '0', copies = 1) {
+        console.log('[Tracking] Registrando QR Code:', { qrType, product, value });
+        
         await sendTracking('qrcode', {
           qrId: 'QR-' + Date.now(),
           type: qrType,
@@ -317,6 +326,7 @@ export function initializeTracking() {
       
       console.log('[Tracking] Sistema iniciado');
       console.log('[Tracking] Session ID:', SESSION_ID);
+      console.log('[Tracking] APIs disponíveis: trackingAPI.payment(), trackingAPI.qrcode()');
     }
 
     // Aguardar carregamento

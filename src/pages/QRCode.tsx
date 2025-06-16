@@ -1,20 +1,41 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { QrCode, Shuffle, CheckCircle, Copy } from "lucide-react";
-import { useEffect } from "react";
+import { Badge } from "@/components/ui/badge";
+import { QrCode, Shuffle, CheckCircle, Copy, Activity, Wifi } from "lucide-react";
 import { initializeTracking } from "@/utils/trackingScript";
+import { useRealtimeData } from "@/hooks/useRealtimeData";
 
 const QRCodePage = () => {
   const [customValue, setCustomValue] = useState("");
   const [customProduct, setCustomProduct] = useState("");
   const [lastQR, setLastQR] = useState<any>(null);
+  const [trackingStatus, setTrackingStatus] = useState("Inicializando...");
+  const { metrics } = useRealtimeData();
 
   useEffect(() => {
-    // Inicializar tracking nesta página
-    initializeTracking();
+    console.log('[QRCode] Inicializando tracking...');
+    setTrackingStatus("Conectando...");
+    
+    try {
+      initializeTracking();
+      setTrackingStatus("Conectado ✓");
+      
+      // Verificar se APIs estão disponíveis
+      setTimeout(() => {
+        if ((window as any).trackingAPI) {
+          setTrackingStatus("APIs carregadas ✓");
+          console.log('[QRCode] trackingAPI disponível:', (window as any).trackingAPI);
+        } else {
+          setTrackingStatus("Erro: APIs não carregadas");
+        }
+      }, 2000);
+    } catch (error) {
+      console.error('[QRCode] Erro ao inicializar:', error);
+      setTrackingStatus("Erro na inicialização");
+    }
   }, []);
 
   const generateRandomQR = () => {
@@ -41,6 +62,15 @@ const QRCodePage = () => {
     }
     
     try {
+      console.log('[QRCode] Simulando QR Code:', { finalValue, finalProduct });
+      
+      // Verificar se a API está disponível
+      if (!(window as any).trackingAPI) {
+        console.error('[QRCode] trackingAPI não está disponível');
+        setTrackingStatus("Erro: API não disponível");
+        return;
+      }
+
       // Chamar a API de tracking
       await (window as any).trackingAPI.qrcode(
         'produto',
@@ -57,9 +87,11 @@ const QRCodePage = () => {
         content: `https://meusite.com/produto/${Date.now()}`
       });
 
-      console.log('[Test] QR Code simulado:', { product: finalProduct, value: finalValue });
+      console.log('[QRCode] QR Code registrado com sucesso');
+      setTrackingStatus("QR Code enviado ✓");
     } catch (error) {
-      console.error('[Test] Erro ao simular QR Code:', error);
+      console.error('[QRCode] Erro ao simular QR Code:', error);
+      setTrackingStatus("Erro no QR Code");
     }
   };
 
@@ -70,10 +102,21 @@ const QRCodePage = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-slate-900 to-black p-6">
       <div className="max-w-4xl mx-auto space-y-6">
+        {/* Header com Status */}
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent mb-4">
-            Simulação de QR Codes
+            Teste de QR Codes
           </h1>
+          <div className="flex items-center justify-center space-x-4 mb-4">
+            <Badge variant="outline" className={`${trackingStatus.includes('✓') ? 'bg-green-500/20 border-green-500/30 text-green-300' : 'bg-yellow-500/20 border-yellow-500/30 text-yellow-300'}`}>
+              <Activity className="h-3 w-3 mr-1" />
+              {trackingStatus}
+            </Badge>
+            <Badge variant="outline" className="bg-cyan-500/20 border-cyan-500/30 text-cyan-300">
+              <Wifi className="h-3 w-3 mr-1" />
+              {metrics.totalQRCodes} QR codes
+            </Badge>
+          </div>
           <p className="text-gray-400">
             Teste o sistema de tracking de QR Codes em tempo real
           </p>
@@ -196,8 +239,33 @@ const QRCodePage = () => {
           </Card>
         )}
 
-        {/* Instruções */}
+        {/* Métricas em Tempo Real */}
         <Card className="bg-purple-900/20 border-purple-500/30">
+          <CardContent className="p-6">
+            <h3 className="text-white font-semibold mb-3">Status do Sistema:</h3>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+              <div>
+                <span className="text-gray-400">Usuários Online:</span>
+                <p className="text-purple-300 font-semibold">{metrics.onlineUsers}</p>
+              </div>
+              <div>
+                <span className="text-gray-400">Total Visitas:</span>
+                <p className="text-purple-300 font-semibold">{metrics.totalVisits}</p>
+              </div>
+              <div>
+                <span className="text-gray-400">Pagamentos:</span>
+                <p className="text-green-300 font-semibold">{metrics.totalPayments}</p>
+              </div>
+              <div>
+                <span className="text-gray-400">QR Codes:</span>
+                <p className="text-cyan-300 font-semibold">{metrics.totalQRCodes}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Instruções */}
+        <Card className="bg-yellow-900/20 border-yellow-500/30">
           <CardContent className="p-6">
             <h3 className="text-white font-semibold mb-3">Como Testar:</h3>
             <ul className="text-gray-300 space-y-2 text-sm">
@@ -205,6 +273,7 @@ const QRCodePage = () => {
               <li>• Simule QR Codes aqui e veja aparecer no dashboard instantaneamente</li>
               <li>• O sistema detecta automaticamente elementos com classe .qr-code</li>
               <li>• Use a API manual: trackingAPI.qrcode('produto', 'Nome do Produto', 'R$ 299,00')</li>
+              <li>• Verifique o console para logs detalhados do sistema</li>
             </ul>
           </CardContent>
         </Card>

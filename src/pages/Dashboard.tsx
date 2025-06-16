@@ -1,25 +1,42 @@
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { ModernMetricsCards } from "@/components/ModernMetricsCards";
+import { Badge } from "@/components/ui/badge";
 import { initializeTracking } from "@/utils/trackingScript";
 import { listenToRealtimeData } from "@/services/firebase";
+import { Wifi, WifiOff, Activity } from "lucide-react";
 
 const Dashboard = () => {
+  const [connectionStatus, setConnectionStatus] = useState("Conectando...");
+  const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
+
   useEffect(() => {
+    console.log('[Dashboard] Inicializando...');
+    
     // Inicializar tracking do dashboard (mas não contar visitas)
     initializeTracking();
-
+    
     // Escutar dados em tempo real do Firebase
-    const unsubscribe = listenToRealtimeData((update) => {
-      console.log('[Dashboard] Dados atualizados em tempo real:', update);
-      // Os componentes de métricas serão atualizados automaticamente
-    });
+    try {
+      const unsubscribe = listenToRealtimeData((update) => {
+        console.log('[Dashboard] Dados atualizados em tempo real:', update);
+        setConnectionStatus("Conectado em tempo real ✓");
+        setLastUpdate(new Date());
+        // Os componentes de métricas serão atualizados automaticamente
+      });
+      
+      setConnectionStatus("Ouvindo Firebase...");
 
-    return () => {
-      // Cleanup se necessário
-    };
+      return () => {
+        console.log('[Dashboard] Limpando listeners...');
+        // Cleanup se necessário
+      };
+    } catch (error) {
+      console.error('[Dashboard] Erro ao conectar Firebase:', error);
+      setConnectionStatus("Erro de conexão");
+    }
   }, []);
 
   return (
@@ -35,6 +52,46 @@ const Dashboard = () => {
           </div>
           
           <div className="relative z-10 p-6">
+            {/* Status Header */}
+            <div className="mb-6 flex items-center justify-between">
+              <div>
+                <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-cyan-400 bg-clip-text text-transparent">
+                  Dashboard em Tempo Real
+                </h1>
+                <p className="text-gray-400 mt-1">
+                  Monitoramento de visitantes, pagamentos e QR codes
+                </p>
+              </div>
+              
+              <div className="flex items-center space-x-3">
+                <Badge 
+                  variant="outline" 
+                  className={`${
+                    connectionStatus.includes('✓') 
+                      ? 'bg-green-500/20 border-green-500/30 text-green-300' 
+                      : connectionStatus.includes('Erro')
+                      ? 'bg-red-500/20 border-red-500/30 text-red-300'
+                      : 'bg-yellow-500/20 border-yellow-500/30 text-yellow-300'
+                  }`}
+                >
+                  {connectionStatus.includes('✓') ? (
+                    <Wifi className="h-3 w-3 mr-1" />
+                  ) : connectionStatus.includes('Erro') ? (
+                    <WifiOff className="h-3 w-3 mr-1" />
+                  ) : (
+                    <Activity className="h-3 w-3 mr-1 animate-spin" />
+                  )}
+                  {connectionStatus}
+                </Badge>
+                
+                {lastUpdate && (
+                  <Badge variant="outline" className="bg-blue-500/20 border-blue-500/30 text-blue-300">
+                    Atualizado: {lastUpdate.toLocaleTimeString('pt-BR')}
+                  </Badge>
+                )}
+              </div>
+            </div>
+            
             <div className="animate-fade-in">
               <ModernMetricsCards />
             </div>
