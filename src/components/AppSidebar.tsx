@@ -49,7 +49,7 @@ const menuItems = [
 ];
 
 function SidebarContent_() {
-  const { setOpen } = useSidebar();
+  const { setOpen, open } = useSidebar();
 
   const handleMouseEnter = () => {
     setOpen(true);
@@ -61,17 +61,21 @@ function SidebarContent_() {
 
   return (
     <div 
-      className="h-full"
+      className="h-full fixed left-0 top-0 z-40"
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
-      <Sidebar className="border-r border-gray-700/50 bg-gray-900/98 backdrop-blur-xl shadow-2xl">
+      <Sidebar className={`border-r border-gray-700/30 bg-gray-900/95 backdrop-blur-xl shadow-2xl transition-all duration-500 ease-out ${
+        open 
+          ? 'translate-x-0 opacity-100' 
+          : '-translate-x-full opacity-0 blur-sm'
+      }`}>
         <SidebarHeader className="p-4 border-b border-gray-700/30">
           <div className="flex items-center space-x-3">
             <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center shadow-lg">
               <Settings className="h-4 w-4 text-white" />
             </div>
-            <div>
+            <div className={`transition-all duration-300 ${open ? 'opacity-100' : 'opacity-0'}`}>
               <h2 className="text-white font-bold text-lg">Dashboard</h2>
               <p className="text-gray-400 text-xs">Painel de Controle</p>
             </div>
@@ -80,7 +84,9 @@ function SidebarContent_() {
         
         <SidebarContent className="px-2">
           <SidebarGroup>
-            <SidebarGroupLabel className="text-gray-400 text-xs uppercase tracking-wider mb-2">
+            <SidebarGroupLabel className={`text-gray-400 text-xs uppercase tracking-wider mb-2 transition-all duration-300 ${
+              open ? 'opacity-100' : 'opacity-0'
+            }`}>
               Menu Principal
             </SidebarGroupLabel>
             <SidebarGroupContent>
@@ -93,7 +99,11 @@ function SidebarContent_() {
                     >
                       <a href={item.url} className="flex items-center space-x-3 p-3">
                         <item.icon className="h-4 w-4 group-hover:text-blue-400 transition-colors group-hover:scale-110 transform duration-200" />
-                        <span className="font-medium">{item.title}</span>
+                        <span className={`font-medium transition-all duration-300 ${
+                          open ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-4'
+                        }`}>
+                          {item.title}
+                        </span>
                       </a>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -104,7 +114,7 @@ function SidebarContent_() {
         </SidebarContent>
         
         <SidebarFooter className="p-4 border-t border-gray-700/30">
-          <div className="text-center">
+          <div className={`text-center transition-all duration-300 ${open ? 'opacity-100' : 'opacity-0'}`}>
             <p className="text-gray-400 text-xs">v1.0.0</p>
             <p className="text-gray-500 text-xs">Admin Panel</p>
           </div>
@@ -117,9 +127,9 @@ function SidebarContent_() {
 export function AppSidebar() {
   return (
     <>
-      {/* Invisible trigger area */}
+      {/* Invisible trigger area - increased width for better UX */}
       <div 
-        className="fixed left-0 top-0 w-4 h-full z-50 bg-transparent"
+        className="fixed left-0 top-0 w-8 h-full z-50 bg-transparent"
         onMouseEnter={() => {
           const sidebar = document.querySelector('[data-sidebar="sidebar"]');
           if (sidebar) {
