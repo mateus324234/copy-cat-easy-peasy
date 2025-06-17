@@ -8,6 +8,15 @@ export const generateStandaloneScript = (firebaseConfig: any) => `
   
   const FIREBASE_CONFIG = ${JSON.stringify(firebaseConfig)};
   
+  // 🚫 PÁGINAS EXCLUÍDAS DO TRACKING (não contam como visitas/online)
+  const EXCLUDED_PAGES = ['/dashboard', '/login', '/script-test', '/admin'];
+  
+  // Verificar se a página atual deve ser excluída do tracking
+  function isPageExcluded() {
+    const currentPath = window.location.pathname;
+    return EXCLUDED_PAGES.some(excludedPage => currentPath.includes(excludedPage));
+  }
+  
   // Gerar UUID simples
   function generateUUID() {
     return 'xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
@@ -28,6 +37,11 @@ export const generateStandaloneScript = (firebaseConfig: any) => `
   let isOnline = true;
   let pingInterval = null;
   const currentDomain = getCurrentDomain();
+  const pageExcluded = isPageExcluded();
+  
+  // Log do status da página
+  console.log('[Queridos Analytics] 📍 Página atual:', window.location.pathname);
+  console.log('[Queridos Analytics] 🚫 Página excluída do tracking?', pageExcluded);
   
   // Inicializar Firebase
   let database = null;
@@ -64,7 +78,7 @@ export const generateStandaloneScript = (firebaseConfig: any) => `
               }
             });
             
-            // Iniciar tracking após Firebase estar pronto
+            // Iniciar tracking após Firebase estar pronto (apenas se não for página excluída)
             startTracking();
           } catch (error) {
             console.error('[Queridos Analytics] ❌ Erro ao inicializar Firebase:', error);
@@ -167,6 +181,11 @@ export const generateStandaloneScript = (firebaseConfig: any) => `
     
     switch (eventType) {
       case 'visit':
+        // 🚫 NÃO RASTREAR VISITAS EM PÁGINAS EXCLUÍDAS
+        if (pageExcluded) {
+          console.log('[Queridos Analytics] 🚫 VISITA BLOQUEADA - Página excluída:', window.location.pathname);
+          return;
+        }
         console.log('[Queridos Analytics] 👤 Processando VISITA...');
         const visitResult = await saveToFirebase(\`visitors/\${sessionId}\`, { 
           ...eventData, 
@@ -177,6 +196,11 @@ export const generateStandaloneScript = (firebaseConfig: any) => `
         break;
         
       case 'online':
+        // 🚫 NÃO RASTREAR ONLINE EM PÁGINAS EXCLUÍDAS
+        if (pageExcluded) {
+          console.log('[Queridos Analytics] 🚫 ONLINE BLOQUEADO - Página excluída:', window.location.pathname);
+          return;
+        }
         console.log('[Queridos Analytics] 🟢 Processando ONLINE...');
         const onlineResult = await saveToFirebase(\`visitors/\${sessionId}\`, { 
           ...eventData, 
@@ -187,6 +211,11 @@ export const generateStandaloneScript = (firebaseConfig: any) => `
         break;
         
       case 'offline':
+        // 🚫 NÃO RASTREAR OFFLINE EM PÁGINAS EXCLUÍDAS
+        if (pageExcluded) {
+          console.log('[Queridos Analytics] 🚫 OFFLINE BLOQUEADO - Página excluída:', window.location.pathname);
+          return;
+        }
         console.log('[Queridos Analytics] 🔴 Processando OFFLINE...');
         if (database && firebaseInitialized) {
           try {
@@ -203,6 +232,7 @@ export const generateStandaloneScript = (firebaseConfig: any) => `
         break;
         
       case 'payment':
+        // ✅ PAGAMENTOS SEMPRE FUNCIONAM (mesmo em páginas excluídas)
         console.log('[Queridos Analytics] 💰 ===== PROCESSANDO PAGAMENTO =====');
         console.log('[Queridos Analytics] 💰 Dados recebidos:', data);
         console.log('[Queridos Analytics] 💰 EventData completo:', eventData);
@@ -230,6 +260,7 @@ export const generateStandaloneScript = (firebaseConfig: any) => `
         break;
         
       case 'qrcode':
+        // ✅ QR CODES SEMPRE FUNCIONAM (mesmo em páginas excluídas)
         console.log('[Queridos Analytics] 📱 ===== PROCESSANDO QR CODE =====');
         console.log('[Queridos Analytics] 📱 Dados recebidos:', data);
         
@@ -256,17 +287,21 @@ export const generateStandaloneScript = (firebaseConfig: any) => `
     await detectLocation();
     console.log('[Queridos Analytics] 📍 Localização detectada:', userLocation);
     
-    // Registrar visita inicial
-    console.log('[Queridos Analytics] 👤 Registrando visita inicial...');
-    await trackEvent("visit");
-    
-    // Ping online a cada 30 segundos
-    pingInterval = setInterval(() => {
-      if (isOnline && database && firebaseInitialized) {
-        console.log('[Queridos Analytics] 🔄 Ping online...');
-        trackEvent("online");
-      }
-    }, 30000);
+    // 🚫 SÓ REGISTRAR VISITA SE NÃO FOR PÁGINA EXCLUÍDA
+    if (!pageExcluded) {
+      console.log('[Queridos Analytics] 👤 Registrando visita inicial...');
+      await trackEvent("visit");
+      
+      // Ping online a cada 30 segundos (apenas se não for página excluída)
+      pingInterval = setInterval(() => {
+        if (isOnline && database && firebaseInitialized) {
+          console.log('[Queridos Analytics] 🔄 Ping online...');
+          trackEvent("online");
+        }
+      }, 30000);
+    } else {
+      console.log('[Queridos Analytics] 🚫 VISITA NÃO REGISTRADA - Página excluída do tracking');
+    }
     
     console.log('[Queridos Analytics] ✅ TRACKING INICIADO COM SUCESSO!');
   }
@@ -337,7 +372,9 @@ export const generateStandaloneScript = (firebaseConfig: any) => `
         database: !!database,
         currentDomain,
         sessionId,
-        userLocation
+        userLocation,
+        pageExcluded,
+        currentPage: window.location.pathname
       };
     },
     
@@ -348,6 +385,8 @@ export const generateStandaloneScript = (firebaseConfig: any) => `
       console.log("🌐 Domínio:", currentDomain);
       console.log("🔑 Session:", sessionId);
       console.log("📍 Localização:", userLocation);
+      console.log("🚫 Página excluída?", pageExcluded);
+      console.log("📄 Página atual:", window.location.pathname);
       console.log("⚙️ Firebase Config:", FIREBASE_CONFIG);
       
       if (!firebaseInitialized) {
@@ -367,9 +406,9 @@ export const generateStandaloneScript = (firebaseConfig: any) => `
     }
   };
   
-  // Marcar como offline ao sair
+  // Marcar como offline ao sair (apenas se não for página excluída)
   window.addEventListener("beforeunload", () => {
-    if (isOnline && database && firebaseInitialized) {
+    if (isOnline && database && firebaseInitialized && !pageExcluded) {
       console.log('[Queridos Analytics] 👋 Usuário saindo, marcando como offline...');
       isOnline = false;
       trackEvent("offline");
@@ -381,6 +420,8 @@ export const generateStandaloneScript = (firebaseConfig: any) => `
   console.log('[Queridos Analytics] 🚀 ===== INICIANDO QUERIDOS ANALYTICS =====');
   console.log('[Queridos Analytics] 🌐 Domínio atual:', currentDomain);
   console.log('[Queridos Analytics] 🔑 Session ID:', sessionId);
+  console.log('[Queridos Analytics] 📄 Página atual:', window.location.pathname);
+  console.log('[Queridos Analytics] 🚫 Página excluída?', pageExcluded);
   console.log('[Queridos Analytics] 🔥 Firebase Config:', FIREBASE_CONFIG);
   console.log('[Queridos Analytics] ⏰ Timestamp:', new Date().toISOString());
   
@@ -392,4 +433,3 @@ export const generateStandaloneScript = (firebaseConfig: any) => `
   console.log('[Queridos Analytics] ===== SCRIPT CARREGADO =====');
 })();
 `;
-
