@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from 'react';
 import { listenToRealtimeData, clearData } from '@/services/firebase';
 import { useSite } from '@/context/SiteContext';
@@ -27,11 +26,12 @@ export const useRealtimeData = () => {
       switch (update.type) {
         case 'visitors':
           const newVisitors = update.data;
-          // Detectar novos visitantes com ID único (excluindo dashboard)
+          // Detectar novos visitantes com ID único (excluindo dashboard e bots)
           const newVisitorKeys = Object.keys(newVisitors).filter(
             key => !notifiedVisitorsRef.current.has(key) && 
                    newVisitors[key].status === 'online' &&
-                   !isDashboardSession(newVisitors[key])
+                   !isDashboardSession(newVisitors[key]) &&
+                   !isBotSession(newVisitors[key])
           );
           
           if (newVisitorKeys.length > 0) {
@@ -125,19 +125,104 @@ export const useRealtimeData = () => {
     return unsubscribe;
   }, []);
 
-  // Função para verificar se é uma sessão do dashboard
+  // Função para verificar se é um bot
+  function isBotSession(visitor: any): boolean {
+    const userAgent = visitor.userAgent || '';
+    const sessionId = visitor.sessionId || '';
+    const ip = visitor.ip || '';
+    const page = visitor.page || visitor.url || '';
+    
+    // Lista de user agents conhecidos de bots
+    const botUserAgents = [
+      'vercel-screenshot',
+      'bot',
+      'crawler',
+      'spider',
+      'lighthouse',
+      'pagespeed',
+      'googlebot',
+      'bingbot',
+      'slurp',
+      'duckduckbot',
+      'baiduspider',
+      'yandexbot',
+      'facebookexternalhit',
+      'twitterbot',
+      'linkedinbot',
+      'whatsapp',
+      'telegram',
+      'headlesschrome',
+      'phantomjs',
+      'selenium',
+      'webdriver'
+    ];
+    
+    // Verificar user agent
+    const isBot = botUserAgents.some(botAgent => 
+      userAgent.toLowerCase().includes(botAgent.toLowerCase())
+    );
+    
+    // Verificar IPs conhecidos de serviços (Vercel, etc)
+    const knownServiceIPs = [
+      '76.76.19.', // Vercel
+      '76.223.126.', // Vercel
+    ];
+    
+    const isServiceIP = knownServiceIPs.some(serviceIP => ip.startsWith(serviceIP));
+    
+    // Verificar se o domínio da página é de serviços de deploy
+    const isServiceDomain = page.includes('vercel.app') || 
+                           page.includes('netlify.app') || 
+                           page.includes('herokuapp.com');
+    
+    if (isBot || isServiceIP || isServiceDomain) {
+      console.log(`[useRealtimeData] 🤖 Bot/Serviço filtrado:`, { 
+        sessionId, 
+        userAgent, 
+        ip, 
+        page,
+        reason: isBot ? 'UserAgent Bot' : isServiceIP ? 'Service IP' : 'Service Domain'
+      });
+      return true;
+    }
+    
+    return false;
+  }
+
+  // Função para verificar se é uma sessão do dashboard (melhorada)
   function isDashboardSession(visitor: any): boolean {
     const page = visitor.page || visitor.url || '';
+    const referrer = visitor.referrer || '';
     const sessionId = visitor.sessionId || '';
+    const domain = visitor.domain || '';
     
-    // Verificar se a página é do dashboard ou se o sessionId indica dashboard
-    const isDashboard = page.includes('/dashboard') || 
-                       page.includes('/login') || 
-                       page.includes('/admin') ||
-                       sessionId.includes('dashboard');
+    // Verificar se a página é do dashboard
+    const dashboardPages = ['/dashboard', '/login', '/admin'];
+    const isDashboardPage = dashboardPages.some(dashPage => page.includes(dashPage));
+    
+    // Verificar se o referrer é do dashboard
+    const isDashboardReferrer = dashboardPages.some(dashPage => referrer.includes(dashPage));
+    
+    // Verificar se o sessionId indica dashboard
+    const isDashboardSessionId = sessionId.includes('dashboard');
+    
+    // Verificar se é um domínio de dashboard (localhost, lovable, etc)
+    const isDashboardDomain = domain.includes('localhost') || 
+                             domain.includes('lovable.app') || 
+                             domain.includes('127.0.0.1');
+    
+    const isDashboard = isDashboardPage || isDashboardReferrer || isDashboardSessionId || isDashboardDomain;
     
     if (isDashboard) {
-      console.log(`[useRealtimeData] 🚫 Sessão do dashboard filtrada:`, { page, sessionId });
+      console.log(`[useRealtimeData] 🚫 Sessão do dashboard filtrada:`, { 
+        sessionId, 
+        page, 
+        referrer, 
+        domain,
+        reason: isDashboardPage ? 'Dashboard Page' : 
+                isDashboardReferrer ? 'Dashboard Referrer' : 
+                isDashboardSessionId ? 'Dashboard SessionId' : 'Dashboard Domain'
+      });
     }
     
     return isDashboard;
@@ -187,19 +272,29 @@ export const useRealtimeData = () => {
     return filtered;
   }
 
-  // Calcular métricas em tempo real com logs detalhados (excluindo dashboard)
+  // Calcular métricas em tempo real com logs detalhados (excluindo dashboard e bots)
   const realVisitors = Object.entries(filteredData.visitors).filter(([key, visitor]: [string, any]) => {
-    return !isDashboardSession(visitor);
+    const isDashboard = isDashboardSession(visitor);
+    const isBot = isBotSession(visitor);
+    const isValid = !isDashboard && !isBot;
+    
+    if (!isValid) {
+      console.log(`[useRealtimeData] 🚫 Visitante filtrado: ${key}, Dashboard: ${isDashboard}, Bot: ${isBot}`);
+    }
+    
+    return isValid;
   });
 
   const onlineUsers = realVisitors.filter(([key, visitor]: [string, any]) => {
     const isOnline = visitor.status === 'online';
-    console.log(`[useRealtimeData] 👤 Verificando usuário online: ${key}, status: ${visitor.status}, page: ${visitor.page}`);
+    if (isOnline) {
+      console.log(`[useRealtimeData] 👤 Usuário online válido: ${key}, page: ${visitor.page}, userAgent: ${visitor.userAgent?.substring(0, 50)}...`);
+    }
     return isOnline;
   }).length;
 
-  console.log(`[useRealtimeData] 📊 Total de visitantes reais (sem dashboard): ${realVisitors.length}`);
-  console.log(`[useRealtimeData] 🟢 Total de usuários online (sem dashboard): ${onlineUsers}`);
+  console.log(`[useRealtimeData] 📊 Total de visitantes reais (sem dashboard/bots): ${realVisitors.length}`);
+  console.log(`[useRealtimeData] 🟢 Total de usuários online (sem dashboard/bots): ${onlineUsers}`);
 
   const totalVisits = realVisitors.length;
   const totalPayments = Object.keys(filteredData.payments).length;
