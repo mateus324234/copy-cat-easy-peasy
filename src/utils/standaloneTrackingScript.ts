@@ -14,7 +14,9 @@ export const generateStandaloneScript = (firebaseConfig: any) => `
   // Verificar se a página atual deve ser excluída do tracking
   function isPageExcluded() {
     const currentPath = window.location.pathname;
-    return EXCLUDED_PAGES.some(excludedPage => currentPath.includes(excludedPage));
+    const isExcluded = EXCLUDED_PAGES.some(excludedPage => currentPath.includes(excludedPage));
+    console.log('[Queridos Analytics] 🚫 Verificando exclusão - Página:', currentPath, 'Excluída:', isExcluded);
+    return isExcluded;
   }
   
   // Gerar UUID simples
@@ -42,6 +44,7 @@ export const generateStandaloneScript = (firebaseConfig: any) => `
   // Log do status da página
   console.log('[Queridos Analytics] 📍 Página atual:', window.location.pathname);
   console.log('[Queridos Analytics] 🚫 Página excluída do tracking?', pageExcluded);
+  console.log('[Queridos Analytics] 🌐 Domínio atual:', currentDomain);
   
   // Inicializar Firebase
   let database = null;

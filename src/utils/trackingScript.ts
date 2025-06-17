@@ -17,7 +17,23 @@ const getCurrentDomain = () => {
   return window.location.hostname.replace(/^www\./, '');
 };
 
+// Check if current page should be excluded from tracking
+const isPageExcluded = () => {
+  const currentPath = window.location.pathname;
+  const excludedPages = ['/dashboard', '/login', '/script-test', '/admin'];
+  const isExcluded = excludedPages.some(excludedPage => currentPath.includes(excludedPage));
+  
+  console.log('[TrackingScript] 🚫 Verificando exclusão - Página:', currentPath, 'Excluída:', isExcluded);
+  return isExcluded;
+};
+
 export async function trackVisit() {
+  // Don't track visits on excluded pages
+  if (isPageExcluded()) {
+    console.log('[TrackingScript] 🚫 Visita não registrada - Página excluída do tracking');
+    return;
+  }
+
   try {
     const response = await fetch('https://ipwhois.app/json/');
     const data = await response.json();
@@ -25,6 +41,8 @@ export async function trackVisit() {
     if (data.success) {
       const sessionId = getOrCreateSessionId();
       const currentDomain = getCurrentDomain();
+      
+      console.log('[TrackingScript] 👤 Registrando visita para:', currentDomain, sessionId);
       
       await trackingAPI.visit({
         sessionId,
@@ -44,13 +62,15 @@ export async function trackVisit() {
       
       // Set up the beforeunload handler
       window.addEventListener('beforeunload', async () => {
-        await trackingAPI.offline({
-          sessionId,
-          country: data.country,
-          city: data.city,
-          state: data.region,
-          domain: currentDomain
-        });
+        if (!isPageExcluded()) {
+          await trackingAPI.offline({
+            sessionId,
+            country: data.country,
+            city: data.city,
+            state: data.region,
+            domain: currentDomain
+          });
+        }
       });
     }
   } catch (error) {
@@ -59,19 +79,24 @@ export async function trackVisit() {
 }
 
 function setupPingInterval(sessionId: string, data: any, domain: string) {
-  // Send "online" ping every 30 seconds
+  // Send "online" ping every 30 seconds (only if not excluded page)
   const intervalId = setInterval(async () => {
-    await trackingAPI.online({
-      sessionId,
-      country: data.country,
-      city: data.city,
-      state: data.region,
-      page: window.location.pathname,
-      referrer: document.referrer,
-      url: window.location.href,
-      domain: domain,
-      userAgent: navigator.userAgent
-    });
+    if (!isPageExcluded()) {
+      console.log('[TrackingScript] 🔄 Ping online para:', domain, sessionId);
+      await trackingAPI.online({
+        sessionId,
+        country: data.country,
+        city: data.city,
+        state: data.region,
+        page: window.location.pathname,
+        referrer: document.referrer,
+        url: window.location.href,
+        domain: domain,
+        userAgent: navigator.userAgent
+      });
+    } else {
+      console.log('[TrackingScript] 🚫 Ping online bloqueado - Página excluída');
+    }
   }, 30000);
   
   // Clear the interval when the page is unloaded
@@ -87,6 +112,8 @@ export function initializeTracking() {
     (window as any).payment = async (data: any) => {
       try {
         const currentDomain = getCurrentDomain();
+        console.log('[TrackingScript] 💰 Registrando pagamento para:', currentDomain);
+        
         // Add current page, referrer, and domain to the payment data
         const paymentData = {
           ...data,
@@ -104,6 +131,8 @@ export function initializeTracking() {
     (window as any).qrcode = async (data: any) => {
       try {
         const currentDomain = getCurrentDomain();
+        console.log('[TrackingScript] 📱 Registrando QR code para:', currentDomain);
+        
         // Add current page, referrer, and domain to the QR code data
         const qrData = {
           ...data,

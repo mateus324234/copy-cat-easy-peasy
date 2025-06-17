@@ -1,6 +1,6 @@
 
 import { useState, useEffect, useRef } from 'react';
-import { listenToRealtimeData } from '@/services/firebase';
+import { listenToRealtimeData, clearData } from '@/services/firebase';
 import { useSite } from '@/context/SiteContext';
 import { getDisplayUrl, getFullDomain } from '@/utils/urlUtils';
 
@@ -27,10 +27,11 @@ export const useRealtimeData = () => {
       switch (update.type) {
         case 'visitors':
           const newVisitors = update.data;
-          // Detectar novos visitantes com ID único
+          // Detectar novos visitantes com ID único (excluindo dashboard)
           const newVisitorKeys = Object.keys(newVisitors).filter(
             key => !notifiedVisitorsRef.current.has(key) && 
-                   newVisitors[key].status === 'online'
+                   newVisitors[key].status === 'online' &&
+                   !isDashboardSession(newVisitors[key])
           );
           
           if (newVisitorKeys.length > 0) {
@@ -124,6 +125,24 @@ export const useRealtimeData = () => {
     return unsubscribe;
   }, []);
 
+  // Função para verificar se é uma sessão do dashboard
+  function isDashboardSession(visitor: any): boolean {
+    const page = visitor.page || visitor.url || '';
+    const sessionId = visitor.sessionId || '';
+    
+    // Verificar se a página é do dashboard ou se o sessionId indica dashboard
+    const isDashboard = page.includes('/dashboard') || 
+                       page.includes('/login') || 
+                       page.includes('/admin') ||
+                       sessionId.includes('dashboard');
+    
+    if (isDashboard) {
+      console.log(`[useRealtimeData] 🚫 Sessão do dashboard filtrada:`, { page, sessionId });
+    }
+    
+    return isDashboard;
+  }
+
   // Filter data by selected site
   const filteredData = {
     visitors: activeSite === 'all' ? visitors : filterBySite(visitors, activeSite),
@@ -168,12 +187,21 @@ export const useRealtimeData = () => {
     return filtered;
   }
 
-  // Calcular métricas em tempo real com logs detalhados
-  const onlineUsers = Object.values(filteredData.visitors).filter(
-    (visitor: any) => visitor.status === 'online'
-  ).length;
+  // Calcular métricas em tempo real com logs detalhados (excluindo dashboard)
+  const realVisitors = Object.entries(filteredData.visitors).filter(([key, visitor]: [string, any]) => {
+    return !isDashboardSession(visitor);
+  });
 
-  const totalVisits = Object.keys(filteredData.visitors).length;
+  const onlineUsers = realVisitors.filter(([key, visitor]: [string, any]) => {
+    const isOnline = visitor.status === 'online';
+    console.log(`[useRealtimeData] 👤 Verificando usuário online: ${key}, status: ${visitor.status}, page: ${visitor.page}`);
+    return isOnline;
+  }).length;
+
+  console.log(`[useRealtimeData] 📊 Total de visitantes reais (sem dashboard): ${realVisitors.length}`);
+  console.log(`[useRealtimeData] 🟢 Total de usuários online (sem dashboard): ${onlineUsers}`);
+
+  const totalVisits = realVisitors.length;
   const totalPayments = Object.keys(filteredData.payments).length;
   const totalQRCodes = Object.keys(filteredData.qrcodes).length;
 
@@ -211,8 +239,25 @@ export const useRealtimeData = () => {
 
   console.log(`[useRealtimeData] Total final de pagamentos: R$ ${paymentTotal.toFixed(2)}`);
 
+  // Função para limpar todos os dados
+  const clearAllData = async () => {
+    console.log(`[useRealtimeData] 🧹 Iniciando limpeza geral de todos os dados...`);
+    try {
+      await Promise.all([
+        clearData.clearVisitors(),
+        clearData.clearPayments(),
+        clearData.clearQRCodes()
+      ]);
+      console.log(`[useRealtimeData] ✅ Todos os dados foram limpos com sucesso!`);
+      return true;
+    } catch (error) {
+      console.error(`[useRealtimeData] ❌ Erro ao limpar dados:`, error);
+      throw error;
+    }
+  };
+
   return {
-    visitors: filteredData.visitors,
+    visitors: Object.fromEntries(realVisitors),
     payments: filteredData.payments,
     qrcodes: filteredData.qrcodes,
     metrics: {
@@ -221,6 +266,7 @@ export const useRealtimeData = () => {
       totalPayments,
       totalQRCodes,
       paymentTotal
-    }
+    },
+    clearAllData
   };
 };
