@@ -1,24 +1,27 @@
-import { QueryClient } from "@tanstack/react-query";
+
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
-import Home from "@/pages/Home";
+import Index from "@/pages/Index";
 import Scripts from "@/pages/Scripts";
-import Analytics from "@/pages/Analytics";
+import Dashboard from "@/pages/Dashboard";
 import TrackingAPISimulator from "@/components/TrackingAPISimulator";
+
+const queryClient = new QueryClient();
 
 function App() {
   return (
-    <QueryClient>
+    <QueryClientProvider client={queryClient}>
       <Router>
         <Toaster />
         <TrackingAPISimulator />
         <Routes>
-          <Route path="/" element={<Home />} />
+          <Route path="/" element={<Index />} />
           <Route path="/scripts" element={<Scripts />} />
-          <Route path="/analytics" element={<Analytics />} />
+          <Route path="/dashboard" element={<Dashboard />} />
         </Routes>
       </Router>
-    </QueryClient>
+    </QueryClientProvider>
   );
 }
 
