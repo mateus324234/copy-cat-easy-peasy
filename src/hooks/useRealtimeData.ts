@@ -2,7 +2,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { listenToRealtimeData } from '@/services/firebase';
 import { useSite } from '@/context/SiteContext';
-import { getDisplayUrl } from '@/utils/urlUtils';
+import { getDisplayUrl, getFullDomain } from '@/utils/urlUtils';
 
 export const useRealtimeData = () => {
   const [visitors, setVisitors] = useState<any>({});
@@ -133,15 +133,29 @@ export const useRealtimeData = () => {
 
   // Helper function to filter data by site
   function filterBySite(data: Record<string, any>, siteDomain: string) {
-    return Object.fromEntries(
-      Object.entries(data).filter(([_, item]) => {
+    console.log(`[Filter] Filtrando por site: ${siteDomain}`);
+    console.log(`[Filter] Total de itens antes do filtro:`, Object.keys(data).length);
+    
+    const filtered = Object.fromEntries(
+      Object.entries(data).filter(([key, item]) => {
         const itemUrl = item.page || item.referrer;
-        if (!itemUrl) return false;
+        if (!itemUrl) {
+          console.log(`[Filter] Item ${key} sem URL, ignorando`);
+          return false;
+        }
         
-        const displayUrl = getDisplayUrl(item.page, item.referrer);
-        return displayUrl === siteDomain;
+        const itemDomain = getFullDomain(itemUrl);
+        console.log(`[Filter] Item ${key}: URL=${itemUrl}, Domain=${itemDomain}, Target=${siteDomain}`);
+        
+        const matches = itemDomain === siteDomain;
+        console.log(`[Filter] Item ${key} matches: ${matches}`);
+        
+        return matches;
       })
     );
+    
+    console.log(`[Filter] Total de itens após filtro:`, Object.keys(filtered).length);
+    return filtered;
   }
 
   // Calcular métricas em tempo real com logs detalhados

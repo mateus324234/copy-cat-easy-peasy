@@ -39,6 +39,31 @@ export const formatCleanUrl = (url: string | undefined): string => {
   }
 };
 
+export const getFullDomain = (url: string | undefined): string => {
+  if (!url) return '';
+  
+  try {
+    // Remove protocolo se existir
+    let cleanUrl = url.replace(/^https?:\/\//, '');
+    
+    // Remove www.
+    cleanUrl = cleanUrl.replace(/^www\./, '');
+    
+    // Remove parâmetros de query e hash
+    cleanUrl = cleanUrl.split('?')[0].split('#')[0];
+    
+    // Remove trailing slash
+    cleanUrl = cleanUrl.replace(/\/$/, '');
+    
+    // Extrair apenas o domínio (primeira parte antes da /)
+    const domain = cleanUrl.split('/')[0];
+    
+    return domain;
+  } catch (error) {
+    return '';
+  }
+};
+
 export const getDisplayUrl = (page?: string, referrer?: string): string => {
   // Priorizar página atual, depois referrer
   const url = page || referrer;
