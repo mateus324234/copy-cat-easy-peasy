@@ -1,10 +1,11 @@
+
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Copy, ExternalLink, Code, Globe, Zap, CheckCircle, AlertTriangle, FileText, Database, Eye, Wrench, TestTube, BookOpen, CreditCard, QrCode, Monitor, Settings, Webhook, LineChart, ShoppingCart, Users, Activity } from "lucide-react";
+import { Copy, ExternalLink, Code, Globe, Zap, CheckCircle, AlertTriangle, FileText, Database, Eye, Wrench, TestTube, BookOpen, CreditCard, QrCode, Monitor, Settings, Webhook, LineChart, ShoppingCart, Users, Activity, HelpCircle, Lightbulb, ArrowRight, Play, Pause } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 const Scripts = () => {
@@ -18,7 +19,7 @@ const Scripts = () => {
     });
   };
 
-  const completeTrackingScript = `<!-- 🎯 SISTEMA QUERIDOS ANALYTICS - SCRIPT COMPLETO ATUALIZADO -->
+  const completeTrackingScript = `<!-- 🎯 QUERIDOS ANALYTICS - SCRIPT COMPLETO ATUALIZADO -->
 <script>
 (function() {
   'use strict';
@@ -34,7 +35,7 @@ const Scripts = () => {
     appId: "1:939916254169:web:749b10fe7817f82f2617c8"
   };
 
-  // Função para extrair domínio atual (ATUALIZADA)
+  // ✨ DETECÇÃO AUTOMÁTICA DE DOMÍNIO
   function getCurrentDomain() {
     return window.location.hostname.replace(/^www\\./, '');
   }
@@ -44,12 +45,11 @@ const Scripts = () => {
   let userLocation = { country: 'Brasil', city: 'São Paulo', state: 'SP', ip: 'Unknown' };
   let isOnline = true;
   let pingInterval = null;
-  const currentDomain = getCurrentDomain(); // Detectar domínio automaticamente
+  const currentDomain = getCurrentDomain();
 
-  // Função para detectar localização real
+  // Detectar localização real via API
   async function detectLocation() {
     try {
-      // Primeira tentativa: ipapi.co (gratuita e confiável)
       const response = await fetch('https://ipapi.co/json/');
       if (response.ok) {
         const data = await response.json();
@@ -60,18 +60,15 @@ const Scripts = () => {
             state: data.region || 'SP',
             ip: data.ip
           };
-          console.log('[Queridos Analytics] Localização detectada:', userLocation);
-          console.log('[Queridos Analytics] Domínio detectado:', currentDomain);
+          console.log('[Queridos Analytics] ✅ Localização detectada:', userLocation);
+          console.log('[Queridos Analytics] 🌐 Domínio detectado:', currentDomain);
           return;
         }
       }
     } catch (error) {
-      console.warn('[Queridos Analytics] Erro ao detectar localização:', error);
+      console.warn('[Queridos Analytics] ⚠️ Erro ao detectar localização:', error);
     }
-
-    // Fallback: usar localização padrão
-    console.log('[Queridos Analytics] Usando localização padrão');
-    console.log('[Queridos Analytics] Domínio detectado:', currentDomain);
+    console.log('[Queridos Analytics] 📍 Usando localização padrão');
   }
 
   // Carregamento dinâmico do Firebase
@@ -132,15 +129,15 @@ const Scripts = () => {
     '        domain: "' + currentDomain + '"' +
     '      });' +
     '    }' +
-    '    console.log("[Queridos Analytics] Evento registrado:", eventType, "Domain:", "' + currentDomain + '", eventData);' +
+    '    console.log("[Queridos Analytics] 📊 Evento registrado:", eventType, "Domain:", "' + currentDomain + '");' +
     '  } catch (error) {' +
-    '    console.error("[Queridos Analytics] Erro:", error);' +
+    '    console.error("[Queridos Analytics] ❌ Erro:", error);' +
     '  }' +
     '}' +
     '' +
     'window.trackEvent = trackEvent;' +
     '' +
-    '// Expor API pública (ATUALIZADA)' +
+    '// 🎯 API PÚBLICA PARA DESENVOLVEDORES' +
     'window.queridosAnalytics = {' +
     '  trackPayment: function(amount, method = "PIX", product = "Produto", status = "Gerado") {' +
     '    trackEvent("payment", {' +
@@ -170,10 +167,18 @@ const Scripts = () => {
     '  },' +
     '  getSessionId: function() {' +
     '    return "' + sessionId + '";' +
+    '  },' +
+    '  test: function() {' +
+    '    console.log("🧪 TESTE QUERIDOS ANALYTICS");' +
+    '    console.log("Domínio:", "' + currentDomain + '");' +
+    '    console.log("Session:", "' + sessionId + '");' +
+    '    this.trackPayment("R$ 99,90", "PIX", "Teste Pagamento", "Teste");' +
+    '    this.trackQRCode("QR Teste", "https://teste.com", "url");' +
+    '    console.log("✅ Eventos de teste enviados!");' +
     '  }' +
     '};' +
     '' +
-    '// Inicialização' +
+    '// Inicialização automática' +
     'detectLocation().then(() => {' +
     '  trackEvent("visit", userLocation);' +
     '  ' +
@@ -195,332 +200,242 @@ const Scripts = () => {
     '});';
   
   document.head.appendChild(script);
-
-  // Detectar localização e inicializar
   detectLocation();
 })();
 </script>`;
 
-  const paymentsTrackingExamples = `// 💳 EXEMPLOS ESPECÍFICOS PARA PAGAMENTOS (ATUALIZADOS)
+  const stepByStepGuide = `📋 TUTORIAL PASSO A PASSO
 
-// IMPORTANTE: O script agora detecta o domínio automaticamente!
-// Não é mais necessário configurar manualmente o domínio
+🔥 PASSO 1: ADICIONAR O SCRIPT NO SEU SITE
+═══════════════════════════════════════════
 
-// 1. PIX INSTANTÂNEO
-function gerarPIX(valor, descricao) {
-  // ... sua lógica de geração do PIX ...
-  
-  // 🎯 TRACKING ESPECÍFICO PARA PIX (COM DOMÍNIO AUTOMÁTICO)
-  setTimeout(() => {
-    if (window.queridosAnalytics) {
-      console.log('Domínio atual:', window.queridosAnalytics.getCurrentDomain());
-      window.queridosAnalytics.trackPayment(
-        \`R$ \${valor.toFixed(2).replace('.', ',')}\`,
-        "PIX",
-        descricao || "Pagamento PIX",
-        "Gerado"
-      );
+1️⃣ Copie o script completo acima
+2️⃣ Cole no <head> do seu site, antes do </head>
+3️⃣ Salve e publique seu site
+
+💡 DICA: O script detecta automaticamente seu domínio!
+
+🔥 PASSO 2: VERIFICAR SE ESTÁ FUNCIONANDO
+═══════════════════════════════════════════
+
+1️⃣ Abra seu site no navegador
+2️⃣ Pressione F12 para abrir o console
+3️⃣ Digite: window.queridosAnalytics.test()
+4️⃣ Deve aparecer: "✅ Eventos de teste enviados!"
+
+🔥 PASSO 3: RASTREAR PAGAMENTOS
+═══════════════════════════════════
+
+// Quando gerar um PIX:
+window.queridosAnalytics.trackPayment("R$ 150,00", "PIX", "Produto ABC", "Gerado");
+
+// Quando processar cartão:
+window.queridosAnalytics.trackPayment("R$ 299,90", "Cartão 3x", "Curso React", "Aprovado");
+
+🔥 PASSO 4: RASTREAR QR CODES
+═══════════════════════════════
+
+// QR de URL:
+window.queridosAnalytics.trackQRCode("Link Site", "https://meusite.com", "url");
+
+// QR de PIX:
+window.queridosAnalytics.trackQRCode("PIX Pagamento", "R$ 50,00", "pagamento");
+
+🔥 PASSO 5: VERIFICAR NO DASHBOARD
+═══════════════════════════════════
+
+1️⃣ Acesse o dashboard analytics
+2️⃣ Verifique se aparecem visitantes online
+3️⃣ Teste pagamentos e QR codes
+4️⃣ Confirme se dados estão sendo salvos
+
+✅ PRONTO! Seu site está rastreando tudo automaticamente!`;
+
+  const faqContent = `❓ PERGUNTAS FREQUENTES
+
+🤔 Como sei se o script está funcionando?
+═══════════════════════════════════════════
+• Abra o console (F12) no seu site
+• Digite: window.queridosAnalytics
+• Se retornar um objeto, está funcionando!
+• Use: window.queridosAnalytics.test() para testar
+
+🤔 Por que não vejo dados no dashboard?
+═══════════════════════════════════════
+• Verifique se o script está no <head>
+• Aguarde 30-60 segundos após adicionar
+• Teste com: window.queridosAnalytics.test()
+• Verifique o console por erros
+
+🤔 Como implementar em diferentes plataformas?
+════════════════════════════════════════════
+• WordPress: Adicione no functions.php ou plugin
+• Shopify: Cole no theme.liquid
+• Wix: Use o código HTML personalizado
+• HTML: Cole direto no <head>
+
+🤔 Preciso configurar o domínio manualmente?
+══════════════════════════════════════════
+• ❌ NÃO! O script detecta automaticamente
+• ✅ Cada site será filtrado corretamente
+• ✅ Não precisa de configuração extra
+
+🤔 Como migrar do script antigo?
+═══════════════════════════════════
+• ✅ Scripts antigos continuam funcionando
+• ✅ Substitua gradualmente pelos novos
+• ✅ Compatibilidade 100% garantida
+
+🤔 Posso usar em múltiplos sites?
+═════════════════════════════════
+• ✅ SIM! Use o mesmo script em todos
+• ✅ Cada site aparecerá separadamente
+• ✅ Filtro automático por domínio`;
+
+  const platformIntegration = `🌐 INTEGRAÇÃO COM PLATAFORMAS
+
+🟢 WORDPRESS
+═══════════════════════════════════
+
+// Method 1: functions.php
+function add_queridos_analytics() {
+    if (!is_admin()) {
+        echo '${completeTrackingScript}';
     }
-  }, 1000);
 }
+add_action('wp_head', 'add_queridos_analytics');
 
-// 2. CARTÃO DE CRÉDITO
-function processarCartao(dadosCartao, valor, parcelas) {
-  // ... sua lógica de processamento ...
-  
-  // 🎯 TRACKING PARA CARTÃO (COM DOMÍNIO AUTOMÁTICO)
-  setTimeout(() => {
-    if (window.queridosAnalytics) {
-      console.log('Domínio atual:', window.queridosAnalytics.getCurrentDomain());
-      window.queridosAnalytics.trackPayment(
-        \`R$ \${valor.toFixed(2).replace('.', ',')}\`,
-        \`Cartão \${parcelas}x\`,
-        \`Compra parcelada em \${parcelas}x\`,
-        "Processando"
-      );
-    }
-  }, 1000);
-}
+// Method 2: Plugin Custom HTML
 
-// 3. VERIFICAR DOMÍNIO ATUAL
-function verificarDominioAtual() {
-  if (window.queridosAnalytics) {
-    const dominio = window.queridosAnalytics.getCurrentDomain();
-    console.log('Site atual sendo rastreado:', dominio);
-    return dominio;
-  }
-  return null;
-}
+🟢 SHOPIFY
+═══════════════════════════════════
 
-// 4. TESTE COMPLETO
-function testeCompleto() {
-  if (window.queridosAnalytics) {
-    console.log('=== TESTE QUERIDOS ANALYTICS ===');
-    console.log('Domínio:', window.queridosAnalytics.getCurrentDomain());
-    console.log('Session ID:', window.queridosAnalytics.getSessionId());
-    
-    // Testar pagamento
-    window.queridosAnalytics.trackPayment("R$ 99,90", "PIX", "Teste Pagamento", "Aprovado");
-    
-    // Testar QR Code
-    window.queridosAnalytics.trackQRCode("Teste QR", "https://teste.com", "url");
-    
-    console.log('Testes enviados! Verifique o dashboard.');
-  } else {
-    console.error('Queridos Analytics não carregado!');
-  }
-}`;
+1. Admin → Online Store → Themes
+2. Actions → Edit Code
+3. Abrir theme.liquid
+4. Adicionar antes de </head>:
 
-  const qrCodeTrackingExamples = `// 📱 EXEMPLOS ESPECÍFICOS PARA QR CODES (ATUALIZADOS)
+${completeTrackingScript}
 
-// IMPORTANTE: O script agora detecta o domínio automaticamente!
+🟢 WIX
+═══════════════════════════════════
 
-// 1. QR CODE DE URL/SITE
-function gerarQRURL(url, titulo) {
-  // ... sua lógica de geração do QR ...
-  
-  // 🎯 TRACKING PARA QR DE URL (COM DOMÍNIO AUTOMÁTICO)
-  setTimeout(() => {
-    if (window.queridosAnalytics) {
-      console.log('Domínio atual:', window.queridosAnalytics.getCurrentDomain());
-      window.queridosAnalytics.trackQRCode(
-        titulo || "QR Code URL",
-        url,
-        "url"
-      );
-    }
-  }, 1000);
-}
+1. Settings → Custom Code
+2. Add to Head
+3. Colar o script completo
 
-// 2. QR CODE DE PIX
-function gerarQRPIX(chavePIX, valor, descricao) {
-  // ... gerar QR do PIX ...
-  
-  // 🎯 TRACKING PARA QR PIX (COM DOMÍNIO AUTOMÁTICO)
-  setTimeout(() => {
-    if (window.queridosAnalytics) {
-      console.log('Domínio atual:', window.queridosAnalytics.getCurrentDomain());
-      window.queridosAnalytics.trackQRCode(
-        \`PIX: \${descricao}\`,
-        \`R$ \${valor.toFixed(2).replace('.', ',')}\`,
-        "pagamento"
-      );
-    }
-  }, 1000);
-}
+🟢 HTML PURO
+═══════════════════════════════════
 
-// 3. VERIFICAR SE ANALYTICS ESTÁ FUNCIONANDO
-function verificarAnalytics() {
-  console.log('=== VERIFICAÇÃO QUERIDOS ANALYTICS ===');
-  if (window.queridosAnalytics) {
-    console.log('✅ Script carregado com sucesso!');
-    console.log('🌐 Domínio detectado:', window.queridosAnalytics.getCurrentDomain());
-    console.log('🔑 Session ID:', window.queridosAnalytics.getSessionId());
-    console.log('📊 APIs disponíveis:', Object.keys(window.queridosAnalytics));
-  } else {
-    console.log('❌ Script não carregado ainda. Aguarde alguns segundos e tente novamente.');
-  }
-}`;
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Meu Site</title>
+    ${completeTrackingScript}
+</head>
+<body>
+    <!-- Seu conteúdo -->
+</body>
+</html>
 
-  const nextJsImplementation = `// app/layout.tsx (ATUALIZADO)
-import Script from "next/script"
+🟢 REACT/NEXT.JS
+═══════════════════════════════════
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+// app/layout.tsx ou pages/_app.tsx
+import Script from 'next/script'
+
+export default function Layout({ children }) {
   return (
-    <html lang="pt-BR">
+    <html>
       <head>
-        {/* 🎯 SCRIPT ANALYTICS ATUALIZADO COM DETECÇÃO AUTOMÁTICA DE DOMÍNIO */}
-        <Script id="queridos-analytics" strategy="beforeInteractive">
-          {\`${completeTrackingScript.replace(/`/g, '\\`')}\`}
-        </Script>
+        <Script
+          id="queridos-analytics"
+          strategy="beforeInteractive"
+          dangerouslySetInnerHTML={{
+            __html: \`${completeTrackingScript.replace(/`/g, '\\`')}\`
+          }}
+        />
       </head>
-      <body>
-        {children}
-      </body>
+      <body>{children}</body>
     </html>
   )
-}
+}`;
 
-// types/analytics.d.ts (ATUALIZADO)
-declare global {
-  interface Window {
-    queridosAnalytics?: {
-      trackPayment: (amount: string, method?: string, product?: string, status?: string) => void
-      trackQRCode: (product?: string, value?: string, type?: string) => void
-      getCurrentDomain: () => string // NOVO: Retorna o domínio atual
-      getSessionId: () => string // NOVO: Retorna o session ID
-    }
-  }
-}
+  const troubleshootingGuide = `🔧 TROUBLESHOOTING - RESOLUÇÃO DE PROBLEMAS
 
-export {}
+🚨 SCRIPT NÃO CARREGA
+═══════════════════════════════════════
 
-// Exemplo - Verificar funcionamento
-useEffect(() => {
-  // Aguardar carregamento do script
-  setTimeout(() => {
-    if (window.queridosAnalytics) {
-      console.log('🎯 Analytics carregado para:', window.queridosAnalytics.getCurrentDomain())
-      
-      // Exemplo de pagamento
-      const handlePayment = () => {
-        window.queridosAnalytics.trackPayment(
-          'R$ 150,00',
-          'PIX',
-          'Produto Teste',
-          'Gerado'
-        )
-      }
-      
-      // Exemplo de QR Code
-      const handleQRCode = () => {
-        window.queridosAnalytics.trackQRCode(
-          'QR Teste',
-          'https://meusite.com/produto',
-          'url'
-        )
-      }
-    }
-  }, 2000) // Aguardar 2 segundos para garantir carregamento
-}, [])`;
+✅ Verificações básicas:
+• Script está no <head>?
+• Sem erros de sintaxe?
+• Site está online?
 
-  const testingCommands = `// 🧪 TESTE NO CONSOLE DO NAVEGADOR (ATUALIZADO):
+🔍 Como testar:
+console.log('Script carregado?', !!window.queridosAnalytics);
 
-// 1. Verificar se carregou corretamente
-console.log('Analytics:', window.queridosAnalytics);
+🚨 VISITANTES NÃO APARECEM
+═══════════════════════════════════════
 
-// 2. Verificar domínio detectado automaticamente
-if (window.queridosAnalytics) {
-  console.log('Domínio atual:', window.queridosAnalytics.getCurrentDomain());
-  console.log('Session ID:', window.queridosAnalytics.getSessionId());
-}
+✅ Soluções:
+• Aguarde 1-2 minutos
+• Limpe cache do navegador
+• Teste em aba anônima
+• Verifique console por erros
 
-// 3. Testar pagamento (com domínio automático)
-if (window.queridosAnalytics) {
-  window.queridosAnalytics.trackPayment("R$ 99,90", "PIX", "Teste", "Aprovado");
-}
+🔍 Como debugar:
+window.queridosAnalytics.test();
 
-// 4. Testar QR Code (com domínio automático)
-if (window.queridosAnalytics) {
-  window.queridosAnalytics.trackQRCode("Teste QR", "https://teste.com", "url");
-}
+🚨 PAGAMENTOS NÃO SALVAM
+═══════════════════════════════════════
 
-// 5. Verificar no console (deve aparecer):
-// [Queridos Analytics] Localização detectada: {ip: "...", country: "..."}
-// [Queridos Analytics] Domínio detectado: meusite.com
-// [Queridos Analytics] Evento registrado: visit Domain: meusite.com {...}
-// [Queridos Analytics] Evento registrado: payment Domain: meusite.com {...}
+✅ Verificações:
+• Chamando trackPayment() corretamente?
+• Valores estão corretos?
+• Console mostra erros?
 
-// 6. TESTE COMPLETO AUTOMATIZADO
-function testeCompleto() {
-  if (!window.queridosAnalytics) {
-    console.error('❌ Analytics não carregado!');
-    return;
-  }
-  
-  console.log('🎯 INICIANDO TESTE COMPLETO...');
-  console.log('Domínio:', window.queridosAnalytics.getCurrentDomain());
-  
-  // Teste 1: Pagamento
-  window.queridosAnalytics.trackPayment("R$ 150,00", "PIX", "Produto Teste", "Gerado");
-  console.log('✅ Pagamento enviado');
-  
-  // Teste 2: QR Code
-  window.queridosAnalytics.trackQRCode("QR Teste", "https://exemplo.com", "url");
-  console.log('✅ QR Code enviado');
-  
-  console.log('🎉 Teste concluído! Verifique o dashboard.');
-}
+🔍 Exemplo correto:
+window.queridosAnalytics.trackPayment("R$ 100,00", "PIX", "Produto", "Gerado");
 
-// Execute o teste:
-testeCompleto();`;
+🚨 DOMÍNIO ERRADO NO DASHBOARD
+═══════════════════════════════════════
 
-  const personalizedScripts = `// ⚙️ SCRIPTS PERSONALIZADOS PARA SEU PROJETO (ATUALIZADOS)
+✅ Soluções:
+• Usar script atualizado
+• Limpar cache
+• Aguardar próxima visita
 
-// Script atual do projeto com detecção automática de domínio
-const currentProjectScript = \`
-<!-- SCRIPT QUERIDOS ANALYTICS - VERSÃO ATUAL COM DOMÍNIO AUTOMÁTICO -->
-<script>
-(function() {
-  // ✨ NOVA FUNCIONALIDADE: Detecção automática de domínio
-  const PROJECT_NAME = 'dashboard-app';
-  const ENVIRONMENT = 'production';
-  const CURRENT_DOMAIN = window.location.hostname.replace(/^www\\./, '');
-  
-  console.log('🎯 Iniciando Queridos Analytics para domínio:', CURRENT_DOMAIN);
-  
-  // Firebase config
-  const firebaseConfig = {
-    apiKey: "AIzaSyDsGz4eMdK4AvSotMRubBA6hLZ9wLdTWlY",
-    authDomain: "backend-69215.firebaseapp.com",
-    databaseURL: "https://backend-69215-default-rtdb.firebaseio.com",
-    projectId: "backend-69215",
-    storageBucket: "backend-69215.firebasestorage.app",
-    messagingSenderId: "939916254169",
-    appId: "1:939916254169:web:749b10fe7817f82f2617c8"
-  };
-  
-  // Configurações personalizadas
-  const customSettings = {
-    trackAdminPages: false,
-    enableDebugMode: \${ENVIRONMENT === 'development'},
-    pingInterval: 30000,
-    maxRetries: 3,
-    autoDomainDetection: true // NOVO: Detecção automática habilitada
-  };
-  
-  // ✅ TODOS OS EVENTOS AGORA INCLUEM O CAMPO 'domain' AUTOMATICAMENTE
-  // ✅ NÃO É MAIS NECESSÁRIO CONFIGURAR MANUALMENTE
-  
-  console.log('⚙️ Configurações:', customSettings);
-  console.log('🌐 Domínio detectado automaticamente:', CURRENT_DOMAIN);
-})();
-</script>
-\`;
+🔍 Verificar domínio:
+console.log('Domínio detectado:', window.queridosAnalytics.getCurrentDomain());
 
-// Configurações por ambiente (ATUALIZADAS)
-const environmentConfigs = {
-  development: {
-    firebaseConfig: { /* config de dev */ },
-    debugMode: true,
-    pingInterval: 10000,
-    autoDomainDetection: true
-  },
-  staging: {
-    firebaseConfig: { /* config de staging */ },
-    debugMode: true,
-    pingInterval: 20000,
-    autoDomainDetection: true
-  },
-  production: {
-    firebaseConfig: { /* config de produção */ },
-    debugMode: false,
-    pingInterval: 30000,
-    autoDomainDetection: true
-  }
-};
+🚨 MÚLTIPLOS SITES MISTURADOS
+═══════════════════════════════════════
 
-// Instruções de migração
-const migrationInstructions = \`
-📋 INSTRUÇÕES PARA ATUALIZAR SITES EXISTENTES:
+✅ Soluções:
+• Usar script atualizado em todos
+• Cada site deve ter o script separadamente
+• Filtro automático por domínio
 
-1. ✅ Substitua o script antigo pelo novo script completo
-2. ✅ O novo script detecta o domínio automaticamente
-3. ✅ Não é necessário configurar nada manualmente
-4. ✅ Compatível com scripts antigos (funciona nos dois)
-5. ✅ Novos eventos já incluem o campo 'domain'
-6. ✅ Dashboard irá filtrar corretamente por site
+🚨 CONSOLE ERRORS COMUNS
+═══════════════════════════════════════
 
-🔄 MIGRAÇÃO AUTOMÁTICA:
-- Sites com script antigo: continuarão funcionando
-- Sites com script novo: aparecerão filtrados corretamente
-- Gradualmente substitua todos os scripts
+❌ "queridosAnalytics is not defined"
+✅ Aguarde script carregar ou use setTimeout
 
-🎯 RESULTADO:
-- Cada site mostrará apenas seus dados
-- Filtro por domínio funcionará perfeitamente
-- Dashboard exibirá informações separadas por site
-\`;`;
+❌ "Failed to fetch location"
+✅ Normal, usa localização padrão
+
+❌ "Firebase permission denied"
+✅ Verifique configuração Firebase
+
+🆘 SUPORTE EMERGENCIAL
+═══════════════════════════════════════
+
+Se nada funcionar:
+1. Cole o script exatamente como está
+2. Teste com window.queridosAnalytics.test()
+3. Envie print do console
+4. Informe URL do site`;
 
   return (
     <SidebarProvider defaultOpen={false}>
@@ -537,111 +452,180 @@ const migrationInstructions = \`
             {/* Header */}
             <div className="mb-8">
               <h1 className="text-4xl font-bold bg-gradient-to-r from-green-400 via-blue-400 to-purple-400 bg-clip-text text-transparent">
-                📋 Documentação Completa: Sistema Queridos Analytics
+                🚀 Tutorial Completo: Queridos Analytics
               </h1>
               <p className="text-gray-400 mt-2 text-lg">
-                Guia completo para implementar tracking de visitantes, pagamentos e QR codes <span className="text-green-400 font-semibold">com detecção automática de domínio</span>
+                Guia completo para implementar o sistema de analytics no seu site em <span className="text-green-400 font-semibold">5 passos simples</span>
               </p>
             </div>
 
             <Tabs defaultValue="overview" className="space-y-6">
-              <TabsList className="grid w-full grid-cols-7 bg-gray-800/50">
+              <TabsList className="grid w-full grid-cols-8 bg-gray-800/50">
                 <TabsTrigger value="overview" className="flex items-center space-x-2">
-                  <Zap className="h-4 w-4" />
-                  <span>Visão Geral</span>
+                  <Play className="h-4 w-4" />
+                  <span>Início</span>
                 </TabsTrigger>
-                <TabsTrigger value="payments" className="flex items-center space-x-2">
-                  <CreditCard className="h-4 w-4" />
-                  <span>Pagamentos</span>
+                <TabsTrigger value="tutorial" className="flex items-center space-x-2">
+                  <BookOpen className="h-4 w-4" />
+                  <span>Tutorial</span>
                 </TabsTrigger>
-                <TabsTrigger value="qrcodes" className="flex items-center space-x-2">
-                  <QrCode className="h-4 w-4" />
-                  <span>QR Codes</span>
+                <TabsTrigger value="script" className="flex items-center space-x-2">
+                  <Code className="h-4 w-4" />
+                  <span>Script</span>
                 </TabsTrigger>
-                <TabsTrigger value="implementation" className="flex items-center space-x-2">
+                <TabsTrigger value="examples" className="flex items-center space-x-2">
+                  <Lightbulb className="h-4 w-4" />
+                  <span>Exemplos</span>
+                </TabsTrigger>
+                <TabsTrigger value="platforms" className="flex items-center space-x-2">
+                  <Globe className="h-4 w-4" />
+                  <span>Plataformas</span>
+                </TabsTrigger>
+                <TabsTrigger value="faq" className="flex items-center space-x-2">
+                  <HelpCircle className="h-4 w-4" />
+                  <span>FAQ</span>
+                </TabsTrigger>
+                <TabsTrigger value="troubleshooting" className="flex items-center space-x-2">
                   <Wrench className="h-4 w-4" />
-                  <span>Implementação</span>
+                  <span>Problemas</span>
                 </TabsTrigger>
-                <TabsTrigger value="monitoring" className="flex items-center space-x-2">
-                  <Monitor className="h-4 w-4" />
-                  <span>Monitoramento</span>
-                </TabsTrigger>
-                <TabsTrigger value="apis" className="flex items-center space-x-2">
-                  <Webhook className="h-4 w-4" />
-                  <span>APIs</span>
-                </TabsTrigger>
-                <TabsTrigger value="scripts" className="flex items-center space-x-2">
-                  <Settings className="h-4 w-4" />
-                  <span>Scripts</span>
+                <TabsTrigger value="test" className="flex items-center space-x-2">
+                  <TestTube className="h-4 w-4" />
+                  <span>Testar</span>
                 </TabsTrigger>
               </TabsList>
 
-              {/* VISÃO GERAL */}
+              {/* INÍCIO - VISÃO GERAL */}
               <TabsContent value="overview" className="space-y-8">
-                <Card className="bg-gray-800/50 backdrop-blur-lg border-gray-700">
+                <Card className="bg-gradient-to-br from-green-500/10 via-blue-500/10 to-purple-500/10 border-green-500/30">
                   <CardHeader>
                     <CardTitle className="text-white flex items-center space-x-2">
                       <Zap className="h-6 w-6 text-yellow-400" />
-                      <span>🎯 Visão Geral - Script Atualizado</span>
-                      <Badge className="bg-green-500/20 text-green-300">✨ NOVO: Domínio Automático</Badge>
+                      <span>🎯 O que é o Queridos Analytics?</span>
+                      <Badge className="bg-green-500/20 text-green-300">✨ Detecção Automática</Badge>
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className="text-gray-300 space-y-4">
-                    <p className="text-lg">
-                      Este sistema rastreia visitantes, pagamentos e QR codes usando Firebase Realtime Database 
-                      com <strong className="text-yellow-300">detecção automática de IP, localização real e domínio</strong>.
-                    </p>
-                    
-                    <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-4">
-                      <h4 className="text-green-300 font-semibold mb-2">🆕 Novidades da Atualização</h4>
-                      <ul className="text-sm text-gray-300 space-y-1">
-                        <li>✅ <strong>Detecção automática de domínio</strong> - não precisa configurar manualmente</li>
-                        <li>✅ <strong>Campo 'domain' em todos os eventos</strong> - garante filtro correto</li>
-                        <li>✅ <strong>URL completa sempre capturada</strong> - melhora precisão dos dados</li>
-                        <li>✅ <strong>Compatibilidade com scripts antigos</strong> - migração gradual</li>
-                        <li>✅ <strong>Filtro por site 100% funcional</strong> - cada site mostra apenas seus dados</li>
-                      </ul>
+                  <CardContent className="text-gray-300 space-y-6">
+                    <div className="text-lg leading-relaxed">
+                      <p className="mb-4">
+                        Sistema completo de analytics que <strong className="text-yellow-300">detecta automaticamente</strong> visitantes, 
+                        pagamentos e QR codes do seu site em tempo real.
+                      </p>
+                      
+                      <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-4 mb-6">
+                        <h4 className="text-green-300 font-semibold mb-3 flex items-center space-x-2">
+                          <CheckCircle className="h-5 w-5" />
+                          <span>🚀 Por que usar?</span>
+                        </h4>
+                        <ul className="space-y-2 text-sm">
+                          <li className="flex items-center space-x-2">
+                            <ArrowRight className="h-4 w-4 text-green-400" />
+                            <span><strong>100% Automático</strong> - Detecta domínio, IP e localização sozinho</span>
+                          </li>
+                          <li className="flex items-center space-x-2">
+                            <ArrowRight className="h-4 w-4 text-blue-400" />
+                            <span><strong>Tempo Real</strong> - Veja visitantes online agora mesmo</span>
+                          </li>
+                          <li className="flex items-center space-x-2">
+                            <ArrowRight className="h-4 w-4 text-purple-400" />
+                            <span><strong>Fácil de Usar</strong> - Copie, cole e pronto!</span>
+                          </li>
+                          <li className="flex items-center space-x-2">
+                            <ArrowRight className="h-4 w-4 text-yellow-400" />
+                            <span><strong>Multi-Site</strong> - Funciona em quantos sites quiser</span>
+                          </li>
+                        </ul>
+                      </div>
                     </div>
                     
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
-                      <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-4">
-                        <h4 className="text-green-400 font-semibold mb-2 flex items-center space-x-2">
-                          <Eye className="h-4 w-4" />
-                          <span>Visitantes</span>
-                        </h4>
-                        <p className="text-sm text-gray-400">Rastreamento automático com IP real, localização e domínio via API ipapi.co</p>
-                      </div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4">
                         <h4 className="text-blue-400 font-semibold mb-2 flex items-center space-x-2">
-                          <CreditCard className="h-4 w-4" />
+                          <Users className="h-5 w-5" />
+                          <span>Visitantes</span>
+                        </h4>
+                        <p className="text-sm text-gray-400">Rastreamento automático com localização real e tempo online</p>
+                      </div>
+                      <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-4">
+                        <h4 className="text-green-400 font-semibold mb-2 flex items-center space-x-2">
+                          <CreditCard className="h-5 w-5" />
                           <span>Pagamentos</span>
                         </h4>
-                        <p className="text-sm text-gray-400">Registro manual de transações com valores, métodos e domínio</p>
+                        <p className="text-sm text-gray-400">Acompanhe PIX, cartão e outros métodos de pagamento</p>
                       </div>
                       <div className="bg-purple-500/10 border border-purple-500/30 rounded-lg p-4">
                         <h4 className="text-purple-400 font-semibold mb-2 flex items-center space-x-2">
-                          <Code className="h-4 w-4" />
+                          <QrCode className="h-5 w-5" />
                           <span>QR Codes</span>
                         </h4>
-                        <p className="text-sm text-gray-400">Tracking de QR codes gerados ou acessados com domínio automático</p>
+                        <p className="text-sm text-gray-400">Monitore geração e acesso de QR codes por tipo</p>
+                      </div>
+                    </div>
+
+                    <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-6 mt-6">
+                      <h4 className="text-yellow-300 font-semibold mb-3 text-lg">⚡ Implementação em 30 segundos</h4>
+                      <div className="flex items-center space-x-4 text-sm">
+                        <div className="flex items-center space-x-2">
+                          <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center text-white text-xs font-bold">1</div>
+                          <span>Copiar script</span>
+                        </div>
+                        <ArrowRight className="h-4 w-4 text-gray-400" />
+                        <div className="flex items-center space-x-2">
+                          <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center text-white text-xs font-bold">2</div>
+                          <span>Colar no site</span>
+                        </div>
+                        <ArrowRight className="h-4 w-4 text-gray-400" />
+                        <div className="flex items-center space-x-2">
+                          <div className="w-6 h-6 bg-purple-500 rounded-full flex items-center justify-center text-white text-xs font-bold">3</div>
+                          <span>Funcionando!</span>
+                        </div>
                       </div>
                     </div>
                   </CardContent>
                 </Card>
+              </TabsContent>
 
-                {/* Script Completo Atualizado */}
+              {/* TUTORIAL PASSO A PASSO */}
+              <TabsContent value="tutorial" className="space-y-8">
+                <Card className="bg-gray-800/50 backdrop-blur-lg border-gray-700">
+                  <CardHeader>
+                    <CardTitle className="text-white flex items-center space-x-2">
+                      <BookOpen className="h-6 w-6 text-blue-400" />
+                      <span>📚 Tutorial Passo a Passo</span>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="bg-gray-900/80 rounded-lg p-4 relative">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="absolute top-2 right-2 text-gray-400 border-gray-600 hover:bg-gray-700"
+                        onClick={() => copyToClipboard(stepByStepGuide, "Tutorial copiado!")}
+                      >
+                        <Copy className="h-4 w-4" />
+                      </Button>
+                      <pre className="text-sm text-gray-300 overflow-x-auto pr-12 whitespace-pre-wrap">
+                        <code>{stepByStepGuide}</code>
+                      </pre>
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              {/* SCRIPT COMPLETO */}
+              <TabsContent value="script" className="space-y-8">
                 <Card className="bg-gray-800/50 backdrop-blur-lg border-gray-700">
                   <CardHeader>
                     <CardTitle className="text-white flex items-center space-x-2">
                       <Code className="h-6 w-6 text-green-400" />
-                      <span>🔧 Script Completo Atualizado</span>
-                      <Badge className="bg-green-500/20 text-green-300">✨ Domínio Automático</Badge>
+                      <span>📄 Script Completo - Copie e Cole</span>
+                      <Badge className="bg-green-500/20 text-green-300">✨ Atualizado</Badge>
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-4">
                       <p className="text-green-300 text-sm">
-                        ✅ <strong>Script atualizado com detecção automática de domínio!</strong> Agora cada site será filtrado corretamente no dashboard.
+                        ✅ <strong>Cole este script no &lt;head&gt; do seu site</strong> - Ele detecta automaticamente o domínio e funciona em qualquer plataforma!
                       </p>
                     </div>
                     
@@ -650,7 +634,7 @@ const migrationInstructions = \`
                         size="sm"
                         variant="outline"
                         className="absolute top-2 right-2 text-gray-400 border-gray-600 hover:bg-gray-700"
-                        onClick={() => copyToClipboard(completeTrackingScript, "Script atualizado copiado!")}
+                        onClick={() => copyToClipboard(completeTrackingScript, "Script completo copiado! Cole no <head> do seu site.")}
                       >
                         <Copy className="h-4 w-4" />
                       </Button>
@@ -662,421 +646,375 @@ const migrationInstructions = \`
                 </Card>
               </TabsContent>
 
-              {/* PAGAMENTOS */}
-              <TabsContent value="payments" className="space-y-8">
+              {/* EXEMPLOS PRÁTICOS */}
+              <TabsContent value="examples" className="space-y-8">
+                <div className="grid gap-6">
+                  <Card className="bg-gray-800/50 backdrop-blur-lg border-gray-700">
+                    <CardHeader>
+                      <CardTitle className="text-white flex items-center space-x-2">
+                        <CreditCard className="h-6 w-6 text-green-400" />
+                        <span>💳 Exemplos: Rastrear Pagamentos</span>
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="bg-gray-900/80 rounded-lg p-4 relative">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="absolute top-2 right-2 text-gray-400 border-gray-600 hover:bg-gray-700"
+                          onClick={() => copyToClipboard(`// 💳 EXEMPLOS PRÁTICOS DE PAGAMENTOS
+
+// PIX Instantâneo
+function gerarPIX(valor) {
+  // Sua lógica de PIX aqui...
+  
+  // 🎯 ADICIONE ESTA LINHA PARA RASTREAR:
+  window.queridosAnalytics.trackPayment(
+    "R$ " + valor.toFixed(2).replace('.', ','),
+    "PIX",
+    "Produto/Serviço",
+    "Gerado"
+  );
+}
+
+// Cartão de Crédito
+function processarCartao(valor, parcelas) {
+  // Sua lógica de cartão aqui...
+  
+  // 🎯 ADICIONE ESTA LINHA PARA RASTREAR:
+  window.queridosAnalytics.trackPayment(
+    "R$ " + valor.toFixed(2).replace('.', ','),
+    "Cartão " + parcelas + "x",
+    "Compra parcelada",
+    "Processando"
+  );
+}
+
+// Pagamento Aprovado
+function pagamentoAprovado(valor, metodo) {
+  // 🎯 ADICIONE ESTA LINHA PARA RASTREAR:
+  window.queridosAnalytics.trackPayment(
+    "R$ " + valor.toFixed(2).replace('.', ','),
+    metodo,
+    "Pagamento confirmado",
+    "Aprovado"
+  );
+}
+
+// 🧪 TESTE RÁPIDO NO CONSOLE:
+window.queridosAnalytics.trackPayment("R$ 99,90", "PIX", "Teste", "Gerado");`, "Exemplos de pagamentos copiados!")}
+                        >
+                          <Copy className="h-4 w-4" />
+                        </Button>
+                        <pre className="text-sm text-gray-300 overflow-x-auto pr-12">
+                          <code>{`// 💳 EXEMPLOS PRÁTICOS DE PAGAMENTOS
+
+// PIX Instantâneo
+function gerarPIX(valor) {
+  // Sua lógica de PIX aqui...
+  
+  // 🎯 ADICIONE ESTA LINHA PARA RASTREAR:
+  window.queridosAnalytics.trackPayment(
+    "R$ " + valor.toFixed(2).replace('.', ','),
+    "PIX",
+    "Produto/Serviço",
+    "Gerado"
+  );
+}
+
+// Cartão de Crédito
+function processarCartao(valor, parcelas) {
+  // Sua lógica de cartão aqui...
+  
+  // 🎯 ADICIONE ESTA LINHA PARA RASTREAR:
+  window.queridosAnalytics.trackPayment(
+    "R$ " + valor.toFixed(2).replace('.', ','),
+    "Cartão " + parcelas + "x",
+    "Compra parcelada",
+    "Processando"
+  );
+}
+
+// 🧪 TESTE RÁPIDO NO CONSOLE:
+window.queridosAnalytics.trackPayment("R$ 99,90", "PIX", "Teste", "Gerado");`}</code>
+                        </pre>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="bg-gray-800/50 backdrop-blur-lg border-gray-700">
+                    <CardHeader>
+                      <CardTitle className="text-white flex items-center space-x-2">
+                        <QrCode className="h-6 w-6 text-purple-400" />
+                        <span>📱 Exemplos: Rastrear QR Codes</span>
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="bg-gray-900/80 rounded-lg p-4 relative">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="absolute top-2 right-2 text-gray-400 border-gray-600 hover:bg-gray-700"
+                          onClick={() => copyToClipboard(`// 📱 EXEMPLOS PRÁTICOS DE QR CODES
+
+// QR Code de URL/Site
+function gerarQRURL(url, titulo) {
+  // Sua lógica de QR aqui...
+  
+  // 🎯 ADICIONE ESTA LINHA PARA RASTREAR:
+  window.queridosAnalytics.trackQRCode(
+    titulo || "QR Code URL",
+    url,
+    "url"
+  );
+}
+
+// QR Code de PIX
+function gerarQRPIX(valor, descricao) {
+  // Sua lógica de QR PIX aqui...
+  
+  // 🎯 ADICIONE ESTA LINHA PARA RASTREAR:
+  window.queridosAnalytics.trackQRCode(
+    "PIX: " + descricao,
+    "R$ " + valor.toFixed(2).replace('.', ','),
+    "pagamento"
+  );
+}
+
+// QR Code de Contato
+function gerarQRContato(nome, telefone) {
+  // 🎯 ADICIONE ESTA LINHA PARA RASTREAR:
+  window.queridosAnalytics.trackQRCode(
+    "Contato: " + nome,
+    telefone,
+    "contato"
+  );
+}
+
+// 🧪 TESTE RÁPIDO NO CONSOLE:
+window.queridosAnalytics.trackQRCode("QR Teste", "https://meusite.com", "url");`, "Exemplos de QR codes copiados!")}
+                        >
+                          <Copy className="h-4 w-4" />
+                        </Button>
+                        <pre className="text-sm text-gray-300 overflow-x-auto pr-12">
+                          <code>{`// 📱 EXEMPLOS PRÁTICOS DE QR CODES
+
+// QR Code de URL/Site
+function gerarQRURL(url, titulo) {
+  // Sua lógica de QR aqui...
+  
+  // 🎯 ADICIONE ESTA LINHA PARA RASTREAR:
+  window.queridosAnalytics.trackQRCode(
+    titulo || "QR Code URL",
+    url,
+    "url"
+  );
+}
+
+// QR Code de PIX
+function gerarQRPIX(valor, descricao) {
+  // Sua lógica de QR PIX aqui...
+  
+  // 🎯 ADICIONE ESTA LINHA PARA RASTREAR:
+  window.queridosAnalytics.trackQRCode(
+    "PIX: " + descricao,
+    "R$ " + valor.toFixed(2).replace('.', ','),
+    "pagamento"
+  );
+}
+
+// 🧪 TESTE RÁPIDO NO CONSOLE:
+window.queridosAnalytics.trackQRCode("QR Teste", "https://meusite.com", "url");`}</code>
+                        </pre>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              </TabsContent>
+
+              {/* INTEGRAÇÃO COM PLATAFORMAS */}
+              <TabsContent value="platforms" className="space-y-8">
                 <Card className="bg-gray-800/50 backdrop-blur-lg border-gray-700">
                   <CardHeader>
                     <CardTitle className="text-white flex items-center space-x-2">
-                      <CreditCard className="h-6 w-6 text-blue-400" />
-                      <span>💳 Tracking Avançado de Pagamentos</span>
+                      <Globe className="h-6 w-6 text-blue-400" />
+                      <span>🌐 Como Instalar em Cada Plataforma</span>
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-6">
-                    <div className="grid gap-4">
-                      <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4">
-                        <h4 className="text-blue-300 font-semibold mb-3">📊 Métodos de Pagamento Suportados</h4>
-                        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                          {[
-                            "PIX (Instantâneo/Agendado)",
-                            "Cartão Crédito/Débito",
-                            "Boleto Bancário",
-                            "Mercado Pago",
-                            "PagSeguro",
-                            "Stripe Internacional"
-                          ].map((method, index) => (
-                            <div key={index} className="flex items-center space-x-2 bg-gray-700/50 rounded p-2">
-                              <CheckCircle className="h-4 w-4 text-green-400" />
-                              <span className="text-sm text-gray-300">{method}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-
+                  <CardContent className="space-y-4">
                     <div className="bg-gray-900/80 rounded-lg p-4 relative">
                       <Button
                         size="sm"
                         variant="outline"
                         className="absolute top-2 right-2 text-gray-400 border-gray-600 hover:bg-gray-700"
-                        onClick={() => copyToClipboard(paymentsTrackingExamples, "Exemplos de pagamentos copiados!")}
+                        onClick={() => copyToClipboard(platformIntegration, "Guia de plataformas copiado!")}
                       >
                         <Copy className="h-4 w-4" />
                       </Button>
-                      <pre className="text-sm text-gray-300 overflow-x-auto pr-12 max-h-96">
-                        <code>{paymentsTrackingExamples}</code>
+                      <pre className="text-sm text-gray-300 overflow-x-auto pr-12 max-h-96 whitespace-pre-wrap">
+                        <code>{platformIntegration}</code>
                       </pre>
                     </div>
                   </CardContent>
                 </Card>
               </TabsContent>
 
-              {/* QR CODES */}
-              <TabsContent value="qrcodes" className="space-y-8">
+              {/* FAQ */}
+              <TabsContent value="faq" className="space-y-8">
                 <Card className="bg-gray-800/50 backdrop-blur-lg border-gray-700">
                   <CardHeader>
                     <CardTitle className="text-white flex items-center space-x-2">
-                      <QrCode className="h-6 w-6 text-purple-400" />
-                      <span>📱 Tracking Avançado de QR Codes</span>
+                      <HelpCircle className="h-6 w-6 text-yellow-400" />
+                      <span>❓ Perguntas Frequentes</span>
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-6">
-                    <div className="grid gap-4">
-                      <div className="bg-purple-500/10 border border-purple-500/30 rounded-lg p-4">
-                        <h4 className="text-purple-300 font-semibold mb-3">📊 Tipos de QR Code Suportados</h4>
-                        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                          {[
-                            "URL/Website",
-                            "Contato (vCard)",
-                            "Produto/Serviço",
-                            "Pagamento PIX",
-                            "Texto Simples",
-                            "WiFi"
-                          ].map((type, index) => (
-                            <div key={index} className="flex items-center space-x-2 bg-gray-700/50 rounded p-2">
-                              <CheckCircle className="h-4 w-4 text-purple-400" />
-                              <span className="text-sm text-gray-300">{type}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-
+                  <CardContent className="space-y-4">
                     <div className="bg-gray-900/80 rounded-lg p-4 relative">
                       <Button
                         size="sm"
                         variant="outline"
                         className="absolute top-2 right-2 text-gray-400 border-gray-600 hover:bg-gray-700"
-                        onClick={() => copyToClipboard(qrCodeTrackingExamples, "Exemplos de QR codes copiados!")}
+                        onClick={() => copyToClipboard(faqContent, "FAQ copiado!")}
                       >
                         <Copy className="h-4 w-4" />
                       </Button>
-                      <pre className="text-sm text-gray-300 overflow-x-auto pr-12 max-h-96">
-                        <code>{qrCodeTrackingExamples}</code>
+                      <pre className="text-sm text-gray-300 overflow-x-auto pr-12 whitespace-pre-wrap">
+                        <code>{faqContent}</code>
                       </pre>
                     </div>
                   </CardContent>
                 </Card>
               </TabsContent>
 
-              {/* IMPLEMENTAÇÃO */}
-              <TabsContent value="implementation" className="space-y-8">
+              {/* TROUBLESHOOTING */}
+              <TabsContent value="troubleshooting" className="space-y-8">
                 <Card className="bg-gray-800/50 backdrop-blur-lg border-gray-700">
                   <CardHeader>
                     <CardTitle className="text-white flex items-center space-x-2">
-                      <Wrench className="h-6 w-6 text-orange-400" />
-                      <span>🔧 Implementação Prática</span>
+                      <Wrench className="h-6 w-6 text-red-400" />
+                      <span>🔧 Resolução de Problemas</span>
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-6">
-                    <div className="bg-orange-500/10 border border-orange-500/30 rounded-lg p-4">
-                      <h4 className="text-orange-300 font-semibold mb-3">📝 Passo a Passo da Implementação</h4>
-                      <ol className="text-sm text-gray-300 space-y-2 list-decimal list-inside">
-                        <li>Adicionar Script no layout.tsx com strategy="beforeInteractive"</li>
-                        <li>Criar arquivo types/analytics.d.ts com declarações TypeScript</li>
-                        <li>Integrar nas páginas com setTimeout de 1000ms</li>
-                        <li>Sempre verificar se window.queridosAnalytics existe</li>
-                        <li>Testar no console do navegador</li>
-                        <li>Verificar dados no Firebase Console</li>
-                      </ol>
+                  <CardContent className="space-y-4">
+                    <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-4">
+                      <p className="text-red-300 text-sm">
+                        🚨 <strong>Problemas comuns e suas soluções</strong> - Se algo não funcionar, as respostas estão aqui!
+                      </p>
                     </div>
-
+                    
                     <div className="bg-gray-900/80 rounded-lg p-4 relative">
                       <Button
                         size="sm"
                         variant="outline"
                         className="absolute top-2 right-2 text-gray-400 border-gray-600 hover:bg-gray-700"
-                        onClick={() => copyToClipboard(nextJsImplementation, "Código de implementação copiado!")}
+                        onClick={() => copyToClipboard(troubleshootingGuide, "Guia de troubleshooting copiado!")}
                       >
                         <Copy className="h-4 w-4" />
                       </Button>
-                      <pre className="text-sm text-gray-300 overflow-x-auto pr-12 max-h-96">
-                        <code>{nextJsImplementation}</code>
+                      <pre className="text-sm text-gray-300 overflow-x-auto pr-12 max-h-96 whitespace-pre-wrap">
+                        <code>{troubleshootingGuide}</code>
                       </pre>
                     </div>
                   </CardContent>
                 </Card>
               </TabsContent>
 
-              {/* MONITORAMENTO */}
-              <TabsContent value="monitoring" className="space-y-8">
-                <Card className="bg-gray-800/50 backdrop-blur-lg border-gray-700">
-                  <CardHeader>
-                    <CardTitle className="text-white flex items-center space-x-2">
-                      <Monitor className="h-6 w-6 text-cyan-400" />
-                      <span>📊 Monitoramento e Dashboard</span>
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-6">
-                    <div className="grid gap-4">
-                      <div className="bg-cyan-500/10 border border-cyan-500/30 rounded-lg p-4">
-                        <h4 className="text-cyan-300 font-semibold mb-3">📈 Métricas Importantes</h4>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                          {[
-                            "Visitantes Online em Tempo Real",
-                            "Faturamento do Dia",
-                            "QR Codes Gerados/Escaneados",
-                            "Conversão de Pagamentos",
-                            "Localização dos Usuários",
-                            "Picos de Tráfego"
-                          ].map((metric, index) => (
-                            <div key={index} className="flex items-center space-x-2 bg-gray-700/50 rounded p-2">
-                              <LineChart className="h-4 w-4 text-cyan-400" />
-                              <span className="text-sm text-gray-300">{metric}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="bg-gray-900/80 rounded-lg p-4 relative">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="absolute top-2 right-2 text-gray-400 border-gray-600 hover:bg-gray-700"
-                        onClick={() => copyToClipboard(testingCommands, "Código de monitoramento copiado!")}
-                      >
-                        <Copy className="h-4 w-4" />
-                      </Button>
-                      <pre className="text-sm text-gray-300 overflow-x-auto pr-12 max-h-96">
-                        <code>{testingCommands}</code>
-                      </pre>
-                    </div>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-
-              {/* APIS */}
-              <TabsContent value="apis" className="space-y-8">
-                <Card className="bg-gray-800/50 backdrop-blur-lg border-gray-700">
-                  <CardHeader>
-                    <CardTitle className="text-white flex items-center space-x-2">
-                      <Webhook className="h-6 w-6 text-green-400" />
-                      <span>🔌 APIs e Webhooks</span>
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-6">
-                    <div className="grid gap-4">
-                      <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-4">
-                        <h4 className="text-green-300 font-semibold mb-3">🔗 Integrações Disponíveis</h4>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                          {[
-                            "Webhooks Zapier",
-                            "Notificações Slack",
-                            "Google Analytics",
-                            "Relatórios Automatizados",
-                            "Email Notifications",
-                            "Discord Webhooks"
-                          ].map((integration, index) => (
-                            <div key={index} className="flex items-center space-x-2 bg-gray-700/50 rounded p-2">
-                              <Webhook className="h-4 w-4 text-green-400" />
-                              <span className="text-sm text-gray-300">{integration}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="bg-gray-900/80 rounded-lg p-4 relative">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="absolute top-2 right-2 text-gray-400 border-gray-600 hover:bg-gray-700"
-                        onClick={() => copyToClipboard(personalizedScripts, "Scripts atualizados copiados!")}
-                      >
-                        <Copy className="h-4 w-4" />
-                      </Button>
-                      <pre className="text-sm text-gray-300 overflow-x-auto pr-12 max-h-96">
-                        <code>{personalizedScripts}</code>
-                      </pre>
-                    </div>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-
-              {/* SCRIPTS PERSONALIZADOS */}
-              <TabsContent value="scripts" className="space-y-8">
-                <Card className="bg-gray-800/50 backdrop-blur-lg border-gray-700">
-                  <CardHeader>
-                    <CardTitle className="text-white flex items-center space-x-2">
-                      <Settings className="h-6 w-6 text-yellow-400" />
-                      <span>⚙️ Scripts Personalizados Atualizados</span>
-                      <Badge className="bg-yellow-500/20 text-yellow-300">✨ Domínio Automático</Badge>
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-6">
-                    <div className="grid gap-4">
-                      <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-4">
-                        <h4 className="text-yellow-300 font-semibold mb-3">🎯 Configurações Atualizadas</h4>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                          {[
-                            "✨ Detecção Automática de Domínio",
-                            "✅ Campo 'domain' em Todos Eventos",
-                            "🔄 Compatibilidade com Scripts Antigos",
-                            "📊 Filtro por Site 100% Funcional",
-                            "🐛 Debug e Logs Melhorados",
-                            "⚡ Performance Otimizada"
-                          ].map((config, index) => (
-                            <div key={index} className="flex items-center space-x-2 bg-gray-700/50 rounded p-2">
-                              <Settings className="h-4 w-4 text-yellow-400" />
-                              <span className="text-sm text-gray-300">{config}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="bg-gray-900/80 rounded-lg p-4 relative">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="absolute top-2 right-2 text-gray-400 border-gray-600 hover:bg-gray-700"
-                        onClick={() => copyToClipboard(personalizedScripts, "Scripts atualizados copiados!")}
-                      >
-                        <Copy className="h-4 w-4" />
-                      </Button>
-                      <pre className="text-sm text-gray-300 overflow-x-auto pr-12 max-h-96">
-                        <code>{personalizedScripts}</code>
-                      </pre>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                {/* Como Testar */}
+              {/* TESTE */}
+              <TabsContent value="test" className="space-y-8">
                 <Card className="bg-gray-800/50 backdrop-blur-lg border-gray-700">
                   <CardHeader>
                     <CardTitle className="text-white flex items-center space-x-2">
                       <TestTube className="h-6 w-6 text-green-400" />
-                      <span>🧪 Como Testar</span>
+                      <span>🧪 Como Testar se Está Funcionando</span>
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="bg-gray-900/80 rounded-lg p-4 relative">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="absolute top-2 right-2 text-gray-400 border-gray-600 hover:bg-gray-700"
-                        onClick={() => copyToClipboard(testingCommands, "Comandos de teste copiados!")}
-                      >
-                        <Copy className="h-4 w-4" />
-                      </Button>
-                      <pre className="text-sm text-gray-300 overflow-x-auto pr-12">
-                        <code>{testingCommands}</code>
-                      </pre>
+                  <CardContent className="space-y-6">
+                    <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-4">
+                      <h4 className="text-green-300 font-semibold mb-3">✅ Teste Rápido (Cole no Console)</h4>
+                      <div className="bg-gray-900/80 rounded-lg p-3">
+                        <code className="text-green-300">window.queridosAnalytics.test()</code>
+                      </div>
+                      <p className="text-sm text-gray-400 mt-2">
+                        Deve aparecer: "✅ Eventos de teste enviados!"
+                      </p>
                     </div>
-                  </CardContent>
-                </Card>
 
-                {/* Estrutura Firebase */}
-                <Card className="bg-gray-800/50 backdrop-blur-lg border-gray-700">
-                  <CardHeader>
-                    <CardTitle className="text-white flex items-center space-x-2">
-                      <Database className="h-6 w-6 text-cyan-400" />
-                      <span>🔍 Estrutura do Firebase</span>
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="bg-gray-900/80 rounded-lg p-4 relative">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="absolute top-2 right-2 text-gray-400 border-gray-600 hover:bg-gray-700"
-                        onClick={() => copyToClipboard(`backend-69215-default-rtdb/
-├── visitors/
-│   └── session_abc123_1234567890/
-│       ├── sessionId: "session_abc123_1234567890"
-│       ├── ip: "177.45.123.45"
-│       ├── country: "Brazil"
-│       ├── city: "São Paulo"
-│       ├── state: "São Paulo"
-│       ├── status: "online"
-│       ├── userAgent: "Mozilla/5.0..."
-│       ├── url: "https://site.com"
-│       └── timestamp: ServerValue.TIMESTAMP
-│
-├── payments/
-│   └── 1704123456789_abc12/
-│       ├── amount: "R$ 150.00"
-│       ├── method: "PIX"
-│       ├── product: "Curso React"
-│       ├── status: "Gerado"
-│       ├── sessionId: "session_abc123_1234567890"
-│       ├── ip: "177.45.123.45"
-│       ├── country: "Brazil"
-│       └── timestamp: ServerValue.TIMESTAMP
-│
-└── qrcodes/
-    └── 1704123456789_def34/
-        ├── product: "QR Code URL"
-        ├── value: "https://exemplo.com"
-        ├── type: "url"
-        ├── sessionId: "session_abc123_1234567890"
-        ├── ip: "177.45.123.45"
-        └── timestamp: ServerValue.TIMESTAMP`, "Estrutura do Firebase copiada!")}
-                      >
-                        <Copy className="h-4 w-4" />
-                      </Button>
-                      <pre className="text-sm text-cyan-300 overflow-x-auto pr-12">
-                        <code>{`backend-69215-default-rtdb/
-├── visitors/
-│   └── session_abc123_1234567890/
-│       ├── sessionId: "session_abc123_1234567890"
-│       ├── ip: "177.45.123.45"
-│       ├── country: "Brazil"
-│       ├── city: "São Paulo"
-│       ├── state: "São Paulo"
-│       ├── status: "online"
-│       ├── userAgent: "Mozilla/5.0..."
-│       ├── url: "https://site.com"
-│       └── timestamp: ServerValue.TIMESTAMP
-│
-├── payments/
-│   └── 1704123456789_abc12/
-│       ├── amount: "R$ 150.00"
-│       ├── method: "PIX"
-│       ├── product: "Curso React"
-│       ├── status: "Gerado"
-│       ├── sessionId: "session_abc123_1234567890"
-│       ├── ip: "177.45.123.45"
-│       ├── country: "Brazil"
-│       └── timestamp: ServerValue.TIMESTAMP
-│
-└── qrcodes/
-    └── 1704123456789_def34/
-        ├── product: "QR Code URL"
-        ├── value: "https://exemplo.com"
-        ├── type: "url"
-        ├── sessionId: "session_abc123_1234567890"
-        ├── ip: "177.45.123.45"
-        └── timestamp: ServerValue.TIMESTAMP`}</code>
-                      </pre>
+                    <div className="grid gap-4">
+                      <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4">
+                        <h4 className="text-blue-300 font-semibold mb-2">🔍 Verificar se Script Carregou</h4>
+                        <div className="bg-gray-900/80 rounded-lg p-3">
+                          <code className="text-blue-300">console.log('Script carregado?', !!window.queridosAnalytics)</code>
+                        </div>
+                      </div>
+
+                      <div className="bg-purple-500/10 border border-purple-500/30 rounded-lg p-4">
+                        <h4 className="text-purple-300 font-semibold mb-2">🌐 Ver Domínio Detectado</h4>
+                        <div className="bg-gray-900/80 rounded-lg p-3">
+                          <code className="text-purple-300">window.queridosAnalytics.getCurrentDomain()</code>
+                        </div>
+                      </div>
+
+                      <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-4">
+                        <h4 className="text-yellow-300 font-semibold mb-2">💳 Testar Pagamento</h4>
+                        <div className="bg-gray-900/80 rounded-lg p-3">
+                          <code className="text-yellow-300">window.queridosAnalytics.trackPayment("R$ 99,90", "PIX", "Teste", "Gerado")</code>
+                        </div>
+                      </div>
+
+                      <div className="bg-pink-500/10 border border-pink-500/30 rounded-lg p-4">
+                        <h4 className="text-pink-300 font-semibold mb-2">📱 Testar QR Code</h4>
+                        <div className="bg-gray-900/80 rounded-lg p-3">
+                          <code className="text-pink-300">window.queridosAnalytics.trackQRCode("QR Teste", "https://teste.com", "url")</code>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="bg-gray-700/50 border border-gray-600 rounded-lg p-4">
+                      <h4 className="text-white font-semibold mb-3">📊 O que Verificar no Dashboard</h4>
+                      <ul className="space-y-2 text-sm text-gray-300">
+                        <li className="flex items-center space-x-2">
+                          <CheckCircle className="h-4 w-4 text-green-400" />
+                          <span>Aparecem visitantes online</span>
+                        </li>
+                        <li className="flex items-center space-x-2">
+                          <CheckCircle className="h-4 w-4 text-blue-400" />
+                          <span>Pagamentos de teste foram salvos</span>
+                        </li>
+                        <li className="flex items-center space-x-2">
+                          <CheckCircle className="h-4 w-4 text-purple-400" />
+                          <span>QR codes de teste aparecem</span>
+                        </li>
+                        <li className="flex items-center space-x-2">
+                          <CheckCircle className="h-4 w-4 text-yellow-400" />
+                          <span>Filtro por site funcionando</span>
+                        </li>
+                      </ul>
                     </div>
                   </CardContent>
                 </Card>
               </TabsContent>
             </Tabs>
 
-            {/* Footer atualizado */}
+            {/* Footer */}
             <Card className="bg-gradient-to-r from-green-500/10 to-blue-500/10 border-green-500/30 mt-8">
               <CardHeader>
                 <CardTitle className="text-white flex items-center space-x-2">
                   <CheckCircle className="h-6 w-6 text-green-400" />
-                  <span>🎉 Resultado Final - Script Atualizado</span>
+                  <span>🎉 Pronto! Seu Site Está Rastreado</span>
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <p className="text-lg text-gray-300 mb-4">Com o script atualizado, o sistema agora:</p>
+                <p className="text-lg text-gray-300 mb-4">
+                  Após seguir este tutorial, seu site terá:
+                </p>
                 <div className="grid gap-3">
                   {[
-                    "✨ Detecta o domínio automaticamente sem configuração manual",
-                    "🎯 Inclui campo 'domain' em todos os eventos (visit, payment, qrcode, offline)",
-                    "📊 Filtra dados corretamente por site no dashboard",
-                    "🔄 Mantém compatibilidade com scripts antigos",
-                    "📍 Detecta visitantes únicos com IP e localização reais",
-                    "💳 Rastreia pagamentos com valores e métodos específicos",
-                    "📱 Monitora geração e acesso de QR codes por tipo",
-                    "⚡ Mantém usuários online em tempo real",
-                    "🔥 Armazena tudo no Firebase automaticamente",
-                    "🔌 Oferece APIs para integrações avançadas"
+                    "✨ Detecção automática de visitantes com localização real",
+                    "💳 Rastreamento completo de pagamentos por método",
+                    "📱 Monitoramento de QR codes por tipo e uso",
+                    "🌐 Filtro automático por domínio (multi-site)",
+                    "⚡ Dados em tempo real no dashboard",
+                    "🔄 Sistema 100% automático e funcional"
                   ].map((item, index) => (
                     <div key={index} className="flex items-center space-x-3">
                       <CheckCircle className="h-5 w-5 text-green-400 flex-shrink-0" />
@@ -1086,7 +1024,7 @@ const migrationInstructions = \`
                 </div>
                 <div className="mt-6 p-4 bg-green-500/20 border border-green-500/30 rounded-lg">
                   <p className="text-green-300 font-semibold text-center">
-                    🚀 Sistema completo com filtro por domínio funcionando perfeitamente!
+                    🚀 Analytics profissional implementado em minutos!
                   </p>
                 </div>
               </CardContent>
