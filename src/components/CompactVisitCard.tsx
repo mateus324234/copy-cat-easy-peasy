@@ -53,9 +53,12 @@ export const CompactVisitCard = ({ visit }: CompactVisitCardProps) => {
   const browser = getBrowserFromUserAgent(visit.userAgent);
 
   return (
-    <div className="bg-gray-700/30 border-l-4 border-blue-500 px-3 py-2 text-sm">
+    <div className="relative overflow-hidden bg-gray-700/30 border-l-4 border-blue-500 rounded-xl px-4 py-3 text-sm hover:bg-gray-700/40 transition-all duration-300 hover:shadow-lg hover:shadow-blue-500/20">
+      {/* Shimmer Effect */}
+      <div className="absolute inset-0 -translate-x-full animate-[shimmer_2s_infinite] bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
+      
       {/* Primeira linha: Bandeira + Localização + Status + Data */}
-      <div className="flex items-center justify-between">
+      <div className="relative z-10 flex items-center justify-between">
         <div className="flex items-center space-x-2">
           {countryCode && (
             <CountryFlag 
@@ -89,7 +92,7 @@ export const CompactVisitCard = ({ visit }: CompactVisitCardProps) => {
       </div>
 
       {/* Segunda linha: Desktop + Browser + IP */}
-      <div className="flex items-center justify-between mt-1">
+      <div className="relative z-10 flex items-center justify-between mt-1">
         <div className="flex items-center space-x-4">
           <div className="flex items-center space-x-1 text-gray-400">
             <Monitor className="h-3 w-3" />

@@ -94,9 +94,12 @@ export const CompactQRCard = ({ qr }: CompactQRCardProps) => {
   const countryCode = getCountryCode(country);
 
   return (
-    <div className="bg-gray-700/30 border-l-4 border-orange-500 px-4 py-3 text-sm hover:bg-gray-700/40 transition-colors">
+    <div className="relative overflow-hidden bg-gray-700/30 border-l-4 border-orange-500 rounded-xl px-4 py-3 text-sm hover:bg-gray-700/40 transition-all duration-300 hover:shadow-lg hover:shadow-orange-500/20">
+      {/* Shimmer Effect */}
+      <div className="absolute inset-0 -translate-x-full animate-[shimmer_2s_infinite] bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
+      
       {/* Primeira linha: Localização + Tipo + Status */}
-      <div className="flex items-center justify-between mb-2">
+      <div className="relative z-10 flex items-center justify-between mb-2">
         <div className="flex items-center space-x-3">
           <CountryFlag 
             countryCode={countryCode} 
@@ -124,7 +127,7 @@ export const CompactQRCard = ({ qr }: CompactQRCardProps) => {
       </div>
 
       {/* Segunda linha: Produto + Valor + Cliente + Data */}
-      <div className="flex items-center justify-between text-xs">
+      <div className="relative z-10 flex items-center justify-between text-xs">
         <div className="flex items-center space-x-4">
           <div className="flex items-center space-x-1 text-orange-400">
             <Package className="h-3 w-3" />
