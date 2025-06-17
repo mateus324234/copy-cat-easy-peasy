@@ -1,3 +1,4 @@
+
 import { Card, CardContent } from "@/components/ui/card";
 import { CompactVisitCard } from "./CompactVisitCard";
 import { CompactPaymentCard } from "./CompactPaymentCard";
@@ -86,13 +87,17 @@ export const ExpandedCardContent = ({ cardType }: ExpandedCardContentProps) => {
     }
   };
 
-  const renderHeader = (title: string, icon: any, count: number) => {
+  const renderHeader = (title: string, icon: any, count: number, siteName?: string) => {
     const Icon = icon;
+    const displayTitle = siteName && selectedSite !== 'todos' 
+      ? `${title} (${count}) - ${siteName}`
+      : `${title} (${count})`;
+      
     return (
       <div className="flex items-center justify-between mb-6">
         <h3 className="text-xl font-bold text-white flex items-center space-x-2">
           <Icon className="h-5 w-5 text-blue-400" />
-          <span>{title} ({count})</span>
+          <span>{displayTitle}</span>
         </h3>
         
         <AlertDialog>
@@ -322,7 +327,7 @@ export const ExpandedCardContent = ({ cardType }: ExpandedCardContentProps) => {
 
     return (
       <div className="space-y-6">
-        {renderHeader("Pagamentos", CreditCard, paymentsArray.length)}
+        {renderHeader("Pagamentos", CreditCard, totalItems, selectedSite !== 'todos' ? selectedSite : undefined)}
         
         <SiteFilter
           sites={sites}
@@ -376,7 +381,7 @@ export const ExpandedCardContent = ({ cardType }: ExpandedCardContentProps) => {
 
     return (
       <div className="space-y-6">
-        {renderHeader("QR Codes", QrCode, qrcodesArray.length)}
+        {renderHeader("QR Codes", QrCode, totalItems, selectedSite !== 'todos' ? selectedSite : undefined)}
         
         <SiteFilter
           sites={sites}
