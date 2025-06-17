@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef } from 'react';
 import { listenToRealtimeData, clearData } from '@/services/firebase';
 import { useSite } from '@/context/SiteContext';
@@ -359,7 +360,7 @@ export const useRealtimeData = () => {
   console.log(`[useRealtimeData] Calculando total de pagamentos...`);
   console.log(`[useRealtimeData] Dados de pagamentos:`, safeFilteredPayments);
   
-  const paymentTotal: number = Object.values(safeFilteredPayments).reduce((sum: number, payment: any): number => {
+  const paymentTotal = (Object.values(safeFilteredPayments) as any[]).reduce((sum: number, payment: any): number => {
     // Validação robusta de segurança
     if (!payment || typeof payment !== 'object' || Array.isArray(payment)) {
       console.warn(`[useRealtimeData] Pagamento inválido:`, payment);
