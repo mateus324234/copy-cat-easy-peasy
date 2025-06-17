@@ -167,13 +167,25 @@ export function initializeTracking() {
         document.addEventListener(event, resetActivityTimer, true);
       });
 
+      // Melhor detecção para mobile
       document.addEventListener('visibilitychange', function() {
         if (document.hidden) {
-          console.log('[Tracking] Aba ficou oculta');
+          console.log('[Tracking] Aba ficou oculta (mobile/desktop)');
           isActive = false;
           stopOnlinePing();
+          // Timeout de segurança para mobile - marcar offline após 5 segundos se continuar oculto
+          setTimeout(() => {
+            if (document.hidden && isOnline) {
+              console.log('[Tracking] Timeout mobile - marcando como offline');
+              setOffline();
+            }
+          }, 5000);
         } else {
           console.log('[Tracking] Aba voltou ao foco');
+          if (!isOnline) {
+            isOnline = true;
+            console.log('[Tracking] Voltou online após visibilitychange');
+          }
           resetActivityTimer();
         }
       });
@@ -213,24 +225,22 @@ export function initializeTracking() {
       }
     }
 
-    // Marcar como offline com sendBeacon
+    // Marcar como offline - CORRIGIDO para mobile
     async function setOffline() {
       if (isOnline) {
         isOnline = false;
         stopOnlinePing();
         
+        console.log('[Tracking] Marcando usuário como offline');
+        
         try {
-          // Usar sendBeacon para garantir envio
-          if (navigator.sendBeacon) {
-            const payload = JSON.stringify({
-              sessionId: SESSION_ID,
-              status: 'offline'
-            });
-            navigator.sendBeacon('/api/tracking/offline', payload);
-          }
-          
-          // Fallback para fetch normal
-          await sendTracking('offline', { sessionId: SESSION_ID });
+          // Usar apenas Firebase - removido sendBeacon com URL inválida
+          await sendTracking('offline', { 
+            sessionId: SESSION_ID,
+            status: 'offline',
+            timestamp: Date.now()
+          });
+          console.log('[Tracking] Offline registrado com sucesso');
         } catch (error) {
           console.error('[Tracking] Erro ao marcar offline:', error);
         }
@@ -334,10 +344,23 @@ export function initializeTracking() {
       }
     };
 
-    // Event listeners para fechamento
+    // Event listeners para fechamento - MELHORADO para mobile
     window.addEventListener('beforeunload', setOffline);
     window.addEventListener('unload', setOffline);
-    window.addEventListener('pagehide', setOffline);
+    window.addEventListener('pagehide', setOffline); // Crucial para mobile
+    
+    // Listener adicional para mobile quando app vai para background
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) {
+        // Aguardar um pouco antes de marcar offline para evitar falsos positivos
+        setTimeout(() => {
+          if (document.hidden && isOnline) {
+            console.log('[Tracking] Mobile detectou app em background - marcando offline');
+            setOffline();
+          }
+        }, 3000);
+      }
+    });
 
     // Inicialização
     async function init() {
@@ -348,6 +371,7 @@ export function initializeTracking() {
       console.log('[Tracking] Sistema iniciado');
       console.log('[Tracking] Session ID:', SESSION_ID);
       console.log('[Tracking] APIs disponíveis: trackingAPI.payment(), trackingAPI.qrcode()');
+      console.log('[Tracking] Mobile offline detection: ATIVADO');
     }
 
     // Aguardar carregamento
