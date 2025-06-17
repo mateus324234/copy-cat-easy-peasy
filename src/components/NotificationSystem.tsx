@@ -30,22 +30,17 @@ export const NotificationSystem = ({ onNewVisit, onNewPayment, onNewQRCode }: No
   const timeoutRefs = useRef<{ [key: string]: NodeJS.Timeout }>({});
   const sessionStartTimeRef = useRef<number>(Date.now());
 
-  // Inicializar timestamp da sessão
+  // Inicializar timestamp da sessão APENAS para a sessão atual
   useEffect(() => {
-    const sessionKey = 'dashboard_session_start';
-    const existingSession = sessionStorage.getItem(sessionKey);
+    // Sempre criar uma nova sessão a cada carregamento da página
+    const now = Date.now();
+    sessionStartTimeRef.current = now;
     
-    if (!existingSession) {
-      // Nova sessão - marcar timestamp
-      const now = Date.now();
-      sessionStartTimeRef.current = now;
-      sessionStorage.setItem(sessionKey, now.toString());
-      console.log('[NotificationSystem] Nova sessão iniciada:', new Date(now).toLocaleString());
-    } else {
-      // Sessão existente - usar timestamp anterior
-      sessionStartTimeRef.current = parseInt(existingSession);
-      console.log('[NotificationSystem] Sessão existente:', new Date(sessionStartTimeRef.current).toLocaleString());
-    }
+    // Limpar qualquer timestamp anterior para garantir nova sessão
+    sessionStorage.removeItem('dashboard_session_start');
+    sessionStorage.setItem('dashboard_session_start', now.toString());
+    
+    console.log('[NotificationSystem] Nova sessão iniciada - bloqueando notificações anteriores:', new Date(now).toLocaleString());
   }, []);
 
   const playNotificationSound = () => {
@@ -77,8 +72,15 @@ export const NotificationSystem = ({ onNewVisit, onNewPayment, onNewQRCode }: No
   const addNotification = (notification: Omit<Notification, 'id' | 'timestamp' | 'count'>, uniqueId: string, eventTimestamp?: number) => {
     const now = Date.now();
     
+    // BLOQUEIO RIGOROSO: qualquer evento anterior ao carregamento da página atual é rejeitado
     if (eventTimestamp && eventTimestamp <= sessionStartTimeRef.current) {
-      console.log('[NotificationSystem] Evento anterior à sessão, ignorando:', new Date(eventTimestamp).toLocaleString());
+      console.log('[NotificationSystem] Evento anterior à sessão atual, ignorando:', new Date(eventTimestamp).toLocaleString());
+      return;
+    }
+    
+    // Se não há timestamp do evento, considerar apenas se for muito recente (últimos 2 segundos)
+    if (!eventTimestamp && (now - sessionStartTimeRef.current) > 2000) {
+      console.log('[NotificationSystem] Evento sem timestamp após início da sessão, ignorando');
       return;
     }
     
@@ -290,7 +292,7 @@ export const NotificationSystem = ({ onNewVisit, onNewPayment, onNewQRCode }: No
             key={notification.id}
             className={`p-4 rounded-xl border backdrop-blur-lg shadow-xl animate-fade-in ${getNotificationColor(notification.type)}`}
             style={{ 
-              transform: `translateY(${index * -4}px)`,
+              transform: `translateY(${index * -12}px)`,
               zIndex: 50 - index 
             }}
           >

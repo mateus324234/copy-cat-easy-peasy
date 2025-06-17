@@ -1,4 +1,3 @@
-
 import { CountryFlag } from "./CountryFlag";
 import { Clock, Monitor } from "lucide-react";
 
@@ -53,9 +52,11 @@ export const CompactVisitCard = ({ visit }: CompactVisitCardProps) => {
   const browser = getBrowserFromUserAgent(visit.userAgent);
 
   return (
-    <div className="relative overflow-hidden bg-gray-700/30 border-l-4 border-blue-500 rounded-xl px-4 py-3 text-sm hover:bg-gray-700/40 transition-all duration-300 hover:shadow-lg hover:shadow-blue-500/20">
+    <div className="relative overflow-hidden bg-gray-700/30 border-l-4 border-blue-500 rounded-2xl px-4 py-3 text-sm hover:bg-gray-700/40 transition-all duration-300 hover:shadow-lg hover:shadow-blue-500/20">
       {/* Shimmer Effect */}
       <div className="absolute inset-0 -translate-x-full animate-[shimmer_2s_infinite] bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
+      
+      
       
       {/* Primeira linha: Bandeira + Localização + Status + Data */}
       <div className="relative z-10 flex items-center justify-between">
