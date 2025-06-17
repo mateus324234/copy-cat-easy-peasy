@@ -1,16 +1,16 @@
 
-export const generateStandaloneScript = (apiBaseUrl: string) => `
+export const generateStandaloneScript = (firebaseConfig: any) => `
 (function() {
   'use strict';
   
-  // 🎯 QUERIDOS ANALYTICS - SCRIPT STANDALONE
-  // Versão independente - funciona em qualquer site
+  // 🎯 QUERIDOS ANALYTICS - SCRIPT STANDALONE COM FIREBASE DIRETO
+  // Conecta diretamente ao Firebase - funciona em qualquer deploy
   
-  const API_BASE_URL = '${apiBaseUrl}';
+  const FIREBASE_CONFIG = ${JSON.stringify(firebaseConfig)};
   
   // Gerar UUID simples
   function generateUUID() {
-    return 'xxxx-4xxx-yxxx'.replace(/[xy]/g, function(c) {
+    return 'xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
       const r = Math.random() * 16 | 0;
       const v = c == 'x' ? r : (r & 0x3 | 0x8);
       return v.toString(16);
@@ -28,6 +28,39 @@ export const generateStandaloneScript = (apiBaseUrl: string) => `
   let isOnline = true;
   let pingInterval = null;
   const currentDomain = getCurrentDomain();
+  
+  // Inicializar Firebase
+  let database = null;
+  
+  function initFirebase() {
+    try {
+      // Importar Firebase dinamicamente
+      const script1 = document.createElement('script');
+      script1.src = 'https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js';
+      script1.onload = function() {
+        const script2 = document.createElement('script');
+        script2.src = 'https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js';
+        script2.onload = function() {
+          try {
+            if (!firebase.apps.length) {
+              firebase.initializeApp(FIREBASE_CONFIG);
+            }
+            database = firebase.database();
+            console.log('[Queridos Analytics] ✅ Firebase inicializado com sucesso');
+            
+            // Iniciar tracking após Firebase estar pronto
+            startTracking();
+          } catch (error) {
+            console.error('[Queridos Analytics] ❌ Erro ao inicializar Firebase:', error);
+          }
+        };
+        document.head.appendChild(script2);
+      };
+      document.head.appendChild(script1);
+    } catch (error) {
+      console.error('[Queridos Analytics] ❌ Erro ao carregar Firebase:', error);
+    }
+  }
   
   // Detectar localização via API
   async function detectLocation() {
@@ -51,39 +84,31 @@ export const generateStandaloneScript = (apiBaseUrl: string) => `
     }
   }
   
-  // Função para enviar eventos para API REAL
-  async function sendToAPI(endpoint, data) {
-    const fullUrl = API_BASE_URL + endpoint;
-    console.log('[Queridos Analytics] 📡 Enviando para API REAL:', fullUrl);
-    console.log('[Queridos Analytics] 📊 Dados:', data);
+  // Função para salvar dados diretamente no Firebase
+  async function saveToFirebase(path, data) {
+    if (!database) {
+      console.error('[Queridos Analytics] ❌ Firebase não inicializado');
+      return;
+    }
     
     try {
-      const response = await fetch(fullUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-        mode: 'cors' // Permitir CORS
-      });
+      console.log('[Queridos Analytics] 📡 Salvando no Firebase:', path, data);
       
-      console.log('[Queridos Analytics] 📡 Response status:', response.status);
-      
-      if (response.ok) {
-        const result = await response.json();
-        console.log('[Queridos Analytics] ✅ Evento enviado com sucesso:', endpoint, result);
-        return result;
+      if (path.includes('visitors/')) {
+        await database.ref(path).set(data);
       } else {
-        const errorText = await response.text();
-        console.warn('[Queridos Analytics] ⚠️ Erro HTTP:', response.status, errorText);
-        throw new Error(\`HTTP \${response.status}: \${errorText}\`);
+        // Para payments e qrcodes, usar push para gerar ID único
+        await database.ref(path).push(data);
       }
+      
+      console.log('[Queridos Analytics] ✅ Dados salvos com sucesso no Firebase');
     } catch (error) {
-      console.error('[Queridos Analytics] ❌ Erro de rede:', error);
-      // Tentar novamente após 5 segundos em caso de erro
+      console.error('[Queridos Analytics] ❌ Erro ao salvar no Firebase:', error);
+      
+      // Tentar novamente após 5 segundos
       setTimeout(() => {
-        console.log('[Queridos Analytics] 🔄 Tentando reenviar:', endpoint);
-        sendToAPI(endpoint, data);
+        console.log('[Queridos Analytics] 🔄 Tentando salvar novamente...');
+        saveToFirebase(path, data);
       }, 5000);
     }
   }
@@ -107,21 +132,63 @@ export const generateStandaloneScript = (apiBaseUrl: string) => `
     
     switch (eventType) {
       case 'visit':
-        await sendToAPI('/api/track/visit', { ...eventData, status: 'online', firstVisit: timestamp });
+        await saveToFirebase(\`visitors/\${sessionId}\`, { 
+          ...eventData, 
+          status: 'online', 
+          firstVisit: timestamp 
+        });
         break;
+        
       case 'online':
-        await sendToAPI('/api/track/online', { ...eventData, status: 'online', lastSeen: timestamp });
+        await saveToFirebase(\`visitors/\${sessionId}\`, { 
+          ...eventData, 
+          status: 'online', 
+          lastSeen: timestamp 
+        });
         break;
+        
       case 'offline':
-        await sendToAPI('/api/track/offline', { ...eventData, status: 'offline', lastSeen: timestamp });
+        if (database) {
+          await database.ref(\`visitors/\${sessionId}\`).update({
+            status: 'offline',
+            lastSeen: timestamp,
+            timestamp: timestamp
+          });
+        }
         break;
+        
       case 'payment':
-        await sendToAPI('/api/track/payment', eventData);
+        await saveToFirebase('payments', {
+          ...eventData,
+          paymentId: 'payment_' + generateUUID()
+        });
         break;
+        
       case 'qrcode':
-        await sendToAPI('/api/track/qrcode', eventData);
+        await saveToFirebase('qrcodes', {
+          ...eventData,
+          qrId: 'qr_' + generateUUID()
+        });
         break;
     }
+  }
+  
+  // Função para iniciar o tracking
+  async function startTracking() {
+    console.log('[Queridos Analytics] 🚀 Iniciando tracking...');
+    
+    await detectLocation();
+    console.log('[Queridos Analytics] 📍 Localização detectada, iniciando tracking...');
+    
+    // Registrar visita inicial
+    await trackEvent("visit");
+    
+    // Ping online a cada 30 segundos
+    pingInterval = setInterval(() => {
+      if (isOnline && database) {
+        trackEvent("online");
+      }
+    }, 30000);
   }
   
   // API pública para desenvolvedores
@@ -154,42 +221,30 @@ export const generateStandaloneScript = (apiBaseUrl: string) => `
     },
     
     test: function() {
-      console.log("🧪 TESTE QUERIDOS ANALYTICS - API REAL");
+      console.log("🧪 TESTE QUERIDOS ANALYTICS - FIREBASE DIRETO");
       console.log("Domínio:", currentDomain);
       console.log("Session:", sessionId);
-      console.log("API Base URL:", API_BASE_URL);
+      console.log("Firebase Config:", FIREBASE_CONFIG);
       this.trackPayment("R$ 99,90", "PIX", "Teste Pagamento", "Teste");
       this.trackQRCode("QR Teste", "https://teste.com", "url");
-      console.log("✅ Eventos de teste enviados para API REAL!");
+      console.log("✅ Eventos de teste enviados para Firebase!");
     }
   };
   
-  // Inicialização automática
-  console.log('[Queridos Analytics] 🚀 Inicializando com API REAL...');
-  console.log('[Queridos Analytics] 🌐 Domínio:', currentDomain);
-  console.log('[Queridos Analytics] 🔗 API URL:', API_BASE_URL);
-  
-  detectLocation().then(() => {
-    console.log('[Queridos Analytics] 📍 Localização detectada, iniciando tracking com API REAL...');
-    trackEvent("visit");
-    
-    // Ping online a cada 30 segundos
-    pingInterval = setInterval(() => {
-      if (isOnline) {
-        trackEvent("online");
-      }
-    }, 30000);
-  });
-  
   // Marcar como offline ao sair
   window.addEventListener("beforeunload", () => {
-    if (isOnline) {
+    if (isOnline && database) {
       isOnline = false;
       trackEvent("offline");
       if (pingInterval) clearInterval(pingInterval);
     }
   });
   
-  console.log('[Queridos Analytics] 🚀 Inicializado com API REAL - Domínio:', currentDomain);
+  // Inicialização
+  console.log('[Queridos Analytics] 🚀 Inicializando com Firebase direto...');
+  console.log('[Queridos Analytics] 🌐 Domínio:', currentDomain);
+  console.log('[Queridos Analytics] 🔥 Firebase Config:', FIREBASE_CONFIG);
+  
+  initFirebase();
 })();
 `;
