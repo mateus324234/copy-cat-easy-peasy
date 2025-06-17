@@ -31,11 +31,7 @@ const Dashboard = () => {
           </div>
         </div>
         
-        <NotificationSystem 
-          onNewVisit={(visitor) => console.log('New visit:', visitor)}
-          onNewPayment={(payment) => console.log('New payment:', payment)}
-          onNewQRCode={(qr) => console.log('New QR code:', qr)}
-        />
+        <NotificationSystem />
       </main>
     </div>
   );

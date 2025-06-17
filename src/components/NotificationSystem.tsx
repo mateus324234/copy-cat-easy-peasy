@@ -25,6 +25,7 @@ interface NotificationSystemProps {
 export const NotificationSystem = ({ onNewVisit, onNewPayment, onNewQRCode }: NotificationSystemProps) => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const processedItemsRef = useRef<Set<string>>(new Set());
+  const lastProcessedRef = useRef<{ [key: string]: number }>({});
 
   const playNotificationSound = () => {
     try {
@@ -49,21 +50,22 @@ export const NotificationSystem = ({ onNewVisit, onNewPayment, onNewQRCode }: No
       console.log('[NotificationSystem] Som reproduzido com sucesso!');
     } catch (error) {
       console.log('[NotificationSystem] Erro ao reproduzir som:', error);
-      
-      try {
-        const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmYeCC5+zPC4Gg');
-        audio.play();
-        console.log('[NotificationSystem] Som de fallback reproduzido!');
-      } catch (fallbackError) {
-        console.log('[NotificationSystem] Fallback de som também falhou:', fallbackError);
-      }
     }
   };
 
-  const addNotification = (notification: Omit<Notification, 'id' | 'timestamp'>, uniqueId?: string) => {
-    // Verificar se já processamos este item específico
-    if (uniqueId && processedItemsRef.current.has(uniqueId)) {
+  const addNotification = (notification: Omit<Notification, 'id' | 'timestamp'>, uniqueId: string) => {
+    const now = Date.now();
+    
+    // Verificar se já processamos este item recentemente (últimos 5 segundos)
+    if (processedItemsRef.current.has(uniqueId)) {
       console.log('[NotificationSystem] Item já processado, ignorando:', uniqueId);
+      return;
+    }
+
+    // Verificar se há um item similar processado recentemente
+    const lastProcessed = lastProcessedRef.current[uniqueId];
+    if (lastProcessed && (now - lastProcessed) < 5000) {
+      console.log('[NotificationSystem] Item processado recentemente, ignorando:', uniqueId);
       return;
     }
 
@@ -71,21 +73,26 @@ export const NotificationSystem = ({ onNewVisit, onNewPayment, onNewQRCode }: No
     
     const newNotification: Notification = {
       ...notification,
-      id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+      id: uniqueId + '_' + now,
       timestamp: new Date(),
     };
     
-    if (uniqueId) {
-      processedItemsRef.current.add(uniqueId);
-    }
+    processedItemsRef.current.add(uniqueId);
+    lastProcessedRef.current[uniqueId] = now;
     
-    setNotifications(prev => [newNotification, ...prev.slice(0, 4)]); // Keep only 5 notifications
+    setNotifications(prev => [...prev.slice(0, 4), newNotification]); // Keep only 5 notifications, newest at the end
     playNotificationSound();
     
     // Auto remove after 5 seconds
     setTimeout(() => {
       removeNotification(newNotification.id);
     }, 5000);
+
+    // Clean up old processed items after 10 seconds
+    setTimeout(() => {
+      processedItemsRef.current.delete(uniqueId);
+      delete lastProcessedRef.current[uniqueId];
+    }, 10000);
   };
 
   const removeNotification = (id: string) => {
@@ -127,7 +134,7 @@ export const NotificationSystem = ({ onNewVisit, onNewPayment, onNewQRCode }: No
     
     (window as any).notifyNewVisit = (visitor: any) => {
       console.log('[NotificationSystem] Recebendo notificação de visita:', visitor);
-      const uniqueId = `visit_${visitor.sessionId}_${visitor.timestamp}`;
+      const uniqueId = `visit_${visitor.sessionId || visitor.id}_${visitor.timestamp || Date.now()}`;
       addNotification({
         type: 'visit',
         title: 'Nova Visita',
@@ -141,7 +148,7 @@ export const NotificationSystem = ({ onNewVisit, onNewPayment, onNewQRCode }: No
     
     (window as any).notifyNewPayment = (payment: any) => {
       console.log('[NotificationSystem] Recebendo notificação de pagamento:', payment);
-      const uniqueId = `payment_${payment.sessionId}_${payment.timestamp}`;
+      const uniqueId = `payment_${payment.sessionId || payment.id}_${payment.timestamp || Date.now()}`;
       addNotification({
         type: 'payment',
         title: 'Novo Pagamento',
@@ -156,7 +163,7 @@ export const NotificationSystem = ({ onNewVisit, onNewPayment, onNewQRCode }: No
     
     (window as any).notifyNewQRCode = (qr: any) => {
       console.log('[NotificationSystem] Recebendo notificação de QR code:', qr);
-      const uniqueId = `qrcode_${qr.sessionId}_${qr.timestamp}`;
+      const uniqueId = `qrcode_${qr.sessionId || qr.id}_${qr.timestamp || Date.now()}`;
       addNotification({
         type: 'qrcode',
         title: 'QR Code Copiado',

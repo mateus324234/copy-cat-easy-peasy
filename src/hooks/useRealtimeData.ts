@@ -30,7 +30,11 @@ export const useRealtimeData = () => {
               const visitor = newVisitors[key];
               console.log(`[useRealtimeData] Disparando notificação para visitante:`, visitor);
               if ((window as any).notifyNewVisit) {
-                (window as any).notifyNewVisit(visitor);
+                (window as any).notifyNewVisit({
+                  ...visitor,
+                  sessionId: key,
+                  timestamp: visitor.timestamp || Date.now()
+                });
               }
             });
           }
@@ -52,7 +56,11 @@ export const useRealtimeData = () => {
               const payment = newPayments[key];
               console.log(`[useRealtimeData] Disparando notificação para pagamento:`, payment);
               if ((window as any).notifyNewPayment) {
-                (window as any).notifyNewPayment(payment);
+                (window as any).notifyNewPayment({
+                  ...payment,
+                  sessionId: key,
+                  timestamp: payment.timestamp || Date.now()
+                });
               }
             });
           }
@@ -74,7 +82,11 @@ export const useRealtimeData = () => {
               const qrcode = newQrcodes[key];
               console.log(`[useRealtimeData] Disparando notificação para QR code:`, qrcode);
               if ((window as any).notifyNewQRCode) {
-                (window as any).notifyNewQRCode(qrcode);
+                (window as any).notifyNewQRCode({
+                  ...qrcode,
+                  sessionId: key,
+                  timestamp: qrcode.timestamp || Date.now()
+                });
               }
             });
           }
@@ -97,7 +109,7 @@ export const useRealtimeData = () => {
   const totalPayments = Object.keys(payments).length;
   const totalQRCodes = Object.keys(qrcodes).length;
 
-  // Debug detalhado para pagamentos com parsing melhorado
+  // Melhorar o cálculo de pagamentos
   console.log(`[useRealtimeData] Calculando total de pagamentos...`);
   console.log(`[useRealtimeData] Dados de pagamentos:`, payments);
   
@@ -106,7 +118,7 @@ export const useRealtimeData = () => {
     
     let amount = 0;
     if (payment.amount) {
-      const amountStr = payment.amount.toString();
+      const amountStr = payment.amount.toString().trim();
       console.log(`[useRealtimeData] Valor original:`, amountStr);
       
       // Melhor parsing para valores monetários brasileiros
@@ -115,20 +127,14 @@ export const useRealtimeData = () => {
       // Remover "R$" e espaços
       cleanAmount = cleanAmount.replace(/R\$\s*/g, '');
       
-      // Remover pontos de milhares (se houver vírgula decimal depois)
-      if (cleanAmount.includes(',') && cleanAmount.lastIndexOf(',') > cleanAmount.lastIndexOf('.')) {
-        cleanAmount = cleanAmount.replace(/\./g, '');
-        cleanAmount = cleanAmount.replace(',', '.');
-      } else if (cleanAmount.includes('.') && !cleanAmount.includes(',')) {
-        // Se só tem ponto, assumir que é decimal se tiver 2 dígitos após o ponto
-        const parts = cleanAmount.split('.');
-        if (parts[parts.length - 1].length === 2) {
-          // É decimal
-        } else {
-          // É separador de milhares
-          cleanAmount = cleanAmount.replace(/\./g, '');
-        }
+      // Se contém vírgula, assumir que é o separador decimal brasileiro
+      if (cleanAmount.includes(',')) {
+        // Remover pontos (separadores de milhares) e trocar vírgula por ponto
+        cleanAmount = cleanAmount.replace(/\./g, '').replace(',', '.');
       }
+      
+      // Remover qualquer caractere não numérico exceto ponto e hífen
+      cleanAmount = cleanAmount.replace(/[^\d.-]/g, '');
       
       console.log(`[useRealtimeData] Valor limpo:`, cleanAmount);
       amount = parseFloat(cleanAmount);
