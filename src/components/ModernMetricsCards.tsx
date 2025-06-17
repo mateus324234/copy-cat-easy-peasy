@@ -1,3 +1,4 @@
+
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Eye, Users, CreditCard, QrCode, Trash2 } from "lucide-react";
@@ -28,16 +29,30 @@ export const ModernMetricsCards = () => {
   const { toast } = useToast();
 
   const formatCurrency = (value: number) => {
+    // Validação adicional para valores inválidos
+    if (typeof value !== 'number' || isNaN(value)) {
+      console.warn('[ModernMetricsCards] Valor inválido para formatação de moeda:', value);
+      return 'R$ 0,00';
+    }
+    
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
       currency: 'BRL'
     }).format(value);
   };
 
+  // Validação robusta das métricas
+  const safeMetrics = {
+    totalVisits: (metrics?.totalVisits && typeof metrics.totalVisits === 'number') ? metrics.totalVisits : 0,
+    onlineUsers: (metrics?.onlineUsers && typeof metrics.onlineUsers === 'number') ? metrics.onlineUsers : 0,
+    paymentTotal: (metrics?.paymentTotal && typeof metrics.paymentTotal === 'number') ? metrics.paymentTotal : 0,
+    totalQRCodes: (metrics?.totalQRCodes && typeof metrics.totalQRCodes === 'number') ? metrics.totalQRCodes : 0,
+  };
+
   const metricsData = [
     {
       title: "VISITAS",
-      value: metrics.totalVisits.toString(),
+      value: safeMetrics.totalVisits.toString(),
       icon: Eye,
       color: "blue",
       gradient: "from-blue-600 to-cyan-600",
@@ -48,7 +63,7 @@ export const ModernMetricsCards = () => {
     },
     {
       title: "USER ONLINE",
-      value: metrics.onlineUsers.toString(),
+      value: safeMetrics.onlineUsers.toString(),
       icon: Users,
       color: "green",
       gradient: "from-green-600 to-emerald-600",
@@ -59,7 +74,7 @@ export const ModernMetricsCards = () => {
     },
     {
       title: "PAYMENTS",
-      value: formatCurrency(Number(metrics.paymentTotal) || 0),
+      value: formatCurrency(safeMetrics.paymentTotal),
       icon: CreditCard,
       color: "purple",
       gradient: "from-purple-600 to-violet-600",
@@ -70,7 +85,7 @@ export const ModernMetricsCards = () => {
     },
     {
       title: "QR CODE COPIADOS",
-      value: metrics.totalQRCodes.toString(),
+      value: safeMetrics.totalQRCodes.toString(),
       icon: QrCode,
       color: "orange",
       gradient: "from-orange-600 to-red-600",

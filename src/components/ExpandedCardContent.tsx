@@ -39,6 +39,27 @@ export const ExpandedCardContent = ({ cardType }: ExpandedCardContentProps) => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 20;
 
+  // Função para validar e converter dados para array com segurança
+  const safeObjectToArray = (data: any, type: string) => {
+    if (!data || typeof data !== 'object' || Array.isArray(data)) {
+      console.warn(`[ExpandedCardContent] Dados inválidos para ${type}:`, data);
+      return [];
+    }
+    
+    try {
+      return Object.entries(data).map(([id, item]: [string, any]) => {
+        if (!item || typeof item !== 'object') {
+          console.warn(`[ExpandedCardContent] Item inválido em ${type}:`, { id, item });
+          return null;
+        }
+        return { id, ...item };
+      }).filter(Boolean);
+    } catch (error) {
+      console.error(`[ExpandedCardContent] Erro ao converter ${type} para array:`, error);
+      return [];
+    }
+  };
+
   const handleClearData = async () => {
     setIsClearing(true);
     
@@ -187,10 +208,8 @@ export const ExpandedCardContent = ({ cardType }: ExpandedCardContentProps) => {
   };
 
   const renderVisits = () => {
-    const visitorsArray = Object.entries(visitors).map(([id, visitor]: [string, any]) => ({
-      id,
-      ...visitor
-    })).filter((visitor) => {
+    const visitorsArray = safeObjectToArray(visitors, 'visitors').filter((visitor) => {
+      if (!visitor) return false;
       return visitor.ip && 
              visitor.ip !== 'N/A' && 
              visitor.country && 
@@ -234,17 +253,15 @@ export const ExpandedCardContent = ({ cardType }: ExpandedCardContentProps) => {
   };
 
   const renderUserOnline = () => {
-    const onlineVisitors = Object.entries(visitors).filter(([_, visitor]: [string, any]) => 
-      visitor.status === 'online' &&
-      visitor.ip && 
-      visitor.ip !== 'N/A' && 
-      visitor.country && 
-      visitor.city &&
-      !visitor.sessionId?.includes('dashboard')
-    ).map(([id, visitor]: [string, any]) => ({
-      id,
-      ...visitor
-    })).sort((a, b) => {
+    const onlineVisitors = safeObjectToArray(visitors, 'visitors').filter((visitor) => {
+      if (!visitor) return false;
+      return visitor.status === 'online' &&
+             visitor.ip && 
+             visitor.ip !== 'N/A' && 
+             visitor.country && 
+             visitor.city &&
+             !visitor.sessionId?.includes('dashboard');
+    }).sort((a, b) => {
       const timeA = new Date(a.lastSeen || a.timestamp || 0).getTime();
       const timeB = new Date(b.lastSeen || b.timestamp || 0).getTime();
       return timeB - timeA;
@@ -281,10 +298,7 @@ export const ExpandedCardContent = ({ cardType }: ExpandedCardContentProps) => {
   };
 
   const renderPayments = () => {
-    const paymentsArray = Object.entries(payments).map(([id, payment]: [string, any]) => ({
-      id,
-      ...payment
-    })).sort((a, b) => {
+    const paymentsArray = safeObjectToArray(payments, 'payments').sort((a, b) => {
       const timeA = new Date(a.date || a.timestamp || 0).getTime();
       const timeB = new Date(b.date || b.timestamp || 0).getTime();
       return timeB - timeA;
@@ -321,10 +335,7 @@ export const ExpandedCardContent = ({ cardType }: ExpandedCardContentProps) => {
   };
 
   const renderQrCode = () => {
-    const qrcodesArray = Object.entries(qrcodes).map(([id, qr]: [string, any]) => ({
-      id,
-      ...qr
-    })).sort((a, b) => {
+    const qrcodesArray = safeObjectToArray(qrcodes, 'qrcodes').sort((a, b) => {
       const timeA = new Date(a.date || a.timestamp || 0).getTime();
       const timeB = new Date(b.date || b.timestamp || 0).getTime();
       return timeB - timeA;

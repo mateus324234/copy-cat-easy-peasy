@@ -19,19 +19,38 @@ export const useRealtimeData = () => {
   const notifiedPaymentsRef = useRef<Set<string>>(new Set());
   const notifiedQrcodesRef = useRef<Set<string>>(new Set());
 
+  // Função para validar dados de entrada
+  const validateData = (data: any, type: string): Record<string, any> => {
+    if (!data || typeof data !== 'object' || Array.isArray(data)) {
+      console.warn(`[useRealtimeData] Dados inválidos para ${type}:`, data);
+      return {};
+    }
+    
+    // Filtrar entradas inválidas
+    const validEntries = Object.entries(data).filter(([key, value]) => {
+      if (!key || !value || typeof value !== 'object') {
+        console.warn(`[useRealtimeData] Entrada inválida filtrada em ${type}:`, { key, value });
+        return false;
+      }
+      return true;
+    });
+    
+    return Object.fromEntries(validEntries);
+  };
+
   useEffect(() => {
     const unsubscribe = listenToRealtimeData((update) => {
       console.log(`[useRealtimeData] Recebendo update:`, update.type, update.data);
       
-      // Validação de segurança para prevenir React error #130
-      if (!update || !update.data || typeof update.data !== 'object') {
+      // Validação de segurança robusta para prevenir React error #130
+      if (!update || !update.type || !update.data) {
         console.warn(`[useRealtimeData] Update inválido recebido:`, update);
         return;
       }
       
       switch (update.type) {
         case 'visitors':
-          const newVisitors = update.data || {};
+          const newVisitors = validateData(update.data, 'visitors');
           // Detectar novos visitantes com ID único (excluindo dashboard e bots)
           const newVisitorKeys = Object.keys(newVisitors).filter(
             key => newVisitors[key] && 
@@ -66,7 +85,7 @@ export const useRealtimeData = () => {
           break;
           
         case 'payments':
-          const newPayments = update.data || {};
+          const newPayments = validateData(update.data, 'payments');
           // Detectar novos pagamentos com ID único
           const newPaymentKeys = Object.keys(newPayments).filter(
             key => newPayments[key] && !notifiedPaymentsRef.current.has(key)
@@ -97,7 +116,7 @@ export const useRealtimeData = () => {
           break;
           
         case 'qrcodes':
-          const newQrcodes = update.data || {};
+          const newQrcodes = validateData(update.data, 'qrcodes');
           // Detectar novos QR codes com ID único
           const newQrcodeKeys = Object.keys(newQrcodes).filter(
             key => newQrcodes[key] && !notifiedQrcodesRef.current.has(key)
@@ -239,17 +258,17 @@ export const useRealtimeData = () => {
     return isDashboard;
   }
 
-  // Filter data by selected site
+  // Filter data by selected site with enhanced validation
   const filteredData = {
     visitors: activeSite === 'all' ? visitors : filterBySite(visitors, activeSite),
     payments: activeSite === 'all' ? payments : filterBySite(payments, activeSite),
     qrcodes: activeSite === 'all' ? qrcodes : filterBySite(qrcodes, activeSite),
   };
 
-  // Helper function to filter data by site
+  // Helper function to filter data by site with enhanced validation
   function filterBySite(data: Record<string, any>, siteDomain: string) {
-    // Validação de segurança
-    if (!data || typeof data !== 'object' || !siteDomain) {
+    // Validação robusta de segurança
+    if (!data || typeof data !== 'object' || Array.isArray(data) || !siteDomain) {
       console.warn(`[Filter] Dados inválidos para filtrar:`, { data, siteDomain });
       return {};
     }
@@ -257,10 +276,10 @@ export const useRealtimeData = () => {
     console.log(`[Filter] Filtrando por site: ${siteDomain}`);
     console.log(`[Filter] Total de itens antes do filtro:`, Object.keys(data).length);
     
-    const filtered = Object.fromEntries(
-      Object.entries(data).filter(([key, item]) => {
-        // Validação de segurança
-        if (!item || typeof item !== 'object') {
+    try {
+      const validEntries = Object.entries(data).filter(([key, item]) => {
+        // Validação de segurança robusta
+        if (!item || typeof item !== 'object' || Array.isArray(item)) {
           console.warn(`[Filter] Item inválido encontrado:`, { key, item });
           return false;
         }
@@ -287,17 +306,25 @@ export const useRealtimeData = () => {
         console.log(`[Filter] Item ${key} matches: ${matches}`);
         
         return matches;
-      })
-    );
-    
-    console.log(`[Filter] Total de itens após filtro:`, Object.keys(filtered).length);
-    console.log(`[Filter] Itens filtrados:`, Object.keys(filtered));
-    return filtered;
+      });
+      
+      const filtered = Object.fromEntries(validEntries);
+      console.log(`[Filter] Total de itens após filtro:`, Object.keys(filtered).length);
+      console.log(`[Filter] Itens filtrados:`, Object.keys(filtered));
+      return filtered;
+    } catch (error) {
+      console.error(`[Filter] Erro durante filtragem:`, error);
+      return {};
+    }
   }
 
-  // Calcular métricas em tempo real com logs detalhados (excluindo dashboard e bots)
-  const realVisitors = Object.entries(filteredData.visitors || {}).filter(([key, visitor]: [string, any]) => {
-    if (!visitor) return false;
+  // Calcular métricas em tempo real com validação robusta
+  const safeFilteredVisitors = filteredData.visitors || {};
+  const realVisitors = Object.entries(safeFilteredVisitors).filter(([key, visitor]: [string, any]) => {
+    if (!visitor || typeof visitor !== 'object') {
+      console.warn(`[useRealtimeData] Visitante inválido filtrado: ${key}`);
+      return false;
+    }
     
     const isDashboard = isDashboardSession(visitor);
     const isBot = isBotSession(visitor);
@@ -311,7 +338,7 @@ export const useRealtimeData = () => {
   });
 
   const onlineUsers = realVisitors.filter(([key, visitor]: [string, any]) => {
-    if (!visitor) return false;
+    if (!visitor || typeof visitor !== 'object') return false;
     
     const isOnline = visitor.status === 'online';
     if (isOnline) {
@@ -324,15 +351,17 @@ export const useRealtimeData = () => {
   console.log(`[useRealtimeData] 🟢 Total de usuários online (sem dashboard/bots): ${onlineUsers}`);
 
   const totalVisits = realVisitors.length;
-  const totalPayments = Object.keys(filteredData.payments || {}).length;
-  const totalQRCodes = Object.keys(filteredData.qrcodes || {}).length;
+  const safeFilteredPayments = filteredData.payments || {};
+  const safeFilteredQRCodes = filteredData.qrcodes || {};
+  const totalPayments = Object.keys(safeFilteredPayments).length;
+  const totalQRCodes = Object.keys(safeFilteredQRCodes).length;
 
   console.log(`[useRealtimeData] Calculando total de pagamentos...`);
-  console.log(`[useRealtimeData] Dados de pagamentos:`, filteredData.payments);
+  console.log(`[useRealtimeData] Dados de pagamentos:`, safeFilteredPayments);
   
-  const paymentTotal = (Object.values(filteredData.payments || {}) as any[]).reduce((sum: number, payment: any): number => {
-    // Validação de segurança
-    if (!payment || typeof payment !== 'object') {
+  const paymentTotal = Object.values(safeFilteredPayments).reduce((sum: number, payment: any): number => {
+    // Validação robusta de segurança
+    if (!payment || typeof payment !== 'object' || Array.isArray(payment)) {
       console.warn(`[useRealtimeData] Pagamento inválido:`, payment);
       return sum;
     }
@@ -386,8 +415,8 @@ export const useRealtimeData = () => {
 
   return {
     visitors: Object.fromEntries(realVisitors),
-    payments: filteredData.payments || {},
-    qrcodes: filteredData.qrcodes || {},
+    payments: safeFilteredPayments,
+    qrcodes: safeFilteredQRCodes,
     metrics: {
       onlineUsers: onlineUsers || 0,
       totalVisits: totalVisits || 0,
