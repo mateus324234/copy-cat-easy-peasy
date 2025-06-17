@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { HashRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from '@/components/ui/sonner';
 import { SiteProvider } from '@/context/SiteContext';
@@ -20,7 +20,7 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <SiteProvider>
-        <HashRouter>
+        <BrowserRouter>
           <Toaster />
           <div className="min-h-screen bg-background">
             <Routes>
@@ -34,7 +34,7 @@ function App() {
               <Route path="*" element={<NotFound />} />
             </Routes>
           </div>
-        </HashRouter>
+        </BrowserRouter>
       </SiteProvider>
     </QueryClientProvider>
   );
