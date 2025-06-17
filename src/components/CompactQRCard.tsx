@@ -1,5 +1,6 @@
-import { QrCode, Clock, MapPin, User, Mail, Package } from "lucide-react";
+import { QrCode, Clock, MapPin, User, Mail, Package, Link } from "lucide-react";
 import { CountryFlag } from "./CountryFlag";
+import { getDisplayUrl } from "../utils/urlUtils";
 
 interface CompactQRCardProps {
   qr: {
@@ -15,6 +16,8 @@ interface CompactQRCardProps {
     clientId?: string;
     qrId?: string;
     copies?: number;
+    page?: string;
+    referrer?: string;
   };
 }
 
@@ -91,6 +94,7 @@ export const CompactQRCard = ({ qr }: CompactQRCardProps) => {
   const city = qr.city || 'São Paulo';
   const state = qr.state || 'SP';
   const countryCode = getCountryCode(country);
+  const displayUrl = getDisplayUrl(qr.page, qr.referrer);
 
   return (
     <div className="relative overflow-hidden bg-gray-700/30 border-l-4 border-orange-500 rounded-2xl px-4 py-3 text-sm hover:bg-gray-700/40 transition-all duration-300 hover:shadow-lg hover:shadow-orange-500/20">
@@ -125,7 +129,7 @@ export const CompactQRCard = ({ qr }: CompactQRCardProps) => {
         </div>
       </div>
 
-      {/* Segunda linha: Produto + Valor + Cliente + Data */}
+      {/* Segunda linha: Produto + Valor + Link + Cliente + Data */}
       <div className="relative z-10 flex items-center justify-between text-xs">
         <div className="flex items-center space-x-4">
           <div className="flex items-center space-x-1 text-orange-400">
@@ -136,6 +140,13 @@ export const CompactQRCard = ({ qr }: CompactQRCardProps) => {
           {formatValue(qr.value) && (
             <div className="flex items-center space-x-1 text-gray-300">
               <span className="text-white font-semibold">{formatValue(qr.value)}</span>
+            </div>
+          )}
+          
+          {displayUrl && (
+            <div className="flex items-center space-x-1 text-orange-400">
+              <Link className="h-3 w-3" />
+              <span className="font-medium">{displayUrl}</span>
             </div>
           )}
           

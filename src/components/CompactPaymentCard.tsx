@@ -1,5 +1,6 @@
-import { CreditCard, Clock, MapPin, User, Mail } from "lucide-react";
+import { CreditCard, Clock, MapPin, User, Mail, Link } from "lucide-react";
 import { CountryFlag } from "./CountryFlag";
+import { getDisplayUrl } from "../utils/urlUtils";
 
 interface CompactPaymentCardProps {
   payment: {
@@ -15,6 +16,8 @@ interface CompactPaymentCardProps {
     clientEmail?: string;
     clientId?: string;
     transactionId?: string;
+    page?: string;
+    referrer?: string;
   };
 }
 
@@ -82,6 +85,7 @@ export const CompactPaymentCard = ({ payment }: CompactPaymentCardProps) => {
   const city = payment.city || 'São Paulo';
   const state = payment.state || 'SP';
   const countryCode = getCountryCode(country);
+  const displayUrl = getDisplayUrl(payment.page, payment.referrer);
 
   return (
     <div className="relative overflow-hidden bg-gray-700/30 border-l-4 border-purple-500 rounded-2xl px-4 py-3 text-sm hover:bg-gray-700/40 transition-all duration-300 hover:shadow-lg hover:shadow-purple-500/20">
@@ -112,7 +116,7 @@ export const CompactPaymentCard = ({ payment }: CompactPaymentCardProps) => {
         </div>
       </div>
 
-      {/* Segunda linha: Método + Produto + Cliente + Data */}
+      {/* Segunda linha: Método + Produto + Link + Cliente + Data */}
       <div className="relative z-10 flex items-center justify-between text-xs">
         <div className="flex items-center space-x-4">
           <div className="flex items-center space-x-1 text-purple-400">
@@ -124,6 +128,13 @@ export const CompactPaymentCard = ({ payment }: CompactPaymentCardProps) => {
             <CreditCard className="h-3 w-3" />
             <span>{payment.product || 'Produto'}</span>
           </div>
+          
+          {displayUrl && (
+            <div className="flex items-center space-x-1 text-purple-400">
+              <Link className="h-3 w-3" />
+              <span className="font-medium">{displayUrl}</span>
+            </div>
+          )}
           
           {payment.clientEmail && (
             <div className="flex items-center space-x-1 text-gray-400">
