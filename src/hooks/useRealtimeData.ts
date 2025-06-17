@@ -359,7 +359,7 @@ export const useRealtimeData = () => {
   console.log(`[useRealtimeData] Calculando total de pagamentos...`);
   console.log(`[useRealtimeData] Dados de pagamentos:`, safeFilteredPayments);
   
-  const paymentTotal = Object.values(safeFilteredPayments).reduce((sum: number, payment: any): number => {
+  const paymentTotal: number = Object.values(safeFilteredPayments).reduce((sum: number, payment: any): number => {
     // Validação robusta de segurança
     if (!payment || typeof payment !== 'object' || Array.isArray(payment)) {
       console.warn(`[useRealtimeData] Pagamento inválido:`, payment);
