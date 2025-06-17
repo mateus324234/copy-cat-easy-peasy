@@ -77,19 +77,16 @@ export const NotificationSystem = ({ onNewVisit, onNewPayment, onNewQRCode }: No
   const addNotification = (notification: Omit<Notification, 'id' | 'timestamp' | 'count'>, uniqueId: string, eventTimestamp?: number) => {
     const now = Date.now();
     
-    // Verificar se o evento é anterior ao início da sessão
     if (eventTimestamp && eventTimestamp <= sessionStartTimeRef.current) {
       console.log('[NotificationSystem] Evento anterior à sessão, ignorando:', new Date(eventTimestamp).toLocaleString());
       return;
     }
     
-    // Verificar se já processamos este item recentemente (últimos 5 segundos)
     if (processedItemsRef.current.has(uniqueId)) {
       console.log('[NotificationSystem] Item já processado, ignorando:', uniqueId);
       return;
     }
 
-    // Verificar se há um item similar processado recentemente
     const lastProcessed = lastProcessedRef.current[uniqueId];
     if (lastProcessed && (now - lastProcessed) < 5000) {
       console.log('[NotificationSystem] Item processado recentemente, ignorando:', uniqueId);
@@ -97,7 +94,6 @@ export const NotificationSystem = ({ onNewVisit, onNewPayment, onNewQRCode }: No
     }
 
     console.log('[NotificationSystem] Processando notificação:', notification);
-    console.log('[NotificationSystem] Estado atual das notificações:', notifications.length);
     
     // Verificar se já existe uma notificação do mesmo tipo
     const existingNotificationIndex = notifications.findIndex(n => n.type === notification.type);
@@ -105,47 +101,32 @@ export const NotificationSystem = ({ onNewVisit, onNewPayment, onNewQRCode }: No
     if (existingNotificationIndex !== -1) {
       console.log('[NotificationSystem] AGRUPANDO - Notificação existente encontrada do tipo:', notification.type);
       
-      // Atualizar notificação existente
       setNotifications(prev => {
         const updated = [...prev];
         const existing = updated[existingNotificationIndex];
         
-        console.log('[NotificationSystem] Notificação existente ID:', existing.id);
-        console.log('[NotificationSystem] Contador atual:', existing.count);
-        
-        // Limpar timeout anterior usando o ID correto da notificação existente
         if (timeoutRefs.current[existing.id]) {
-          console.log('[NotificationSystem] Limpando timeout anterior para ID:', existing.id);
           clearTimeout(timeoutRefs.current[existing.id]);
           delete timeoutRefs.current[existing.id];
         }
         
-        // Atualizar contadores e valores
         existing.count += 1;
         existing.timestamp = new Date();
         
-        // Para pagamentos, somar os valores
         if (notification.type === 'payment' && notification.amount) {
           const newAmount = parseFloat(notification.amount.toString().replace(/[^\d.-]/g, ''));
           existing.totalAmount = (existing.totalAmount || 0) + (isNaN(newAmount) ? 0 : newAmount);
-          console.log('[NotificationSystem] Somando valor do pagamento. Novo total:', existing.totalAmount);
         }
         
-        // Configurar novo timeout usando o ID correto da notificação existente
         timeoutRefs.current[existing.id] = setTimeout(() => {
-          console.log('[NotificationSystem] Auto-removendo notificação agrupada ID:', existing.id);
           removeNotification(existing.id);
         }, 8000);
         
-        console.log('[NotificationSystem] Notificação atualizada. Novo contador:', existing.count);
         return updated;
       });
-      
-      console.log('[NotificationSystem] Notificação existente atualizada, contador incrementado');
     } else {
       console.log('[NotificationSystem] CRIANDO NOVA - Primeira notificação do tipo:', notification.type);
       
-      // Criar nova notificação
       const newNotificationId = notification.type + '_' + now;
       const newNotification: Notification = {
         ...notification,
@@ -156,52 +137,37 @@ export const NotificationSystem = ({ onNewVisit, onNewPayment, onNewQRCode }: No
           parseFloat(notification.amount.toString().replace(/[^\d.-]/g, '')) : undefined
       };
       
-      console.log('[NotificationSystem] Nova notificação criada com ID:', newNotificationId);
-      
       setNotifications(prev => {
-        const updated = [...prev.slice(0, 4), newNotification];
-        console.log('[NotificationSystem] Total de notificações após adicionar:', updated.length);
+        // Manter máximo de 3 notificações (uma de cada tipo)
+        const updated = [newNotification, ...prev.slice(0, 2)];
         return updated;
       });
       
       playNotificationSound();
       
-      // Configurar auto-remoção usando o ID correto
       timeoutRefs.current[newNotificationId] = setTimeout(() => {
-        console.log('[NotificationSystem] Auto-removendo notificação nova ID:', newNotificationId);
         removeNotification(newNotificationId);
       }, 8000);
-      
-      console.log('[NotificationSystem] Nova notificação criada:', newNotification);
     }
     
     processedItemsRef.current.add(uniqueId);
     lastProcessedRef.current[uniqueId] = now;
     
-    // Clean up old processed items after 10 seconds
     setTimeout(() => {
       processedItemsRef.current.delete(uniqueId);
       delete lastProcessedRef.current[uniqueId];
     }, 10000);
-    
-    console.log('[NotificationSystem] IDs de timeout ativos:', Object.keys(timeoutRefs.current));
   };
 
   const removeNotification = (id: string) => {
     console.log('[NotificationSystem] Removendo notificação ID:', id);
     
-    // Limpar timeout se existir
     if (timeoutRefs.current[id]) {
       clearTimeout(timeoutRefs.current[id]);
       delete timeoutRefs.current[id];
-      console.log('[NotificationSystem] Timeout removido para ID:', id);
     }
     
-    setNotifications(prev => {
-      const filtered = prev.filter(n => n.id !== id);
-      console.log('[NotificationSystem] Notificações restantes após remoção:', filtered.length);
-      return filtered;
-    });
+    setNotifications(prev => prev.filter(n => n.id !== id));
   };
 
   const getCountryCode = (country: string) => {
@@ -317,58 +283,64 @@ export const NotificationSystem = ({ onNewVisit, onNewPayment, onNewQRCode }: No
   };
 
   return (
-    <div className="fixed bottom-4 right-4 z-50 space-y-2 max-w-sm">
-      {notifications.map((notification) => (
-        <div
-          key={notification.id}
-          className={`p-4 rounded-xl border backdrop-blur-lg shadow-xl animate-fade-in ${getNotificationColor(notification.type)}`}
-        >
-          <div className="flex items-start justify-between mb-2">
-            <div className="flex items-center space-x-2">
-              {renderNotificationIcon(notification.type)}
-              <span className="font-semibold text-white text-sm">
-                {getNotificationTitle(notification)}
-              </span>
+    <div className="fixed bottom-4 right-4 z-50 max-w-sm">
+      <div className="space-y-3">
+        {notifications.map((notification, index) => (
+          <div
+            key={notification.id}
+            className={`p-4 rounded-xl border backdrop-blur-lg shadow-xl animate-fade-in ${getNotificationColor(notification.type)}`}
+            style={{ 
+              transform: `translateY(${index * -4}px)`,
+              zIndex: 50 - index 
+            }}
+          >
+            <div className="flex items-start justify-between mb-2">
+              <div className="flex items-center space-x-2">
+                {renderNotificationIcon(notification.type)}
+                <span className="font-semibold text-white text-sm">
+                  {getNotificationTitle(notification)}
+                </span>
+              </div>
+              <button
+                onClick={() => removeNotification(notification.id)}
+                className="text-gray-400 hover:text-white transition-colors"
+              >
+                <X className="h-4 w-4" />
+              </button>
             </div>
-            <button
-              onClick={() => removeNotification(notification.id)}
-              className="text-gray-400 hover:text-white transition-colors"
-            >
-              <X className="h-4 w-4" />
-            </button>
-          </div>
-          
-          <div className="flex items-center space-x-2 mb-2">
-            {notification.country && (
-              <CountryFlag 
-                countryCode={getCountryCode(notification.country)} 
-                countryName={notification.country}
-                size="sm"
-              />
+            
+            <div className="flex items-center space-x-2 mb-2">
+              {notification.country && (
+                <CountryFlag 
+                  countryCode={getCountryCode(notification.country)} 
+                  countryName={notification.country}
+                  size="sm"
+                />
+              )}
+              <div className="flex items-center space-x-1 text-gray-300">
+                <MapPin className="h-3 w-3" />
+                <span className="text-sm">{notification.message}</span>
+              </div>
+            </div>
+            
+            {notification.type === 'payment' && notification.totalAmount && (
+              <div className="text-lg font-bold text-green-400">
+                {formatCurrency(notification.totalAmount)}
+              </div>
             )}
-            <div className="flex items-center space-x-1 text-gray-300">
-              <MapPin className="h-3 w-3" />
-              <span className="text-sm">{notification.message}</span>
+            
+            {notification.product && (
+              <div className="text-sm text-orange-400">
+                {notification.product}
+              </div>
+            )}
+            
+            <div className="text-xs text-gray-500 mt-1">
+              {notification.timestamp.toLocaleTimeString('pt-BR')}
             </div>
           </div>
-          
-          {notification.type === 'payment' && notification.totalAmount && (
-            <div className="text-lg font-bold text-green-400">
-              {formatCurrency(notification.totalAmount)}
-            </div>
-          )}
-          
-          {notification.product && (
-            <div className="text-sm text-orange-400">
-              {notification.product}
-            </div>
-          )}
-          
-          <div className="text-xs text-gray-500 mt-1">
-            {notification.timestamp.toLocaleTimeString('pt-BR')}
-          </div>
-        </div>
-      ))}
+        ))}
+      </div>
     </div>
   );
 };
