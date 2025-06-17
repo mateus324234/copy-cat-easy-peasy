@@ -1,11 +1,14 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { listenToRealtimeData } from '@/services/firebase';
+import { useSite } from '@/context/SiteContext';
+import { getDisplayUrl } from '@/utils/urlUtils';
 
 export const useRealtimeData = () => {
   const [visitors, setVisitors] = useState<any>({});
   const [payments, setPayments] = useState<any>({});
   const [qrcodes, setQrcodes] = useState<any>({});
+  const { activeSite } = useSite();
   
   // Refs para armazenar os dados anteriores e detectar novos itens
   const prevVisitorsRef = useRef<any>({});
@@ -121,19 +124,39 @@ export const useRealtimeData = () => {
     return unsubscribe;
   }, []);
 
+  // Filter data by selected site
+  const filteredData = {
+    visitors: activeSite === 'all' ? visitors : filterBySite(visitors, activeSite),
+    payments: activeSite === 'all' ? payments : filterBySite(payments, activeSite),
+    qrcodes: activeSite === 'all' ? qrcodes : filterBySite(qrcodes, activeSite),
+  };
+
+  // Helper function to filter data by site
+  function filterBySite(data: Record<string, any>, siteDomain: string) {
+    return Object.fromEntries(
+      Object.entries(data).filter(([_, item]) => {
+        const itemUrl = item.page || item.referrer;
+        if (!itemUrl) return false;
+        
+        const displayUrl = getDisplayUrl(item.page, item.referrer);
+        return displayUrl === siteDomain;
+      })
+    );
+  }
+
   // Calcular métricas em tempo real com logs detalhados
-  const onlineUsers = Object.values(visitors).filter(
+  const onlineUsers = Object.values(filteredData.visitors).filter(
     (visitor: any) => visitor.status === 'online'
   ).length;
 
-  const totalVisits = Object.keys(visitors).length;
-  const totalPayments = Object.keys(payments).length;
-  const totalQRCodes = Object.keys(qrcodes).length;
+  const totalVisits = Object.keys(filteredData.visitors).length;
+  const totalPayments = Object.keys(filteredData.payments).length;
+  const totalQRCodes = Object.keys(filteredData.qrcodes).length;
 
   console.log(`[useRealtimeData] Calculando total de pagamentos...`);
-  console.log(`[useRealtimeData] Dados de pagamentos:`, payments);
+  console.log(`[useRealtimeData] Dados de pagamentos:`, filteredData.payments);
   
-  const paymentTotal = (Object.values(payments) as any[]).reduce((sum: number, payment: any): number => {
+  const paymentTotal = (Object.values(filteredData.payments) as any[]).reduce((sum: number, payment: any): number => {
     console.log(`[useRealtimeData] Processando pagamento:`, payment);
     
     let amount = 0;
@@ -165,9 +188,9 @@ export const useRealtimeData = () => {
   console.log(`[useRealtimeData] Total final de pagamentos: R$ ${paymentTotal.toFixed(2)}`);
 
   return {
-    visitors,
-    payments,
-    qrcodes,
+    visitors: filteredData.visitors,
+    payments: filteredData.payments,
+    qrcodes: filteredData.qrcodes,
     metrics: {
       onlineUsers,
       totalVisits,

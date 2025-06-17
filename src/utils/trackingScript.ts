@@ -1,385 +1,107 @@
-/**
- * Sistema de Tracking em Tempo Real com Firebase
- * Baseado no modelo fornecido com melhorias
- */
-export function initializeTracking() {
-  (function() {
-    'use strict';
 
-    // Configuração
-    const SITE = 'dashboard-app';
-    const REF = 'direct';
+import { trackingAPI } from '@/services/firebase';
+import { v4 as uuidv4 } from 'uuid';
+
+// Store the session ID in localStorage to reuse it across page views
+const getOrCreateSessionId = () => {
+  let sessionId = localStorage.getItem('tracking_session_id');
+  if (!sessionId) {
+    sessionId = uuidv4();
+    localStorage.setItem('tracking_session_id', sessionId);
+  }
+  return sessionId;
+};
+
+export async function trackVisit() {
+  try {
+    const response = await fetch('https://ipwhois.app/json/');
+    const data = await response.json();
     
-    // Gerar session ID único
-    const SESSION_ID = 'sess_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-    let pingInterval: NodeJS.Timeout | null = null;
-    let inactivityTimer: NodeJS.Timeout | null = null;
-    let isOnline = true;
-    let isActive = true;
-    let lastActivity = Date.now();
-    let startTime = Date.now();
-
-    // Localização do usuário
-    let userLocation = { country: 'Brasil', city: 'São Paulo', state: 'SP', ip: 'Unknown' };
-
-    // Função para obter localização usando APIs reais
-    async function getLocation() {
-      try {
-        // Primeira tentativa: IPWHOIS API
-        try {
-          const ipwhoResponse = await fetch('https://ipwhois.app/json/', {
-            method: 'GET',
-            headers: { 'Accept': 'application/json' }
-          });
-          
-          if (ipwhoResponse.ok) {
-            const data = await ipwhoResponse.json();
-            if (data.success) {
-              userLocation = {
-                country: data.country || 'Brasil',
-                city: data.city || 'São Paulo',
-                state: data.region || 'SP',
-                ip: data.ip || 'Unknown'
-              };
-              console.log('[Tracking] Localização obtida via IPWHOIS:', userLocation);
-              return;
-            }
-          }
-        } catch (ipwhoError) {
-          console.warn('[Tracking] IPWHOIS falhou, tentando fallback');
-        }
-
-        // Segunda tentativa: ipinfo.io com seu token
-        try {
-          const ipinfoResponse = await fetch('https://ipinfo.io/json?token=d64885a1e83ad4', {
-            method: 'GET',
-            headers: { 'Accept': 'application/json' }
-          });
-          
-          if (ipinfoResponse.ok) {
-            const data = await ipinfoResponse.json();
-            userLocation = {
-              country: data.country === 'BR' ? 'Brasil' : (data.country || 'Brasil'),
-              city: data.city || 'São Paulo',
-              state: data.region || 'SP',
-              ip: data.ip || 'Unknown'
-            };
-            console.log('[Tracking] Localização obtida via ipinfo.io:', userLocation);
-            return;
-          }
-        } catch (ipinfoError) {
-          console.warn('[Tracking] ipinfo.io falhou');
-        }
-
-      } catch (error) {
-        console.warn('[Tracking] Erro ao obter localização:', error);
-      }
-    }
-
-    // Função para enviar dados para Firebase via nossa API
-    async function sendTracking(endpoint: string, data: any) {
-      try {
-        // Importar dinamicamente nosso Firebase service
-        const { trackingAPI } = await import('../services/firebase');
-        
-        const payload = {
-          site: SITE,
-          ref: REF,
-          sessionId: SESSION_ID,
-          ...userLocation,
-          ...data
-        };
-
-        console.log(`[Tracking] Enviando ${endpoint}:`, payload);
-
-        // Chamar a função correspondente do Firebase
-        switch (endpoint) {
-          case 'visit':
-            await trackingAPI.visit(payload);
-            break;
-          case 'online':
-            await trackingAPI.online(payload);
-            break;
-          case 'offline':
-            await trackingAPI.offline(payload);
-            break;
-          case 'payment':
-            await trackingAPI.payment(payload);
-            break;
-          case 'qrcode':
-            await trackingAPI.qrcode(payload);
-            break;
-        }
-      } catch (error) {
-        console.error('[Tracking] Erro ao enviar dados:', error);
-      }
-    }
-
-    // Registrar visita inicial
-    async function trackVisit() {
-      // Verificar se é dashboard administrativo
-      const isAdminDashboard = window.location.pathname.includes('/dashboard') || 
-                              window.location.pathname.includes('/admin') ||
-                              document.title.includes('Dashboard');
-      
-      if (isAdminDashboard) {
-        console.log('[Tracking] Dashboard administrativo detectado - visita ignorada');
-        return;
-      }
-      
-      await getLocation();
-      
-      await sendTracking('visit', {
+    if (data.success) {
+      const sessionId = getOrCreateSessionId();
+      await trackingAPI.visit({
+        sessionId,
+        ip: data.ip,
+        country: data.country,
+        city: data.city,
+        state: data.region,
         page: window.location.pathname,
-        userAgent: navigator.userAgent,
-        referrer: document.referrer || 'direct',
-        country: userLocation.country,
-        city: userLocation.city,
-        state: userLocation.state,
-        ip: userLocation.ip
+        referrer: document.referrer,
+        url: window.location.href,
+        userAgent: navigator.userAgent
       });
-    }
-
-    // Detectores de atividade
-    function setupActivityDetection() {
-      const activityEvents = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart', 'click'];
       
-      function resetActivityTimer() {
-        lastActivity = Date.now();
-        
-        if (!isActive) {
-          isActive = true;
-          console.log('[Tracking] Usuário voltou a ser ativo');
-          startOnlinePing();
-        }
-        
-        clearTimeout(inactivityTimer!);
-        inactivityTimer = setTimeout(() => {
-          if (isActive && isOnline) {
-            console.log('[Tracking] Usuário inativo por 15 segundos - pausando ping');
-            isActive = false;
-            stopOnlinePing();
-          }
-        }, 15000);
-      }
-
-      activityEvents.forEach(event => {
-        document.addEventListener(event, resetActivityTimer, true);
-      });
-
-      // Melhor detecção para mobile
-      document.addEventListener('visibilitychange', function() {
-        if (document.hidden) {
-          console.log('[Tracking] Aba ficou oculta (mobile/desktop)');
-          isActive = false;
-          stopOnlinePing();
-          // Timeout de segurança para mobile - marcar offline após 5 segundos se continuar oculto
-          setTimeout(() => {
-            if (document.hidden && isOnline) {
-              console.log('[Tracking] Timeout mobile - marcando como offline');
-              setOffline();
-            }
-          }, 5000);
-        } else {
-          console.log('[Tracking] Aba voltou ao foco');
-          if (!isOnline) {
-            isOnline = true;
-            console.log('[Tracking] Voltou online após visibilitychange');
-          }
-          resetActivityTimer();
-        }
-      });
-
-      resetActivityTimer();
-    }
-
-    // Ping online a cada 3 segundos
-    function startOnlinePing() {
-      if (pingInterval) return;
+      // Set up the ping interval
+      setupPingInterval(sessionId, data);
       
-      pingInterval = setInterval(async () => {
-        if (isOnline && isActive) {
-          const isAdminDashboard = window.location.pathname.includes('/dashboard') || 
-                                  window.location.pathname.includes('/admin') ||
-                                  document.title.includes('Dashboard');
-          
-          if (isAdminDashboard) {
-            return;
-          }
-          
-          await sendTracking('online', {
-            status: 'online',
-            currentPage: window.location.pathname,
-            cartValue: getCartValue(),
-            timeOnSite: Math.floor((Date.now() - startTime) / 1000) + 's',
-            isActive: true
-          });
-        }
-      }, 3000);
-    }
-
-    function stopOnlinePing() {
-      if (pingInterval) {
-        clearInterval(pingInterval);
-        pingInterval = null;
-      }
-    }
-
-    // Marcar como offline - CORRIGIDO para mobile
-    async function setOffline() {
-      if (isOnline) {
-        isOnline = false;
-        stopOnlinePing();
-        
-        console.log('[Tracking] Marcando usuário como offline');
-        
-        try {
-          // Usar apenas Firebase - removido sendBeacon com URL inválida
-          await sendTracking('offline', { 
-            sessionId: SESSION_ID,
-            status: 'offline',
-            timestamp: Date.now()
-          });
-          console.log('[Tracking] Offline registrado com sucesso');
-        } catch (error) {
-          console.error('[Tracking] Erro ao marcar offline:', error);
-        }
-      }
-    }
-
-    // Detectar valor do carrinho
-    function getCartValue() {
-      const cartSelectors = [
-        '[data-cart-total]', '.cart-total', '#cart-total',
-        '.total-price', '[data-total]', '.price', '.valor',
-        '.preco', '.amount', '.total', '[data-price]'
-      ];
-      
-      for (const selector of cartSelectors) {
-        const element = document.querySelector(selector);
-        if (element) {
-          const value = extractMoneyValue(element.textContent);
-          if (value) return value;
-        }
-      }
-      
-      return null;
-    }
-    
-    function extractMoneyValue(text: string | null) {
-      if (!text) return null;
-      
-      const patterns = [
-        /R\$\s*(\d{1,3}(?:\.\d{3})*(?:,\d{2})?)/,
-        /(\d{1,3}(?:\.\d{3})*,\d{2})/,
-        /(\d+,\d{2})/,
-        /R\$\s*(\d+(?:,\d{2})?)/
-      ];
-      
-      for (const pattern of patterns) {
-        const match = text.match(pattern);
-        if (match) return match[0].trim();
-      }
-      
-      return null;
-    }
-
-    // API pública para tracking manual com informações de cliente
-    (window as any).trackingAPI = {
-      payment: async function(amount: string, method = 'PIX', product = 'Produto', options: {
-        transactionId?: string;
-        clientEmail?: string;
-        clientId?: string;
-        clientName?: string;
-      } = {}) {
-        let cleanAmount = amount;
-        
-        if (typeof amount === 'string') {
-          cleanAmount = amount
-            .replace(/R\$\s*/, '')
-            .replace(/\./g, '')
-            .replace(',', '.')
-            .trim();
-        }
-        
-        console.log('[Tracking] Registrando pagamento:', { amount: cleanAmount, method, product, options });
-        
-        await sendTracking('payment', {
-          amount: cleanAmount,
-          currency: 'BRL',
-          method: method,
-          product: product,
-          transactionId: options.transactionId || 'TXN-' + Date.now(),
-          status: 'aprovado',
-          clientEmail: options.clientEmail,
-          clientId: options.clientId,
-          clientName: options.clientName,
-          country: userLocation.country,
-          city: userLocation.city,
-          state: userLocation.state
+      // Set up the beforeunload handler
+      window.addEventListener('beforeunload', async () => {
+        await trackingAPI.offline({
+          sessionId,
+          country: data.country,
+          city: data.city,
+          state: data.region
         });
-      },
+      });
+    }
+  } catch (error) {
+    console.error('Failed to track visit:', error);
+  }
+}
 
-      qrcode: async function(qrType = 'produto', product = 'QR Code', value = '0', options: {
-        copies?: number;
-        clientEmail?: string;
-        clientId?: string;
-        clientName?: string;
-      } = {}) {
-        console.log('[Tracking] Registrando QR Code:', { qrType, product, value, options });
-        
-        await sendTracking('qrcode', {
-          qrId: 'QR-' + Date.now(),
-          type: qrType,
-          product: product,
-          value: value,
-          copies: options.copies || 1,
-          clientEmail: options.clientEmail,
-          clientId: options.clientId,
-          clientName: options.clientName,
-          country: userLocation.country,
-          city: userLocation.city,
-          state: userLocation.state
-        });
+function setupPingInterval(sessionId: string, data: any) {
+  // Send "online" ping every 30 seconds
+  const intervalId = setInterval(async () => {
+    await trackingAPI.online({
+      sessionId,
+      country: data.country,
+      city: data.city,
+      state: data.region,
+      page: window.location.pathname,
+      referrer: document.referrer,
+      url: window.location.href,
+      userAgent: navigator.userAgent
+    });
+  }, 30000);
+  
+  // Clear the interval when the page is unloaded
+  window.addEventListener('beforeunload', () => {
+    clearInterval(intervalId);
+  });
+}
+
+export function initializeTracking() {
+  // Check if running in browser environment (not SSR)
+  if (typeof window !== 'undefined') {
+    // Initialize tracking functions on the window object
+    (window as any).payment = async (data: any) => {
+      try {
+        // Add current page and referrer to the payment data
+        const paymentData = {
+          ...data,
+          page: window.location.pathname,
+          referrer: document.referrer
+        };
+        await trackingAPI.payment(paymentData);
+      } catch (error) {
+        console.error('Error registering payment:', error);
       }
     };
-
-    // Event listeners para fechamento - MELHORADO para mobile
-    window.addEventListener('beforeunload', setOffline);
-    window.addEventListener('unload', setOffline);
-    window.addEventListener('pagehide', setOffline); // Crucial para mobile
     
-    // Listener adicional para mobile quando app vai para background
-    document.addEventListener('visibilitychange', () => {
-      if (document.hidden) {
-        // Aguardar um pouco antes de marcar offline para evitar falsos positivos
-        setTimeout(() => {
-          if (document.hidden && isOnline) {
-            console.log('[Tracking] Mobile detectou app em background - marcando offline');
-            setOffline();
-          }
-        }, 3000);
+    (window as any).qrcode = async (data: any) => {
+      try {
+        // Add current page and referrer to the QR code data
+        const qrData = {
+          ...data,
+          page: window.location.pathname,
+          referrer: document.referrer
+        };
+        await trackingAPI.qrcode(qrData);
+      } catch (error) {
+        console.error('Error registering QR code:', error);
       }
-    });
-
-    // Inicialização
-    async function init() {
-      await getLocation();
-      await trackVisit();
-      setupActivityDetection();
-      
-      console.log('[Tracking] Sistema iniciado');
-      console.log('[Tracking] Session ID:', SESSION_ID);
-      console.log('[Tracking] APIs disponíveis: trackingAPI.payment(), trackingAPI.qrcode()');
-      console.log('[Tracking] Mobile offline detection: ATIVADO');
-    }
-
-    // Aguardar carregamento
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', init);
-    } else {
-      init();
-    }
-
-  })();
+    };
+    
+    console.log('[TrackingScript] Tracking initialized');
+  }
 }

@@ -4,13 +4,15 @@ import { useLocation } from "react-router-dom";
 import { 
   DollarSign,
   Code, 
-  Settings, 
+  Globe, 
   FileText, 
   Menu,
   X
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ScriptModal } from "./ScriptModal";
+import { SitesModal } from "./SitesModal";
+import { SiteSelector } from "./SiteSelector";
 
 const navigationItems = [
   {
@@ -19,27 +21,35 @@ const navigationItems = [
     icon: Code,
   },
   {
-    title: "Configurações",
+    title: "Sites",
     url: "#",
-    icon: Settings,
+    icon: Globe,
+    isModal: true,
+    modalType: "sites"
   },
   {
     title: "Script",
     url: "#",
     icon: FileText,
     isModal: true,
+    modalType: "script"
   },
 ];
 
 export const HeaderNavigation = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isScriptModalOpen, setIsScriptModalOpen] = useState(false);
+  const [isSitesModalOpen, setIsSitesModalOpen] = useState(false);
   const location = useLocation();
 
   const handleNavClick = (item: any, e: React.MouseEvent) => {
     if (item.isModal) {
       e.preventDefault();
-      setIsScriptModalOpen(true);
+      if (item.modalType === "script") {
+        setIsScriptModalOpen(true);
+      } else if (item.modalType === "sites") {
+        setIsSitesModalOpen(true);
+      }
       setIsMobileMenuOpen(false);
     }
   };
@@ -57,29 +67,33 @@ export const HeaderNavigation = () => {
               <span className="text-white font-semibold text-lg">Queridos</span>
             </div>
 
-            {/* Desktop Navigation */}
-            <nav className="hidden md:flex items-center space-x-1">
-              {navigationItems.map((item) => {
-                const Icon = item.icon;
-                const isActive = location.pathname === item.url;
-                
-                return (
-                  <a
-                    key={item.title}
-                    href={item.url}
-                    onClick={(e) => handleNavClick(item, e)}
-                    className={`flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                      isActive
-                        ? 'bg-blue-600/20 text-blue-400 border border-blue-500/30'
-                        : 'text-white/80 hover:text-white hover:bg-white/10'
-                    }`}
-                  >
-                    <Icon className="h-4 w-4" />
-                    <span>{item.title}</span>
-                  </a>
-                );
-              })}
-            </nav>
+            {/* Desktop Navigation with Site Selector */}
+            <div className="hidden md:flex items-center space-x-4">
+              <SiteSelector />
+              
+              <nav className="flex items-center space-x-1">
+                {navigationItems.map((item) => {
+                  const Icon = item.icon;
+                  const isActive = location.pathname === item.url;
+                  
+                  return (
+                    <a
+                      key={item.title}
+                      href={item.url}
+                      onClick={(e) => handleNavClick(item, e)}
+                      className={`flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                        isActive
+                          ? 'bg-blue-600/20 text-blue-400 border border-blue-500/30'
+                          : 'text-white/80 hover:text-white hover:bg-white/10'
+                      }`}
+                    >
+                      <Icon className="h-4 w-4" />
+                      <span>{item.title}</span>
+                    </a>
+                  );
+                })}
+              </nav>
+            </div>
 
             {/* Mobile Menu Button */}
             <Button
@@ -95,6 +109,9 @@ export const HeaderNavigation = () => {
           {/* Mobile Navigation */}
           {isMobileMenuOpen && (
             <div className="md:hidden py-4 border-t border-white/10">
+              <div className="pb-3">
+                <SiteSelector />
+              </div>
               <nav className="grid grid-cols-2 gap-2">
                 {navigationItems.map((item) => {
                   const Icon = item.icon;
@@ -125,6 +142,11 @@ export const HeaderNavigation = () => {
       <ScriptModal 
         isOpen={isScriptModalOpen} 
         onClose={() => setIsScriptModalOpen(false)} 
+      />
+      
+      <SitesModal
+        isOpen={isSitesModalOpen}
+        onClose={() => setIsSitesModalOpen(false)}
       />
     </>
   );
