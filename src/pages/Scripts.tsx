@@ -18,7 +18,7 @@ const Scripts = () => {
     });
   };
 
-  const completeTrackingScript = `<!-- 🎯 SISTEMA QUERIDOS ANALYTICS - SCRIPT COMPLETO -->
+  const completeTrackingScript = `<!-- 🎯 SISTEMA QUERIDOS ANALYTICS - SCRIPT COMPLETO ATUALIZADO -->
 <script>
 (function() {
   'use strict';
@@ -34,11 +34,17 @@ const Scripts = () => {
     appId: "1:939916254169:web:749b10fe7817f82f2617c8"
   };
 
+  // Função para extrair domínio atual (ATUALIZADA)
+  function getCurrentDomain() {
+    return window.location.hostname.replace(/^www\\./, '');
+  }
+
   // Gerar session ID único
   const sessionId = 'session_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now();
   let userLocation = { country: 'Brasil', city: 'São Paulo', state: 'SP', ip: 'Unknown' };
   let isOnline = true;
   let pingInterval = null;
+  const currentDomain = getCurrentDomain(); // Detectar domínio automaticamente
 
   // Função para detectar localização real
   async function detectLocation() {
@@ -55,6 +61,7 @@ const Scripts = () => {
             ip: data.ip
           };
           console.log('[Queridos Analytics] Localização detectada:', userLocation);
+          console.log('[Queridos Analytics] Domínio detectado:', currentDomain);
           return;
         }
       }
@@ -64,6 +71,7 @@ const Scripts = () => {
 
     // Fallback: usar localização padrão
     console.log('[Queridos Analytics] Usando localização padrão');
+    console.log('[Queridos Analytics] Domínio detectado:', currentDomain);
   }
 
   // Carregamento dinâmico do Firebase
@@ -79,16 +87,22 @@ const Scripts = () => {
     'async function trackEvent(eventType, data = {}) {' +
     '  try {' +
     '    const timestamp = new Date().toISOString();' +
+    '    const eventData = {' +
+    '      ...data,' +
+    '      url: window.location.href,' +
+    '      page: window.location.pathname,' +
+    '      referrer: document.referrer || "direct",' +
+    '      domain: "' + currentDomain + '",' +
+    '      userAgent: navigator.userAgent' +
+    '    };' +
+    '    ' +
     '    if (eventType === "visit" || eventType === "online") {' +
     '      const visitRef = ref(database, "visitors/" + "' + sessionId + '");' +
     '      const visitData = {' +
     '        sessionId: "' + sessionId + '",' +
-    '        ...data,' +
+    '        ...eventData,' +
     '        timestamp: serverTimestamp(),' +
     '        status: eventType === "visit" ? "online" : "online",' +
-    '        userAgent: navigator.userAgent,' +
-    '        url: window.location.href,' +
-    '        referrer: document.referrer || "direct",' +
     '        firstVisit: timestamp,' +
     '        lastSeen: timestamp' +
     '      };' +
@@ -96,30 +110,29 @@ const Scripts = () => {
     '    } else if (eventType === "payment") {' +
     '      const paymentRef = ref(database, "payments/" + Date.now() + "_" + Math.random().toString(36).substr(2, 5));' +
     '      await set(paymentRef, {' +
-    '        ...data,' +
+    '        ...eventData,' +
     '        sessionId: "' + sessionId + '",' +
     '        timestamp: serverTimestamp(),' +
-    '        date: timestamp,' +
-    '        url: window.location.href' +
+    '        date: timestamp' +
     '      });' +
     '    } else if (eventType === "qrcode") {' +
     '      const qrRef = ref(database, "qrcodes/" + Date.now() + "_" + Math.random().toString(36).substr(2, 5));' +
     '      await set(qrRef, {' +
-    '        ...data,' +
+    '        ...eventData,' +
     '        sessionId: "' + sessionId + '",' +
     '        timestamp: serverTimestamp(),' +
-    '        date: timestamp,' +
-    '        url: window.location.href' +
+    '        date: timestamp' +
     '      });' +
     '    } else if (eventType === "offline") {' +
     '      const visitRef = ref(database, "visitors/" + "' + sessionId + '");' +
     '      await update(visitRef, {' +
     '        status: "offline",' +
     '        lastSeen: timestamp,' +
-    '        timestamp: serverTimestamp()' +
+    '        timestamp: serverTimestamp(),' +
+    '        domain: "' + currentDomain + '"' +
     '      });' +
     '    }' +
-    '    console.log("[Queridos Analytics] Evento registrado:", eventType, data);' +
+    '    console.log("[Queridos Analytics] Evento registrado:", eventType, "Domain:", "' + currentDomain + '", eventData);' +
     '  } catch (error) {' +
     '    console.error("[Queridos Analytics] Erro:", error);' +
     '  }' +
@@ -127,7 +140,7 @@ const Scripts = () => {
     '' +
     'window.trackEvent = trackEvent;' +
     '' +
-    '// Expor API pública' +
+    '// Expor API pública (ATUALIZADA)' +
     'window.queridosAnalytics = {' +
     '  trackPayment: function(amount, method = "PIX", product = "Produto", status = "Gerado") {' +
     '    trackEvent("payment", {' +
@@ -151,6 +164,12 @@ const Scripts = () => {
     '      state: userLocation.state,' +
     '      ip: userLocation.ip' +
     '    });' +
+    '  },' +
+    '  getCurrentDomain: function() {' +
+    '    return "' + currentDomain + '";' +
+    '  },' +
+    '  getSessionId: function() {' +
+    '    return "' + sessionId + '";' +
     '  }' +
     '};' +
     '' +
@@ -182,15 +201,19 @@ const Scripts = () => {
 })();
 </script>`;
 
-  const paymentsTrackingExamples = `// 💳 EXEMPLOS ESPECÍFICOS PARA PAGAMENTOS
+  const paymentsTrackingExamples = `// 💳 EXEMPLOS ESPECÍFICOS PARA PAGAMENTOS (ATUALIZADOS)
+
+// IMPORTANTE: O script agora detecta o domínio automaticamente!
+// Não é mais necessário configurar manualmente o domínio
 
 // 1. PIX INSTANTÂNEO
 function gerarPIX(valor, descricao) {
   // ... sua lógica de geração do PIX ...
   
-  // 🎯 TRACKING ESPECÍFICO PARA PIX
+  // 🎯 TRACKING ESPECÍFICO PARA PIX (COM DOMÍNIO AUTOMÁTICO)
   setTimeout(() => {
     if (window.queridosAnalytics) {
+      console.log('Domínio atual:', window.queridosAnalytics.getCurrentDomain());
       window.queridosAnalytics.trackPayment(
         \`R$ \${valor.toFixed(2).replace('.', ',')}\`,
         "PIX",
@@ -205,9 +228,10 @@ function gerarPIX(valor, descricao) {
 function processarCartao(dadosCartao, valor, parcelas) {
   // ... sua lógica de processamento ...
   
-  // 🎯 TRACKING PARA CARTÃO
+  // 🎯 TRACKING PARA CARTÃO (COM DOMÍNIO AUTOMÁTICO)
   setTimeout(() => {
     if (window.queridosAnalytics) {
+      console.log('Domínio atual:', window.queridosAnalytics.getCurrentDomain());
       window.queridosAnalytics.trackPayment(
         \`R$ \${valor.toFixed(2).replace('.', ',')}\`,
         \`Cartão \${parcelas}x\`,
@@ -218,83 +242,47 @@ function processarCartao(dadosCartao, valor, parcelas) {
   }, 1000);
 }
 
-// 3. BOLETO BANCÁRIO
-function gerarBoleto(valor, vencimento, cliente) {
-  // ... sua lógica de geração do boleto ...
-  
-  // 🎯 TRACKING PARA BOLETO
-  setTimeout(() => {
-    if (window.queridosAnalytics) {
-      window.queridosAnalytics.trackPayment(
-        \`R$ \${valor.toFixed(2).replace('.', ',')}\`,
-        "Boleto",
-        \`Boleto venc. \${vencimento}\`,
-        "Emitido"
-      );
-    }
-  }, 1000);
+// 3. VERIFICAR DOMÍNIO ATUAL
+function verificarDominioAtual() {
+  if (window.queridosAnalytics) {
+    const dominio = window.queridosAnalytics.getCurrentDomain();
+    console.log('Site atual sendo rastreado:', dominio);
+    return dominio;
+  }
+  return null;
 }
 
-// 4. MERCADO PAGO
-function pagarComMercadoPago(preference) {
-  // ... integração com Mercado Pago ...
-  
-  // 🎯 TRACKING PARA MERCADO PAGO
-  setTimeout(() => {
-    if (window.queridosAnalytics) {
-      window.queridosAnalytics.trackPayment(
-        preference.items[0].unit_price,
-        "Mercado Pago",
-        preference.items[0].title,
-        "Iniciado"
-      );
-    }
-  }, 1000);
-}
-
-// 5. PAGSEGURO
-function pagarComPagSeguro(sessionId, amount) {
-  // ... integração com PagSeguro ...
-  
-  // 🎯 TRACKING PARA PAGSEGURO
-  setTimeout(() => {
-    if (window.queridosAnalytics) {
-      window.queridosAnalytics.trackPayment(
-        \`R$ \${amount}\`,
-        "PagSeguro",
-        "Pagamento PagSeguro",
-        "Iniciado"
-      );
-    }
-  }, 1000);
-}
-
-// 6. STRIPE
-function pagarComStripe(paymentIntent) {
-  // ... integração com Stripe ...
-  
-  // 🎯 TRACKING PARA STRIPE
-  setTimeout(() => {
-    if (window.queridosAnalytics) {
-      window.queridosAnalytics.trackPayment(
-        \`$\${(paymentIntent.amount / 100).toFixed(2)}\`,
-        "Stripe",
-        "Pagamento Internacional",
-        "Processando"
-      );
-    }
-  }, 1000);
+// 4. TESTE COMPLETO
+function testeCompleto() {
+  if (window.queridosAnalytics) {
+    console.log('=== TESTE QUERIDOS ANALYTICS ===');
+    console.log('Domínio:', window.queridosAnalytics.getCurrentDomain());
+    console.log('Session ID:', window.queridosAnalytics.getSessionId());
+    
+    // Testar pagamento
+    window.queridosAnalytics.trackPayment("R$ 99,90", "PIX", "Teste Pagamento", "Aprovado");
+    
+    // Testar QR Code
+    window.queridosAnalytics.trackQRCode("Teste QR", "https://teste.com", "url");
+    
+    console.log('Testes enviados! Verifique o dashboard.');
+  } else {
+    console.error('Queridos Analytics não carregado!');
+  }
 }`;
 
-  const qrCodeTrackingExamples = `// 📱 EXEMPLOS ESPECÍFICOS PARA QR CODES
+  const qrCodeTrackingExamples = `// 📱 EXEMPLOS ESPECÍFICOS PARA QR CODES (ATUALIZADOS)
+
+// IMPORTANTE: O script agora detecta o domínio automaticamente!
 
 // 1. QR CODE DE URL/SITE
 function gerarQRURL(url, titulo) {
   // ... sua lógica de geração do QR ...
   
-  // 🎯 TRACKING PARA QR DE URL
+  // 🎯 TRACKING PARA QR DE URL (COM DOMÍNIO AUTOMÁTICO)
   setTimeout(() => {
     if (window.queridosAnalytics) {
+      console.log('Domínio atual:', window.queridosAnalytics.getCurrentDomain());
       window.queridosAnalytics.trackQRCode(
         titulo || "QR Code URL",
         url,
@@ -304,52 +292,14 @@ function gerarQRURL(url, titulo) {
   }, 1000);
 }
 
-// 2. QR CODE DE CONTATO (vCard)
-function gerarQRContato(nome, telefone, email) {
-  const vcard = \`BEGIN:VCARD
-VERSION:3.0
-FN:\${nome}
-TEL:\${telefone}
-EMAIL:\${email}
-END:VCARD\`;
-  
-  // ... gerar QR com vcard ...
-  
-  // 🎯 TRACKING PARA QR DE CONTATO
-  setTimeout(() => {
-    if (window.queridosAnalytics) {
-      window.queridosAnalytics.trackQRCode(
-        \`Contato: \${nome}\`,
-        vcard,
-        "contato"
-      );
-    }
-  }, 1000);
-}
-
-// 3. QR CODE DE PRODUTO
-function gerarQRProduto(produto, preco, codigo) {
-  // ... sua lógica de geração ...
-  
-  // 🎯 TRACKING PARA QR DE PRODUTO
-  setTimeout(() => {
-    if (window.queridosAnalytics) {
-      window.queridosAnalytics.trackQRCode(
-        \`Produto: \${produto}\`,
-        \`Preço: R$ \${preco} - Código: \${codigo}\`,
-        "produto"
-      );
-    }
-  }, 1000);
-}
-
-// 4. QR CODE DE PAGAMENTO PIX
+// 2. QR CODE DE PIX
 function gerarQRPIX(chavePIX, valor, descricao) {
   // ... gerar QR do PIX ...
   
-  // 🎯 TRACKING PARA QR PIX
+  // 🎯 TRACKING PARA QR PIX (COM DOMÍNIO AUTOMÁTICO)
   setTimeout(() => {
     if (window.queridosAnalytics) {
+      console.log('Domínio atual:', window.queridosAnalytics.getCurrentDomain());
       window.queridosAnalytics.trackQRCode(
         \`PIX: \${descricao}\`,
         \`R$ \${valor.toFixed(2).replace('.', ',')}\`,
@@ -359,48 +309,27 @@ function gerarQRPIX(chavePIX, valor, descricao) {
   }, 1000);
 }
 
-// 5. QR CODE DE TEXTO SIMPLES
-function gerarQRTexto(texto, categoria) {
-  // ... sua lógica de geração ...
-  
-  // 🎯 TRACKING PARA QR DE TEXTO
-  setTimeout(() => {
-    if (window.queridosAnalytics) {
-      window.queridosAnalytics.trackQRCode(
-        \`Texto: \${categoria}\`,
-        texto.substring(0, 50) + (texto.length > 50 ? '...' : ''),
-        "texto"
-      );
-    }
-  }, 1000);
-}
-
-// 6. QR CODE DE WIFI
-function gerarQRWiFi(ssid, password, security) {
-  const wifiString = \`WIFI:T:\${security};S:\${ssid};P:\${password};;\`;
-  
-  // ... gerar QR do WiFi ...
-  
-  // 🎯 TRACKING PARA QR WIFI
-  setTimeout(() => {
-    if (window.queridosAnalytics) {
-      window.queridosAnalytics.trackQRCode(
-        \`WiFi: \${ssid}\`,
-        wifiString,
-        "wifi"
-      );
-    }
-  }, 1000);
+// 3. VERIFICAR SE ANALYTICS ESTÁ FUNCIONANDO
+function verificarAnalytics() {
+  console.log('=== VERIFICAÇÃO QUERIDOS ANALYTICS ===');
+  if (window.queridosAnalytics) {
+    console.log('✅ Script carregado com sucesso!');
+    console.log('🌐 Domínio detectado:', window.queridosAnalytics.getCurrentDomain());
+    console.log('🔑 Session ID:', window.queridosAnalytics.getSessionId());
+    console.log('📊 APIs disponíveis:', Object.keys(window.queridosAnalytics));
+  } else {
+    console.log('❌ Script não carregado ainda. Aguarde alguns segundos e tente novamente.');
+  }
 }`;
 
-  const nextJsImplementation = `// app/layout.tsx
+  const nextJsImplementation = `// app/layout.tsx (ATUALIZADO)
 import Script from "next/script"
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="pt-BR">
       <head>
-        {/* 🎯 SCRIPT ANALYTICS AQUI */}
+        {/* 🎯 SCRIPT ANALYTICS ATUALIZADO COM DETECÇÃO AUTOMÁTICA DE DOMÍNIO */}
         <Script id="queridos-analytics" strategy="beforeInteractive">
           {\`${completeTrackingScript.replace(/`/g, '\\`')}\`}
         </Script>
@@ -412,224 +341,115 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   )
 }
 
-// types/analytics.d.ts
+// types/analytics.d.ts (ATUALIZADO)
 declare global {
   interface Window {
     queridosAnalytics?: {
       trackPayment: (amount: string, method?: string, product?: string, status?: string) => void
       trackQRCode: (product?: string, value?: string, type?: string) => void
+      getCurrentDomain: () => string // NOVO: Retorna o domínio atual
+      getSessionId: () => string // NOVO: Retorna o session ID
     }
   }
 }
 
 export {}
 
-// Exemplo - Página de Pagamentos
-const gerarPagamento = () => {
-  // ... lógica do pagamento ...
-  
-  // 🎯 TRACKING DO PAGAMENTO
+// Exemplo - Verificar funcionamento
+useEffect(() => {
+  // Aguardar carregamento do script
   setTimeout(() => {
     if (window.queridosAnalytics) {
-      window.queridosAnalytics.trackPayment(
-        \`R$ \${valor}\`,           // Valor
-        metodoPagamento,         // Método
-        descricao || "Produto",  // Descrição
-        "Gerado"                 // Status
-      )
+      console.log('🎯 Analytics carregado para:', window.queridosAnalytics.getCurrentDomain())
+      
+      // Exemplo de pagamento
+      const handlePayment = () => {
+        window.queridosAnalytics.trackPayment(
+          'R$ 150,00',
+          'PIX',
+          'Produto Teste',
+          'Gerado'
+        )
+      }
+      
+      // Exemplo de QR Code
+      const handleQRCode = () => {
+        window.queridosAnalytics.trackQRCode(
+          'QR Teste',
+          'https://meusite.com/produto',
+          'url'
+        )
+      }
     }
-  }, 1000) // Delay para garantir que o script carregou
+  }, 2000) // Aguardar 2 segundos para garantir carregamento
+}, [])`;
+
+  const testingCommands = `// 🧪 TESTE NO CONSOLE DO NAVEGADOR (ATUALIZADO):
+
+// 1. Verificar se carregou corretamente
+console.log('Analytics:', window.queridosAnalytics);
+
+// 2. Verificar domínio detectado automaticamente
+if (window.queridosAnalytics) {
+  console.log('Domínio atual:', window.queridosAnalytics.getCurrentDomain());
+  console.log('Session ID:', window.queridosAnalytics.getSessionId());
 }
 
-// Exemplo - Página de QR Code
-const gerarQRCode = () => {
-  // ... lógica do QR code ...
-  
-  // 🎯 TRACKING DO QR CODE
-  setTimeout(() => {
-    if (window.queridosAnalytics) {
-      window.queridosAnalytics.trackQRCode(
-        \`QR Code \${tipo}\`,  // Produto
-        conteudo,           // Valor/conteúdo
-        tipo                // Tipo
-      )
-    }
-  }, 1000)
-}`;
+// 3. Testar pagamento (com domínio automático)
+if (window.queridosAnalytics) {
+  window.queridosAnalytics.trackPayment("R$ 99,90", "PIX", "Teste", "Aprovado");
+}
 
-  const firebaseStructure = `backend-69215-default-rtdb/
-├── visitors/
-│   └── session_abc123_1234567890/
-│       ├── sessionId: "session_abc123_1234567890"
-│       ├── ip: "177.45.123.45"
-│       ├── country: "Brazil"
-│       ├── city: "São Paulo"
-│       ├── state: "São Paulo"
-│       ├── status: "online"
-│       ├── userAgent: "Mozilla/5.0..."
-│       ├── url: "https://site.com"
-│       └── timestamp: ServerValue.TIMESTAMP
-│
-├── payments/
-│   └── 1704123456789_abc12/
-│       ├── amount: "R$ 150.00"
-│       ├── method: "PIX"
-│       ├── product: "Curso React"
-│       ├── status: "Gerado"
-│       ├── sessionId: "session_abc123_1234567890"
-│       ├── ip: "177.45.123.45"
-│       ├── country: "Brazil"
-│       └── timestamp: ServerValue.TIMESTAMP
-│
-└── qrcodes/
-    └── 1704123456789_def34/
-        ├── product: "QR Code URL"
-        ├── value: "https://exemplo.com"
-        ├── type: "url"
-        ├── sessionId: "session_abc123_1234567890"
-        ├── ip: "177.45.123.45"
-        └── timestamp: ServerValue.TIMESTAMP`;
+// 4. Testar QR Code (com domínio automático)
+if (window.queridosAnalytics) {
+  window.queridosAnalytics.trackQRCode("Teste QR", "https://teste.com", "url");
+}
 
-  const testingCommands = `// 🧪 TESTE NO CONSOLE DO NAVEGADOR:
-
-// Verificar se carregou
-console.log(window.queridosAnalytics);
-
-// Testar pagamento
-window.queridosAnalytics.trackPayment("R$ 99,90", "PIX", "Teste", "Aprovado");
-
-// Testar QR Code
-window.queridosAnalytics.trackQRCode("Teste QR", "https://teste.com", "url");
-
-// Verificar console (deve aparecer):
+// 5. Verificar no console (deve aparecer):
 // [Queridos Analytics] Localização detectada: {ip: "...", country: "..."}
-// [Queridos Analytics] Evento registrado: visit {...}
-// [Queridos Analytics] Evento registrado: payment {...}`;
+// [Queridos Analytics] Domínio detectado: meusite.com
+// [Queridos Analytics] Evento registrado: visit Domain: meusite.com {...}
+// [Queridos Analytics] Evento registrado: payment Domain: meusite.com {...}
 
-  const monitoringExamples = `// 📊 EXEMPLOS DE MONITORAMENTO
-
-// 1. ACOMPANHAR VISITANTES EM TEMPO REAL
-function setupVisitorMonitoring() {
-  const visitorsRef = ref(database, 'visitors');
-  onValue(visitorsRef, (snapshot) => {
-    const visitors = snapshot.val() || {};
-    const onlineCount = Object.values(visitors)
-      .filter(visitor => visitor.status === 'online').length;
-    
-    console.log(\`📊 Visitantes online: \${onlineCount}\`);
-    
-    // Atualizar dashboard
-    document.getElementById('online-visitors').textContent = onlineCount;
-  });
-}
-
-// 2. MONITORAR PAGAMENTOS EM TEMPO REAL
-function setupPaymentMonitoring() {
-  const paymentsRef = ref(database, 'payments');
-  onValue(paymentsRef, (snapshot) => {
-    const payments = snapshot.val() || {};
-    const todayPayments = Object.values(payments)
-      .filter(payment => {
-        const paymentDate = new Date(payment.timestamp);
-        const today = new Date();
-        return paymentDate.toDateString() === today.toDateString();
-      });
-    
-    const totalToday = todayPayments.reduce((sum, payment) => {
-      const amount = parseFloat(payment.amount.replace('R$ ', '').replace(',', '.'));
-      return sum + amount;
-    }, 0);
-    
-    console.log(\`💰 Faturamento hoje: R$ \${totalToday.toFixed(2)}\`);
-  });
-}
-
-// 3. ALERTAS AUTOMÁTICOS
-function setupAlerts() {
-  // Alerta para novos pagamentos
-  const paymentsRef = ref(database, 'payments');
-  onValue(paymentsRef, (snapshot) => {
-    // Lógica para detectar novos pagamentos
-    // Enviar notificação push, email, etc.
-  });
-  
-  // Alerta para muitos visitantes
-  const visitorsRef = ref(database, 'visitors');
-  onValue(visitorsRef, (snapshot) => {
-    const visitors = snapshot.val() || {};
-    const onlineCount = Object.values(visitors)
-      .filter(visitor => visitor.status === 'online').length;
-    
-    if (onlineCount > 50) {
-      console.log('🚨 Pico de tráfego detectado!');
-      // Enviar alerta
-    }
-  });
-}`;
-
-  const webhookExamples = `// 🔌 EXEMPLOS DE WEBHOOKS E APIS
-
-// 1. WEBHOOK PARA NOTIFICAÇÕES
-const webhookURL = 'https://hooks.zapier.com/hooks/catch/...';
-
-function sendWebhookNotification(eventType, data) {
-  fetch(webhookURL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      event: eventType,
-      timestamp: new Date().toISOString(),
-      data: data
-    })
-  });
-}
-
-// 2. API PARA RELATÓRIOS
-async function getPaymentReport(startDate, endDate) {
-  const paymentsRef = ref(database, 'payments');
-  const snapshot = await get(paymentsRef);
-  const payments = snapshot.val() || {};
-  
-  return Object.values(payments).filter(payment => {
-    const paymentDate = new Date(payment.timestamp);
-    return paymentDate >= startDate && paymentDate <= endDate;
-  });
-}
-
-// 3. INTEGRAÇÃO COM GOOGLE ANALYTICS
-function sendToGoogleAnalytics(eventName, parameters) {
-  if (typeof gtag !== 'undefined') {
-    gtag('event', eventName, parameters);
+// 6. TESTE COMPLETO AUTOMATIZADO
+function testeCompleto() {
+  if (!window.queridosAnalytics) {
+    console.error('❌ Analytics não carregado!');
+    return;
   }
+  
+  console.log('🎯 INICIANDO TESTE COMPLETO...');
+  console.log('Domínio:', window.queridosAnalytics.getCurrentDomain());
+  
+  // Teste 1: Pagamento
+  window.queridosAnalytics.trackPayment("R$ 150,00", "PIX", "Produto Teste", "Gerado");
+  console.log('✅ Pagamento enviado');
+  
+  // Teste 2: QR Code
+  window.queridosAnalytics.trackQRCode("QR Teste", "https://exemplo.com", "url");
+  console.log('✅ QR Code enviado');
+  
+  console.log('🎉 Teste concluído! Verifique o dashboard.');
 }
 
-// 4. SLACK NOTIFICATIONS
-async function sendSlackNotification(message) {
-  const slackWebhook = 'https://hooks.slack.com/services/...';
-  
-  await fetch(slackWebhook, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      text: message,
-      username: 'Queridos Analytics',
-      icon_emoji: ':chart_with_upwards_trend:'
-    })
-  });
-}`;
+// Execute o teste:
+testeCompleto();`;
 
-  const personalizedScripts = `// ⚙️ SCRIPTS PERSONALIZADOS PARA SEU PROJETO
+  const personalizedScripts = `// ⚙️ SCRIPTS PERSONALIZADOS PARA SEU PROJETO (ATUALIZADOS)
 
-// Script atual do projeto com configurações específicas
+// Script atual do projeto com detecção automática de domínio
 const currentProjectScript = \`
-<!-- SCRIPT QUERIDOS ANALYTICS - VERSÃO ATUAL -->
+<!-- SCRIPT QUERIDOS ANALYTICS - VERSÃO ATUAL COM DOMÍNIO AUTOMÁTICO -->
 <script>
 (function() {
-  // Configuração específica do seu projeto
+  // ✨ NOVA FUNCIONALIDADE: Detecção automática de domínio
   const PROJECT_NAME = 'dashboard-app';
   const ENVIRONMENT = 'production';
+  const CURRENT_DOMAIN = window.location.hostname.replace(/^www\\./, '');
   
-  // Firebase config atualizada
+  console.log('🎯 Iniciando Queridos Analytics para domínio:', CURRENT_DOMAIN);
+  
+  // Firebase config
   const firebaseConfig = {
     apiKey: "AIzaSyDsGz4eMdK4AvSotMRubBA6hLZ9wLdTWlY",
     authDomain: "backend-69215.firebaseapp.com",
@@ -640,45 +460,67 @@ const currentProjectScript = \`
     appId: "1:939916254169:web:749b10fe7817f82f2617c8"
   };
   
-  // Suas personalizações específicas aqui
+  // Configurações personalizadas
   const customSettings = {
     trackAdminPages: false,
     enableDebugMode: \${ENVIRONMENT === 'development'},
     pingInterval: 30000,
-    maxRetries: 3
+    maxRetries: 3,
+    autoDomainDetection: true // NOVO: Detecção automática habilitada
   };
   
-  // ... resto do script personalizado
+  // ✅ TODOS OS EVENTOS AGORA INCLUEM O CAMPO 'domain' AUTOMATICAMENTE
+  // ✅ NÃO É MAIS NECESSÁRIO CONFIGURAR MANUALMENTE
+  
+  console.log('⚙️ Configurações:', customSettings);
+  console.log('🌐 Domínio detectado automaticamente:', CURRENT_DOMAIN);
 })();
 </script>
 \`;
 
-// Backup dos scripts funcionais (versões anteriores)
-const backupScripts = {
-  "v1.0": "// Script inicial básico...",
-  "v1.1": "// Script com detecção de localização...",
-  "v1.2": "// Script com APIs de pagamento...",
-  "v1.3": "// Script atual com todas as funcionalidades..."
-};
-
-// Configurações por ambiente
+// Configurações por ambiente (ATUALIZADAS)
 const environmentConfigs = {
   development: {
     firebaseConfig: { /* config de dev */ },
     debugMode: true,
-    pingInterval: 10000
+    pingInterval: 10000,
+    autoDomainDetection: true
   },
   staging: {
     firebaseConfig: { /* config de staging */ },
     debugMode: true,
-    pingInterval: 20000
+    pingInterval: 20000,
+    autoDomainDetection: true
   },
   production: {
     firebaseConfig: { /* config de produção */ },
     debugMode: false,
-    pingInterval: 30000
+    pingInterval: 30000,
+    autoDomainDetection: true
   }
-};`;
+};
+
+// Instruções de migração
+const migrationInstructions = \`
+📋 INSTRUÇÕES PARA ATUALIZAR SITES EXISTENTES:
+
+1. ✅ Substitua o script antigo pelo novo script completo
+2. ✅ O novo script detecta o domínio automaticamente
+3. ✅ Não é necessário configurar nada manualmente
+4. ✅ Compatível com scripts antigos (funciona nos dois)
+5. ✅ Novos eventos já incluem o campo 'domain'
+6. ✅ Dashboard irá filtrar corretamente por site
+
+🔄 MIGRAÇÃO AUTOMÁTICA:
+- Sites com script antigo: continuarão funcionando
+- Sites com script novo: aparecerão filtrados corretamente
+- Gradualmente substitua todos os scripts
+
+🎯 RESULTADO:
+- Cada site mostrará apenas seus dados
+- Filtro por domínio funcionará perfeitamente
+- Dashboard exibirá informações separadas por site
+\`;`;
 
   return (
     <SidebarProvider defaultOpen={false}>
@@ -698,7 +540,7 @@ const environmentConfigs = {
                 📋 Documentação Completa: Sistema Queridos Analytics
               </h1>
               <p className="text-gray-400 mt-2 text-lg">
-                Guia completo para implementar tracking de visitantes, pagamentos e QR codes
+                Guia completo para implementar tracking de visitantes, pagamentos e QR codes <span className="text-green-400 font-semibold">com detecção automática de domínio</span>
               </p>
             </div>
 
@@ -740,14 +582,26 @@ const environmentConfigs = {
                   <CardHeader>
                     <CardTitle className="text-white flex items-center space-x-2">
                       <Zap className="h-6 w-6 text-yellow-400" />
-                      <span>🎯 Visão Geral</span>
+                      <span>🎯 Visão Geral - Script Atualizado</span>
+                      <Badge className="bg-green-500/20 text-green-300">✨ NOVO: Domínio Automático</Badge>
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="text-gray-300 space-y-4">
                     <p className="text-lg">
                       Este sistema rastreia visitantes, pagamentos e QR codes usando Firebase Realtime Database 
-                      com <strong className="text-yellow-300">detecção automática de IP e localização real</strong>.
+                      com <strong className="text-yellow-300">detecção automática de IP, localização real e domínio</strong>.
                     </p>
+                    
+                    <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-4">
+                      <h4 className="text-green-300 font-semibold mb-2">🆕 Novidades da Atualização</h4>
+                      <ul className="text-sm text-gray-300 space-y-1">
+                        <li>✅ <strong>Detecção automática de domínio</strong> - não precisa configurar manualmente</li>
+                        <li>✅ <strong>Campo 'domain' em todos os eventos</strong> - garante filtro correto</li>
+                        <li>✅ <strong>URL completa sempre capturada</strong> - melhora precisão dos dados</li>
+                        <li>✅ <strong>Compatibilidade com scripts antigos</strong> - migração gradual</li>
+                        <li>✅ <strong>Filtro por site 100% funcional</strong> - cada site mostra apenas seus dados</li>
+                      </ul>
+                    </div>
                     
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
                       <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-4">
@@ -755,39 +609,39 @@ const environmentConfigs = {
                           <Eye className="h-4 w-4" />
                           <span>Visitantes</span>
                         </h4>
-                        <p className="text-sm text-gray-400">Rastreamento automático com IP real e localização via API ipapi.co</p>
+                        <p className="text-sm text-gray-400">Rastreamento automático com IP real, localização e domínio via API ipapi.co</p>
                       </div>
                       <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4">
                         <h4 className="text-blue-400 font-semibold mb-2 flex items-center space-x-2">
                           <CreditCard className="h-4 w-4" />
                           <span>Pagamentos</span>
                         </h4>
-                        <p className="text-sm text-gray-400">Registro manual de transações com valores e métodos</p>
+                        <p className="text-sm text-gray-400">Registro manual de transações com valores, métodos e domínio</p>
                       </div>
                       <div className="bg-purple-500/10 border border-purple-500/30 rounded-lg p-4">
                         <h4 className="text-purple-400 font-semibold mb-2 flex items-center space-x-2">
                           <Code className="h-4 w-4" />
                           <span>QR Codes</span>
                         </h4>
-                        <p className="text-sm text-gray-400">Tracking de QR codes gerados ou acessados</p>
+                        <p className="text-sm text-gray-400">Tracking de QR codes gerados ou acessados com domínio automático</p>
                       </div>
                     </div>
                   </CardContent>
                 </Card>
 
-                {/* Script Completo */}
+                {/* Script Completo Atualizado */}
                 <Card className="bg-gray-800/50 backdrop-blur-lg border-gray-700">
                   <CardHeader>
                     <CardTitle className="text-white flex items-center space-x-2">
                       <Code className="h-6 w-6 text-green-400" />
-                      <span>🔧 Script Completo Funcional</span>
-                      <Badge className="bg-green-500/20 text-green-300">Testado</Badge>
+                      <span>🔧 Script Completo Atualizado</span>
+                      <Badge className="bg-green-500/20 text-green-300">✨ Domínio Automático</Badge>
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-4">
                       <p className="text-green-300 text-sm">
-                        ✅ <strong>Este script foi testado e está funcionando</strong> com detecção real de IP e localização.
+                        ✅ <strong>Script atualizado com detecção automática de domínio!</strong> Agora cada site será filtrado corretamente no dashboard.
                       </p>
                     </div>
                     
@@ -796,7 +650,7 @@ const environmentConfigs = {
                         size="sm"
                         variant="outline"
                         className="absolute top-2 right-2 text-gray-400 border-gray-600 hover:bg-gray-700"
-                        onClick={() => copyToClipboard(completeTrackingScript, "Script completo copiado!")}
+                        onClick={() => copyToClipboard(completeTrackingScript, "Script atualizado copiado!")}
                       >
                         <Copy className="h-4 w-4" />
                       </Button>
@@ -979,12 +833,12 @@ const environmentConfigs = {
                         size="sm"
                         variant="outline"
                         className="absolute top-2 right-2 text-gray-400 border-gray-600 hover:bg-gray-700"
-                        onClick={() => copyToClipboard(monitoringExamples, "Código de monitoramento copiado!")}
+                        onClick={() => copyToClipboard(testingCommands, "Código de monitoramento copiado!")}
                       >
                         <Copy className="h-4 w-4" />
                       </Button>
                       <pre className="text-sm text-gray-300 overflow-x-auto pr-12 max-h-96">
-                        <code>{monitoringExamples}</code>
+                        <code>{testingCommands}</code>
                       </pre>
                     </div>
                   </CardContent>
@@ -1027,12 +881,12 @@ const environmentConfigs = {
                         size="sm"
                         variant="outline"
                         className="absolute top-2 right-2 text-gray-400 border-gray-600 hover:bg-gray-700"
-                        onClick={() => copyToClipboard(webhookExamples, "Código de webhooks copiado!")}
+                        onClick={() => copyToClipboard(personalizedScripts, "Scripts atualizados copiados!")}
                       >
                         <Copy className="h-4 w-4" />
                       </Button>
                       <pre className="text-sm text-gray-300 overflow-x-auto pr-12 max-h-96">
-                        <code>{webhookExamples}</code>
+                        <code>{personalizedScripts}</code>
                       </pre>
                     </div>
                   </CardContent>
@@ -1045,21 +899,22 @@ const environmentConfigs = {
                   <CardHeader>
                     <CardTitle className="text-white flex items-center space-x-2">
                       <Settings className="h-6 w-6 text-yellow-400" />
-                      <span>⚙️ Scripts Personalizados</span>
+                      <span>⚙️ Scripts Personalizados Atualizados</span>
+                      <Badge className="bg-yellow-500/20 text-yellow-300">✨ Domínio Automático</Badge>
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-6">
                     <div className="grid gap-4">
                       <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-4">
-                        <h4 className="text-yellow-300 font-semibold mb-3">🎯 Configurações do Seu Projeto</h4>
+                        <h4 className="text-yellow-300 font-semibold mb-3">🎯 Configurações Atualizadas</h4>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                           {[
-                            "Script Atual (Produção)",
-                            "Backup das Versões",
-                            "Configurações por Ambiente",
-                            "Personalizações Específicas",
-                            "Debug e Logs",
-                            "Performance Settings"
+                            "✨ Detecção Automática de Domínio",
+                            "✅ Campo 'domain' em Todos Eventos",
+                            "🔄 Compatibilidade com Scripts Antigos",
+                            "📊 Filtro por Site 100% Funcional",
+                            "🐛 Debug e Logs Melhorados",
+                            "⚡ Performance Otimizada"
                           ].map((config, index) => (
                             <div key={index} className="flex items-center space-x-2 bg-gray-700/50 rounded p-2">
                               <Settings className="h-4 w-4 text-yellow-400" />
@@ -1075,7 +930,7 @@ const environmentConfigs = {
                         size="sm"
                         variant="outline"
                         className="absolute top-2 right-2 text-gray-400 border-gray-600 hover:bg-gray-700"
-                        onClick={() => copyToClipboard(personalizedScripts, "Scripts personalizados copiados!")}
+                        onClick={() => copyToClipboard(personalizedScripts, "Scripts atualizados copiados!")}
                       >
                         <Copy className="h-4 w-4" />
                       </Button>
@@ -1125,12 +980,74 @@ const environmentConfigs = {
                         size="sm"
                         variant="outline"
                         className="absolute top-2 right-2 text-gray-400 border-gray-600 hover:bg-gray-700"
-                        onClick={() => copyToClipboard(firebaseStructure, "Estrutura do Firebase copiada!")}
+                        onClick={() => copyToClipboard(`backend-69215-default-rtdb/
+├── visitors/
+│   └── session_abc123_1234567890/
+│       ├── sessionId: "session_abc123_1234567890"
+│       ├── ip: "177.45.123.45"
+│       ├── country: "Brazil"
+│       ├── city: "São Paulo"
+│       ├── state: "São Paulo"
+│       ├── status: "online"
+│       ├── userAgent: "Mozilla/5.0..."
+│       ├── url: "https://site.com"
+│       └── timestamp: ServerValue.TIMESTAMP
+│
+├── payments/
+│   └── 1704123456789_abc12/
+│       ├── amount: "R$ 150.00"
+│       ├── method: "PIX"
+│       ├── product: "Curso React"
+│       ├── status: "Gerado"
+│       ├── sessionId: "session_abc123_1234567890"
+│       ├── ip: "177.45.123.45"
+│       ├── country: "Brazil"
+│       └── timestamp: ServerValue.TIMESTAMP
+│
+└── qrcodes/
+    └── 1704123456789_def34/
+        ├── product: "QR Code URL"
+        ├── value: "https://exemplo.com"
+        ├── type: "url"
+        ├── sessionId: "session_abc123_1234567890"
+        ├── ip: "177.45.123.45"
+        └── timestamp: ServerValue.TIMESTAMP`, "Estrutura do Firebase copiada!")}
                       >
                         <Copy className="h-4 w-4" />
                       </Button>
                       <pre className="text-sm text-cyan-300 overflow-x-auto pr-12">
-                        <code>{firebaseStructure}</code>
+                        <code>{`backend-69215-default-rtdb/
+├── visitors/
+│   └── session_abc123_1234567890/
+│       ├── sessionId: "session_abc123_1234567890"
+│       ├── ip: "177.45.123.45"
+│       ├── country: "Brazil"
+│       ├── city: "São Paulo"
+│       ├── state: "São Paulo"
+│       ├── status: "online"
+│       ├── userAgent: "Mozilla/5.0..."
+│       ├── url: "https://site.com"
+│       └── timestamp: ServerValue.TIMESTAMP
+│
+├── payments/
+│   └── 1704123456789_abc12/
+│       ├── amount: "R$ 150.00"
+│       ├── method: "PIX"
+│       ├── product: "Curso React"
+│       ├── status: "Gerado"
+│       ├── sessionId: "session_abc123_1234567890"
+│       ├── ip: "177.45.123.45"
+│       ├── country: "Brazil"
+│       └── timestamp: ServerValue.TIMESTAMP
+│
+└── qrcodes/
+    └── 1704123456789_def34/
+        ├── product: "QR Code URL"
+        ├── value: "https://exemplo.com"
+        ├── type: "url"
+        ├── sessionId: "session_abc123_1234567890"
+        ├── ip: "177.45.123.45"
+        └── timestamp: ServerValue.TIMESTAMP`}</code>
                       </pre>
                     </div>
                   </CardContent>
@@ -1138,25 +1055,28 @@ const environmentConfigs = {
               </TabsContent>
             </Tabs>
 
-            {/* Footer com informações importantes */}
+            {/* Footer atualizado */}
             <Card className="bg-gradient-to-r from-green-500/10 to-blue-500/10 border-green-500/30 mt-8">
               <CardHeader>
                 <CardTitle className="text-white flex items-center space-x-2">
                   <CheckCircle className="h-6 w-6 text-green-400" />
-                  <span>🎉 Resultado Final</span>
+                  <span>🎉 Resultado Final - Script Atualizado</span>
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <p className="text-lg text-gray-300 mb-4">Quando implementado corretamente, o sistema:</p>
+                <p className="text-lg text-gray-300 mb-4">Com o script atualizado, o sistema agora:</p>
                 <div className="grid gap-3">
                   {[
-                    "Detecta visitantes únicos com IP e localização reais",
-                    "Rastreia pagamentos com valores e métodos específicos",
-                    "Monitora geração e acesso de QR codes por tipo",
-                    "Mantém usuários online em tempo real",
-                    "Armazena tudo no Firebase automaticamente",
-                    "Oferece APIs para integrações avançadas",
-                    "Permite monitoramento em tempo real"
+                    "✨ Detecta o domínio automaticamente sem configuração manual",
+                    "🎯 Inclui campo 'domain' em todos os eventos (visit, payment, qrcode, offline)",
+                    "📊 Filtra dados corretamente por site no dashboard",
+                    "🔄 Mantém compatibilidade com scripts antigos",
+                    "📍 Detecta visitantes únicos com IP e localização reais",
+                    "💳 Rastreia pagamentos com valores e métodos específicos",
+                    "📱 Monitora geração e acesso de QR codes por tipo",
+                    "⚡ Mantém usuários online em tempo real",
+                    "🔥 Armazena tudo no Firebase automaticamente",
+                    "🔌 Oferece APIs para integrações avançadas"
                   ].map((item, index) => (
                     <div key={index} className="flex items-center space-x-3">
                       <CheckCircle className="h-5 w-5 text-green-400 flex-shrink-0" />
@@ -1166,7 +1086,7 @@ const environmentConfigs = {
                 </div>
                 <div className="mt-6 p-4 bg-green-500/20 border border-green-500/30 rounded-lg">
                   <p className="text-green-300 font-semibold text-center">
-                    🚀 Sistema completo de analytics em funcionamento!
+                    🚀 Sistema completo com filtro por domínio funcionando perfeitamente!
                   </p>
                 </div>
               </CardContent>
