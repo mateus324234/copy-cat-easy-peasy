@@ -1,4 +1,3 @@
-
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Eye, Users, CreditCard, QrCode, Trash2 } from "lucide-react";
@@ -147,7 +146,7 @@ export const ModernMetricsCards = () => {
             onClick={(e) => handleCardClick(index, e)}
           >
             <CardContent className="p-4 relative overflow-hidden">
-              <div className={`absolute inset-0 bg-gradient-to-br ${metric.bgGradient} opacity-0 group-hover:opacity-100 transition-opacity duration-500 ${
+              <div className={`absolute inset-0 bg-gradient-to-br ${metric.bgGradient} opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl ${
                 expandedCard === index ? 'opacity-100' : ''
               }`}></div>
               
