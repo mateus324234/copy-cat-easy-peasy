@@ -141,10 +141,13 @@ const ScriptTest = () => {
                   <div>
                     <p className="text-sm font-medium text-blue-800 mb-1">Exemplo 2: Função JavaScript</p>
                     <div className="bg-gray-100 p-2 rounded text-xs font-mono">
-                      function processarPagamento() {<br />
-                      &nbsp;&nbsp;// seu código existente<br />
-                      &nbsp;&nbsp;window.queridosAnalytics.trackPayment("R$ 199,90", "CARTAO", "Produto Premium", "Processando");<br />
-                      }
+                      function processarPagamento() {'{'}
+                      <br />
+                      &nbsp;&nbsp;// seu código existente
+                      <br />
+                      &nbsp;&nbsp;window.queridosAnalytics.trackPayment("R$ 199,90", "CARTAO", "Produto Premium", "Processando");
+                      <br />
+                      {'}'}
                     </div>
                   </div>
                 </div>
