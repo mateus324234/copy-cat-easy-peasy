@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { Copy, Play, CheckCircle, AlertTriangle, Bug } from 'lucide-react';
+import { Copy, Play, CheckCircle, AlertTriangle, Bug, BookOpen, Zap } from 'lucide-react';
 import { getTrackingScript, getScriptInstructions } from '@/utils/generateScript';
 import { toast } from 'sonner';
 
@@ -21,9 +21,7 @@ const ScriptTest = () => {
   };
 
   const testScript = () => {
-    // Simular o carregamento do script
     try {
-      // Executar o script no contexto atual
       const scriptElement = document.createElement('script');
       scriptElement.textContent = script;
       document.head.appendChild(scriptElement);
@@ -67,17 +65,135 @@ const ScriptTest = () => {
     <div className="container mx-auto p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Script de Tracking com Debug</h1>
+          <h1 className="text-3xl font-bold">Script de Tracking Atualizado</h1>
           <p className="text-muted-foreground">
-            Script atualizado com logs detalhados para identificar problemas
+            Script que não detecta páginas administrativas como online
           </p>
         </div>
         <Badge variant="secondary" className="bg-green-100 text-green-800">
-          ✅ Com Debug Completo
+          ✅ Páginas Admin Excluídas
         </Badge>
       </div>
 
       <div className="grid gap-6">
+        {/* Tutorial de Implementação de Pagamentos */}
+        <Card className="border-blue-200 bg-blue-50">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-blue-800">
+              <BookOpen className="w-5 h-5" />
+              Tutorial: Como Fazer os Pagamentos Funcionarem
+            </CardTitle>
+            <CardDescription className="text-blue-700">
+              Passo a passo completo para implementar detecção de pagamentos no seu site
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="space-y-4">
+              <div className="bg-white p-4 rounded-lg border border-blue-200">
+                <h4 className="font-semibold text-blue-800 mb-3 flex items-center gap-2">
+                  <span className="bg-blue-600 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs">1</span>
+                  Implementar o Script no Seu Site
+                </h4>
+                <div className="space-y-2 text-sm text-blue-700">
+                  <p>• Cole o script atualizado antes do &lt;/body&gt;</p>
+                  <p>• Aguarde 2-3 segundos para o Firebase inicializar</p>
+                  <p>• Teste com window.queridosAnalytics.test()</p>
+                </div>
+              </div>
+
+              <div className="bg-white p-4 rounded-lg border border-blue-200">
+                <h4 className="font-semibold text-blue-800 mb-3 flex items-center gap-2">
+                  <span className="bg-blue-600 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs">2</span>
+                  Identificar o Botão de Pagamento
+                </h4>
+                <div className="space-y-2 text-sm text-blue-700">
+                  <p>• Encontre o botão que gera o PIX/pagamento</p>
+                  <p>• Pode ser um onclick, addEventListener ou função</p>
+                  <p>• Exemplo: &lt;button onclick="gerarPIX()"&gt;Pagar&lt;/button&gt;</p>
+                </div>
+              </div>
+
+              <div className="bg-white p-4 rounded-lg border border-blue-200">
+                <h4 className="font-semibold text-blue-800 mb-3 flex items-center gap-2">
+                  <span className="bg-blue-600 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs">3</span>
+                  Adicionar o Tracking
+                </h4>
+                <div className="space-y-3">
+                  <p className="text-sm text-blue-700">Adicione esta linha na função do botão:</p>
+                  <div className="bg-gray-900 text-green-400 p-3 rounded font-mono text-sm">
+                    window.queridosAnalytics.trackPayment("R$ 99,90", "PIX", "Produto", "Gerado");
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white p-4 rounded-lg border border-blue-200">
+                <h4 className="font-semibold text-blue-800 mb-3 flex items-center gap-2">
+                  <span className="bg-blue-600 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs">4</span>
+                  Exemplos Práticos
+                </h4>
+                <div className="space-y-3">
+                  <div>
+                    <p className="text-sm font-medium text-blue-800 mb-1">Exemplo 1: Botão simples</p>
+                    <div className="bg-gray-100 p-2 rounded text-xs font-mono">
+                      &lt;button onclick="gerarPagamento(); window.queridosAnalytics.trackPayment('R$ 50,00', 'PIX', 'Curso', 'Gerado');"&gt;
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-blue-800 mb-1">Exemplo 2: Função JavaScript</p>
+                    <div className="bg-gray-100 p-2 rounded text-xs font-mono">
+                      function processarPagamento() {<br />
+                      &nbsp;&nbsp;// seu código existente<br />
+                      &nbsp;&nbsp;window.queridosAnalytics.trackPayment("R$ 199,90", "CARTAO", "Produto Premium", "Processando");<br />
+                      }
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Novidades do Script */}
+        <Card className="border-green-200 bg-green-50">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-green-800">
+              <Zap className="w-5 h-5" />
+              ✨ Novidades do Script Atualizado
+            </CardTitle>
+            <CardDescription className="text-green-700">
+              Melhorias implementadas na nova versão
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid gap-3 text-sm">
+              <div className="flex items-center gap-3 bg-white p-3 rounded-lg border border-green-200">
+                <CheckCircle className="w-5 h-5 text-green-600" />
+                <div className="text-green-800">
+                  <strong>Páginas Administrativas Excluídas:</strong> /dashboard, /login, /script-test e /admin não contam como visitas
+                </div>
+              </div>
+              <div className="flex items-center gap-3 bg-white p-3 rounded-lg border border-green-200">
+                <CheckCircle className="w-5 h-5 text-green-600" />
+                <div className="text-green-800">
+                  <strong>Logs Detalhados:</strong> Todos os eventos são logados no console para debug
+                </div>
+              </div>
+              <div className="flex items-center gap-3 bg-white p-3 rounded-lg border border-green-200">
+                <CheckCircle className="w-5 h-5 text-green-600" />
+                <div className="text-green-800">
+                  <strong>Pagamentos Sempre Funcionam:</strong> Tracking de pagamentos funciona em qualquer página
+                </div>
+              </div>
+              <div className="flex items-center gap-3 bg-white p-3 rounded-lg border border-green-200">
+                <CheckCircle className="w-5 h-5 text-green-600" />
+                <div className="text-green-800">
+                  <strong>Melhor Estabilidade:</strong> Firebase inicialização mais robusta
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Diagnóstico de Problemas */}
         <Card className="border-yellow-200 bg-yellow-50">
           <CardHeader>
@@ -138,7 +254,7 @@ const ScriptTest = () => {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center justify-between">
-              <span>Script Completo Atualizado</span>
+              <span>Script Completo Atualizado (Sem Dashboard)</span>
               <Button 
                 onClick={copyScript}
                 variant="outline" 
@@ -198,6 +314,7 @@ const ScriptTest = () => {
                 <li>• Confirme que o Firebase está conectado (deve aparecer "✅ Conexão com Firebase confirmada")</li>
                 <li>• Teste primeiro aqui nesta página antes de implementar no site</li>
                 <li>• Use window.queridosAnalytics.getStatus() para ver o status</li>
+                <li>• Verifique se a função trackPayment está sendo chamada no botão correto</li>
               </ul>
             </div>
           </CardContent>
@@ -240,7 +357,13 @@ const ScriptTest = () => {
               <div className="flex items-start gap-3">
                 <Badge variant="outline" className="w-6 h-6 p-0 flex items-center justify-center text-xs">5</Badge>
                 <div>
-                  <strong>Implemente trackPayment</strong> nos botões de pagamento do seu site
+                  <strong>Adicione trackPayment</strong> nos botões de pagamento do seu site
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <Badge variant="outline" className="w-6 h-6 p-0 flex items-center justify-center text-xs">6</Badge>
+                <div>
+                  <strong>Teste os pagamentos</strong> para confirmar que aparecem no dashboard
                 </div>
               </div>
             </div>
