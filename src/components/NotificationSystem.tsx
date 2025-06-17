@@ -97,19 +97,27 @@ export const NotificationSystem = ({ onNewVisit, onNewPayment, onNewQRCode }: No
     }
 
     console.log('[NotificationSystem] Processando notificação:', notification);
+    console.log('[NotificationSystem] Estado atual das notificações:', notifications.length);
     
     // Verificar se já existe uma notificação do mesmo tipo
     const existingNotificationIndex = notifications.findIndex(n => n.type === notification.type);
     
     if (existingNotificationIndex !== -1) {
+      console.log('[NotificationSystem] AGRUPANDO - Notificação existente encontrada do tipo:', notification.type);
+      
       // Atualizar notificação existente
       setNotifications(prev => {
         const updated = [...prev];
         const existing = updated[existingNotificationIndex];
         
-        // Limpar timeout anterior
+        console.log('[NotificationSystem] Notificação existente ID:', existing.id);
+        console.log('[NotificationSystem] Contador atual:', existing.count);
+        
+        // Limpar timeout anterior usando o ID correto da notificação existente
         if (timeoutRefs.current[existing.id]) {
+          console.log('[NotificationSystem] Limpando timeout anterior para ID:', existing.id);
           clearTimeout(timeoutRefs.current[existing.id]);
+          delete timeoutRefs.current[existing.id];
         }
         
         // Atualizar contadores e valores
@@ -120,25 +128,49 @@ export const NotificationSystem = ({ onNewVisit, onNewPayment, onNewQRCode }: No
         if (notification.type === 'payment' && notification.amount) {
           const newAmount = parseFloat(notification.amount.toString().replace(/[^\d.-]/g, ''));
           existing.totalAmount = (existing.totalAmount || 0) + (isNaN(newAmount) ? 0 : newAmount);
+          console.log('[NotificationSystem] Somando valor do pagamento. Novo total:', existing.totalAmount);
         }
         
+        // Configurar novo timeout usando o ID correto da notificação existente
+        timeoutRefs.current[existing.id] = setTimeout(() => {
+          console.log('[NotificationSystem] Auto-removendo notificação agrupada ID:', existing.id);
+          removeNotification(existing.id);
+        }, 8000);
+        
+        console.log('[NotificationSystem] Notificação atualizada. Novo contador:', existing.count);
         return updated;
       });
       
       console.log('[NotificationSystem] Notificação existente atualizada, contador incrementado');
     } else {
+      console.log('[NotificationSystem] CRIANDO NOVA - Primeira notificação do tipo:', notification.type);
+      
       // Criar nova notificação
+      const newNotificationId = notification.type + '_' + now;
       const newNotification: Notification = {
         ...notification,
-        id: notification.type + '_' + now,
+        id: newNotificationId,
         timestamp: new Date(),
         count: 1,
         totalAmount: notification.type === 'payment' && notification.amount ? 
           parseFloat(notification.amount.toString().replace(/[^\d.-]/g, '')) : undefined
       };
       
-      setNotifications(prev => [...prev.slice(0, 4), newNotification]);
+      console.log('[NotificationSystem] Nova notificação criada com ID:', newNotificationId);
+      
+      setNotifications(prev => {
+        const updated = [...prev.slice(0, 4), newNotification];
+        console.log('[NotificationSystem] Total de notificações após adicionar:', updated.length);
+        return updated;
+      });
+      
       playNotificationSound();
+      
+      // Configurar auto-remoção usando o ID correto
+      timeoutRefs.current[newNotificationId] = setTimeout(() => {
+        console.log('[NotificationSystem] Auto-removendo notificação nova ID:', newNotificationId);
+        removeNotification(newNotificationId);
+      }, 8000);
       
       console.log('[NotificationSystem] Nova notificação criada:', newNotification);
     }
@@ -146,27 +178,30 @@ export const NotificationSystem = ({ onNewVisit, onNewPayment, onNewQRCode }: No
     processedItemsRef.current.add(uniqueId);
     lastProcessedRef.current[uniqueId] = now;
     
-    // Configurar auto-remoção
-    const notificationId = notification.type + '_' + now;
-    timeoutRefs.current[notificationId] = setTimeout(() => {
-      removeNotification(notificationId);
-    }, 8000);
-
     // Clean up old processed items after 10 seconds
     setTimeout(() => {
       processedItemsRef.current.delete(uniqueId);
       delete lastProcessedRef.current[uniqueId];
     }, 10000);
+    
+    console.log('[NotificationSystem] IDs de timeout ativos:', Object.keys(timeoutRefs.current));
   };
 
   const removeNotification = (id: string) => {
+    console.log('[NotificationSystem] Removendo notificação ID:', id);
+    
     // Limpar timeout se existir
     if (timeoutRefs.current[id]) {
       clearTimeout(timeoutRefs.current[id]);
       delete timeoutRefs.current[id];
+      console.log('[NotificationSystem] Timeout removido para ID:', id);
     }
     
-    setNotifications(prev => prev.filter(n => n.id !== id));
+    setNotifications(prev => {
+      const filtered = prev.filter(n => n.id !== id);
+      console.log('[NotificationSystem] Notificações restantes após remoção:', filtered.length);
+      return filtered;
+    });
   };
 
   const getCountryCode = (country: string) => {
