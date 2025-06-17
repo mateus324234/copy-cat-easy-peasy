@@ -138,9 +138,11 @@ export const useRealtimeData = () => {
     
     const filtered = Object.fromEntries(
       Object.entries(data).filter(([key, item]) => {
-        const itemUrl = item.page || item.referrer;
+        // Priorizar url completo, depois page, depois referrer
+        const itemUrl = item.url || item.page || item.referrer;
+        
         if (!itemUrl) {
-          console.log(`[Filter] Item ${key} sem URL, ignorando`);
+          console.log(`[Filter] Item ${key} sem URL válida (url: ${item.url}, page: ${item.page}, referrer: ${item.referrer})`);
           return false;
         }
         
@@ -155,6 +157,7 @@ export const useRealtimeData = () => {
     );
     
     console.log(`[Filter] Total de itens após filtro:`, Object.keys(filtered).length);
+    console.log(`[Filter] Itens filtrados:`, Object.keys(filtered));
     return filtered;
   }
 
