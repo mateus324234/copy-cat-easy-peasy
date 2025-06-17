@@ -1,3 +1,4 @@
+
 import { CreditCard, Clock, MapPin, User, Mail, Link } from "lucide-react";
 import { CountryFlag } from "./CountryFlag";
 import { getDisplayUrl } from "../utils/urlUtils";
@@ -92,9 +93,12 @@ export const CompactPaymentCard = ({ payment }: CompactPaymentCardProps) => {
       {/* Shimmer Effect */}
       <div className="absolute inset-0 -translate-x-full animate-[shimmer_2s_infinite] bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
       
-      {/* Primeira linha: Localização + Valor + Status */}
+      {/* Primeira linha: Ícone Principal + Bandeira + Localização + Valor + Status */}
       <div className="relative z-10 flex items-center justify-between mb-2">
         <div className="flex items-center space-x-3">
+          <div className="flex items-center space-x-1 text-purple-400">
+            <CreditCard className="h-4 w-4" />
+          </div>
           <CountryFlag 
             countryCode={countryCode} 
             countryName={country}
@@ -125,7 +129,6 @@ export const CompactPaymentCard = ({ payment }: CompactPaymentCardProps) => {
           </div>
           
           <div className="flex items-center space-x-1 text-gray-300">
-            <CreditCard className="h-3 w-3" />
             <span>{payment.product || 'Produto'}</span>
           </div>
           
