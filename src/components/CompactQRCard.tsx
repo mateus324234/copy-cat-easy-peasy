@@ -1,4 +1,3 @@
-
 import { QrCode, Clock, MapPin, User, Mail, Package, Link } from "lucide-react";
 import { CountryFlag } from "./CountryFlag";
 import { getDisplayUrl } from "../utils/urlUtils";
@@ -83,19 +82,8 @@ export const CompactQRCard = ({ qr }: CompactQRCardProps) => {
 
   const formatValue = (value: string) => {
     if (!value || value === '0') return '';
-    
-    // Limpar o valor de caracteres não numéricos, exceto vírgula e ponto
-    let cleanValue = value.toString().replace(/[^\d,.-]/g, '');
-    
-    // Se contém vírgula, assumir formato brasileiro (vírgula = decimal)
-    if (cleanValue.includes(',')) {
-      // Remover pontos (separadores de milhares) e trocar vírgula por ponto
-      cleanValue = cleanValue.replace(/\./g, '').replace(',', '.');
-    }
-    
-    const numValue = parseFloat(cleanValue);
+    const numValue = parseFloat(value.toString().replace(/[^\d.-]/g, ''));
     if (isNaN(numValue) || numValue === 0) return '';
-    
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
       currency: 'BRL'
@@ -113,12 +101,9 @@ export const CompactQRCard = ({ qr }: CompactQRCardProps) => {
       {/* Shimmer Effect */}
       <div className="absolute inset-0 -translate-x-full animate-[shimmer_2s_infinite] bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
       
-      {/* Primeira linha: Ícone Principal + Bandeira + Localização + Tipo + Status */}
+      {/* Primeira linha: Localização + Tipo + Status */}
       <div className="relative z-10 flex items-center justify-between mb-2">
         <div className="flex items-center space-x-3">
-          <div className="flex items-center space-x-1 text-orange-400">
-            <QrCode className="h-4 w-4" />
-          </div>
           <CountryFlag 
             countryCode={countryCode} 
             countryName={country}
