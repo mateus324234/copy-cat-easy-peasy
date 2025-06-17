@@ -2,8 +2,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import { CompactVisitCard } from "./CompactVisitCard";
 import { CompactPaymentCard } from "./CompactPaymentCard";
 import { CompactQRCard } from "./CompactQRCard";
+import { SiteFilter } from "./SiteFilter";
 import { Clock, Globe, Monitor, CreditCard, QrCode, Users, MapPin, Mail, Trash2, ChevronLeft, ChevronRight } from "lucide-react";
 import { useRealtimeData } from "@/hooks/useRealtimeData";
+import { useSiteGrouping } from "@/hooks/useSiteGrouping";
 import { Button } from "@/components/ui/button";
 import { clearData } from "@/services/firebase";
 import { useToast } from "@/hooks/use-toast";
@@ -37,6 +39,7 @@ export const ExpandedCardContent = ({ cardType }: ExpandedCardContentProps) => {
   const { toast } = useToast();
   const [isClearing, setIsClearing] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+  const [selectedSite, setSelectedSite] = useState('todos');
   const itemsPerPage = 20;
 
   const handleClearData = async () => {
@@ -65,6 +68,7 @@ export const ExpandedCardContent = ({ cardType }: ExpandedCardContentProps) => {
       if (clearFunction) {
         await clearFunction();
         setCurrentPage(1);
+        setSelectedSite('todos');
         toast({
           title: successMessage,
           description: "Os dados foram removidos do sistema.",
@@ -186,6 +190,11 @@ export const ExpandedCardContent = ({ cardType }: ExpandedCardContentProps) => {
     );
   };
 
+  const handleSiteChange = (site: string) => {
+    setSelectedSite(site);
+    setCurrentPage(1);
+  };
+
   const renderVisits = () => {
     const visitorsArray = Object.entries(visitors).map(([id, visitor]: [string, any]) => ({
       id,
@@ -290,10 +299,16 @@ export const ExpandedCardContent = ({ cardType }: ExpandedCardContentProps) => {
       return timeB - timeA;
     });
 
-    const totalItems = paymentsArray.length;
+    const { grouped, sites } = useSiteGrouping(paymentsArray);
+    
+    const filteredPayments = selectedSite === 'todos' 
+      ? paymentsArray 
+      : grouped[selectedSite] || [];
+
+    const totalItems = filteredPayments.length;
     const startIndex = (currentPage - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
-    const currentItems = paymentsArray.slice(startIndex, endIndex);
+    const currentItems = filteredPayments.slice(startIndex, endIndex);
 
     if (paymentsArray.length === 0) {
       return (
@@ -307,7 +322,15 @@ export const ExpandedCardContent = ({ cardType }: ExpandedCardContentProps) => {
 
     return (
       <div className="space-y-6">
-        {renderHeader("Pagamentos", CreditCard, totalItems)}
+        {renderHeader("Pagamentos", CreditCard, paymentsArray.length)}
+        
+        <SiteFilter
+          sites={sites}
+          selectedSite={selectedSite}
+          onSiteChange={handleSiteChange}
+          grouped={grouped}
+          totalCount={paymentsArray.length}
+        />
         
         <div className="space-y-1 min-h-[600px]">
           {currentItems.map((payment) => (
@@ -330,10 +353,16 @@ export const ExpandedCardContent = ({ cardType }: ExpandedCardContentProps) => {
       return timeB - timeA;
     });
 
-    const totalItems = qrcodesArray.length;
+    const { grouped, sites } = useSiteGrouping(qrcodesArray);
+    
+    const filteredQRCodes = selectedSite === 'todos' 
+      ? qrcodesArray 
+      : grouped[selectedSite] || [];
+
+    const totalItems = filteredQRCodes.length;
     const startIndex = (currentPage - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
-    const currentItems = qrcodesArray.slice(startIndex, endIndex);
+    const currentItems = filteredQRCodes.slice(startIndex, endIndex);
 
     if (qrcodesArray.length === 0) {
       return (
@@ -347,7 +376,15 @@ export const ExpandedCardContent = ({ cardType }: ExpandedCardContentProps) => {
 
     return (
       <div className="space-y-6">
-        {renderHeader("QR Codes", QrCode, totalItems)}
+        {renderHeader("QR Codes", QrCode, qrcodesArray.length)}
+        
+        <SiteFilter
+          sites={sites}
+          selectedSite={selectedSite}
+          onSiteChange={handleSiteChange}
+          grouped={grouped}
+          totalCount={qrcodesArray.length}
+        />
         
         <div className="space-y-1 min-h-[600px]">
           {currentItems.map((qr) => (
