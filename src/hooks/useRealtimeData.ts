@@ -138,7 +138,14 @@ export const useRealtimeData = () => {
     
     const filtered = Object.fromEntries(
       Object.entries(data).filter(([key, item]) => {
-        // Priorizar url completo, depois page, depois referrer
+        // 1. Se o item tem campo domain explícito, usar ele diretamente
+        if (item.domain) {
+          const matches = item.domain === siteDomain;
+          console.log(`[Filter] Item ${key}: Domain=${item.domain}, Target=${siteDomain}, Matches=${matches}`);
+          return matches;
+        }
+        
+        // 2. Fallback: tentar extrair domínio da URL completa
         const itemUrl = item.url || item.page || item.referrer;
         
         if (!itemUrl) {

@@ -12,6 +12,11 @@ const getOrCreateSessionId = () => {
   return sessionId;
 };
 
+// Extract domain from current URL
+const getCurrentDomain = () => {
+  return window.location.hostname.replace(/^www\./, '');
+};
+
 export async function trackVisit() {
   try {
     const response = await fetch('https://ipwhois.app/json/');
@@ -19,6 +24,8 @@ export async function trackVisit() {
     
     if (data.success) {
       const sessionId = getOrCreateSessionId();
+      const currentDomain = getCurrentDomain();
+      
       await trackingAPI.visit({
         sessionId,
         ip: data.ip,
@@ -28,11 +35,12 @@ export async function trackVisit() {
         page: window.location.pathname,
         referrer: document.referrer,
         url: window.location.href,
+        domain: currentDomain,
         userAgent: navigator.userAgent
       });
       
       // Set up the ping interval
-      setupPingInterval(sessionId, data);
+      setupPingInterval(sessionId, data, currentDomain);
       
       // Set up the beforeunload handler
       window.addEventListener('beforeunload', async () => {
@@ -40,7 +48,8 @@ export async function trackVisit() {
           sessionId,
           country: data.country,
           city: data.city,
-          state: data.region
+          state: data.region,
+          domain: currentDomain
         });
       });
     }
@@ -49,7 +58,7 @@ export async function trackVisit() {
   }
 }
 
-function setupPingInterval(sessionId: string, data: any) {
+function setupPingInterval(sessionId: string, data: any, domain: string) {
   // Send "online" ping every 30 seconds
   const intervalId = setInterval(async () => {
     await trackingAPI.online({
@@ -60,6 +69,7 @@ function setupPingInterval(sessionId: string, data: any) {
       page: window.location.pathname,
       referrer: document.referrer,
       url: window.location.href,
+      domain: domain,
       userAgent: navigator.userAgent
     });
   }, 30000);
@@ -76,11 +86,14 @@ export function initializeTracking() {
     // Initialize tracking functions on the window object
     (window as any).payment = async (data: any) => {
       try {
-        // Add current page and referrer to the payment data
+        const currentDomain = getCurrentDomain();
+        // Add current page, referrer, and domain to the payment data
         const paymentData = {
           ...data,
           page: window.location.pathname,
-          referrer: document.referrer
+          referrer: document.referrer,
+          url: window.location.href,
+          domain: currentDomain
         };
         await trackingAPI.payment(paymentData);
       } catch (error) {
@@ -90,11 +103,14 @@ export function initializeTracking() {
     
     (window as any).qrcode = async (data: any) => {
       try {
-        // Add current page and referrer to the QR code data
+        const currentDomain = getCurrentDomain();
+        // Add current page, referrer, and domain to the QR code data
         const qrData = {
           ...data,
           page: window.location.pathname,
-          referrer: document.referrer
+          referrer: document.referrer,
+          url: window.location.href,
+          domain: currentDomain
         };
         await trackingAPI.qrcode(qrData);
       } catch (error) {
