@@ -2,41 +2,16 @@
 import { useState } from "react";
 import { useLocation } from "react-router-dom";
 import { 
-  Home, 
-  Users, 
-  CreditCard, 
-  QrCode, 
+  DollarSign,
   Code, 
   Settings, 
   FileText, 
-  PlusCircle, 
-  Globe,
   Menu,
   X
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const navigationItems = [
-  {
-    title: "Dashboard",
-    url: "/dashboard",
-    icon: Home,
-  },
-  {
-    title: "Clientes",
-    url: "/dashboard",
-    icon: Users,
-  },
-  {
-    title: "Payments Test",
-    url: "/payments",
-    icon: CreditCard,
-  },
-  {
-    title: "QR Code Test",
-    url: "/qrcode",
-    icon: QrCode,
-  },
   {
     title: "Scripts",
     url: "/scripts",
@@ -52,16 +27,6 @@ const navigationItems = [
     url: "#",
     icon: FileText,
   },
-  {
-    title: "Novo Script",
-    url: "#",
-    icon: PlusCircle,
-  },
-  {
-    title: "Sites",
-    url: "#",
-    icon: Globe,
-  },
 ];
 
 export const HeaderNavigation = () => {
@@ -74,10 +39,10 @@ export const HeaderNavigation = () => {
         <div className="flex items-center justify-between h-16">
           {/* Logo/Brand */}
           <div className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-sm">Q</span>
+            <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center shadow-lg hover:shadow-xl transition-shadow duration-300">
+              <DollarSign className="text-white font-bold text-sm h-5 w-5" />
             </div>
-            <span className="text-white font-semibold text-lg">Dashboard</span>
+            <span className="text-white font-semibold text-lg">Queridos</span>
           </div>
 
           {/* Desktop Navigation */}
