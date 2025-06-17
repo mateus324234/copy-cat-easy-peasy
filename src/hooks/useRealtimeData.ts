@@ -122,7 +122,7 @@ export const useRealtimeData = () => {
   console.log(`[useRealtimeData] Calculando total de pagamentos...`);
   console.log(`[useRealtimeData] Dados de pagamentos:`, payments);
   
-  const paymentTotal: number = Object.values(payments).reduce((sum: number, payment: any) => {
+  const paymentTotal = (Object.values(payments) as any[]).reduce((sum: number, payment: any): number => {
     console.log(`[useRealtimeData] Processando pagamento:`, payment);
     
     let amount = 0;
