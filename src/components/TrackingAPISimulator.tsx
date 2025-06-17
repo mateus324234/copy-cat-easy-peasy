@@ -11,12 +11,31 @@ const TrackingAPISimulator: React.FC = () => {
     window.fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
       const url = typeof input === 'string' ? input : input.toString();
       
-      // Verificar se é uma request para nossa API de tracking
-      if (url.includes('/api/track/')) {
-        const endpoint = url.split('/api/track')[1];
+      console.log('[TrackingAPI] 🔍 Interceptando request:', url);
+      
+      // Verificar se é uma request para nossa API de tracking (com domínio completo ou relativo)
+      if (url.includes('/api/track')) {
+        console.log('[TrackingAPI] 📡 Request de tracking detectada:', url);
+        
+        // Extrair o endpoint correto
+        let endpoint = '';
+        if (url.includes('/api/track/visit')) {
+          endpoint = '/visit';
+        } else if (url.includes('/api/track/online')) {
+          endpoint = '/online';
+        } else if (url.includes('/api/track/offline')) {
+          endpoint = '/offline';
+        } else if (url.includes('/api/track/payment')) {
+          endpoint = '/payment';
+        } else if (url.includes('/api/track/qrcode')) {
+          endpoint = '/qrcode';
+        }
+        
+        console.log('[TrackingAPI] 🎯 Endpoint identificado:', endpoint);
         
         try {
           const data: TrackingData = init?.body ? JSON.parse(init.body as string) : {};
+          console.log('[TrackingAPI] 📊 Dados recebidos:', data);
           
           let result;
           switch (endpoint) {
@@ -36,8 +55,11 @@ const TrackingAPISimulator: React.FC = () => {
               result = await trackingEndpoints.handleQRCode(data);
               break;
             default:
+              console.error('[TrackingAPI] ❌ Endpoint desconhecido:', endpoint);
               result = { success: false, error: 'Unknown endpoint' };
           }
+          
+          console.log('[TrackingAPI] ✅ Resultado processado:', result);
           
           // Simular resposta HTTP
           return new Response(JSON.stringify(result), {
@@ -50,9 +72,13 @@ const TrackingAPISimulator: React.FC = () => {
             }
           });
         } catch (error) {
+          console.error('[TrackingAPI] ❌ Erro ao processar:', error);
           return new Response(JSON.stringify({ success: false, error: 'Invalid request' }), {
             status: 400,
-            headers: { 'Content-Type': 'application/json' }
+            headers: { 
+              'Content-Type': 'application/json',
+              'Access-Control-Allow-Origin': '*'
+            }
           });
         }
       }
@@ -61,11 +87,12 @@ const TrackingAPISimulator: React.FC = () => {
       return originalFetch(input, init);
     };
     
-    console.log('[TrackingAPI] 🔗 Simulador de API inicializado');
+    console.log('[TrackingAPI] 🔗 Simulador de API inicializado e interceptando requests');
     
     // Cleanup
     return () => {
       window.fetch = originalFetch;
+      console.log('[TrackingAPI] 🧹 Simulador de API removido');
     };
   }, []);
   

@@ -53,8 +53,12 @@ export const generateStandaloneScript = (apiBaseUrl: string) => `
   
   // Função para enviar eventos para API
   async function sendToAPI(endpoint, data) {
+    const fullUrl = API_BASE_URL + endpoint;
+    console.log('[Queridos Analytics] 📡 Enviando para:', fullUrl);
+    console.log('[Queridos Analytics] 📊 Dados:', data);
+    
     try {
-      const response = await fetch(API_BASE_URL + endpoint, {
+      const response = await fetch(fullUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -62,10 +66,13 @@ export const generateStandaloneScript = (apiBaseUrl: string) => `
         body: JSON.stringify(data)
       });
       
+      console.log('[Queridos Analytics] 📡 Response status:', response.status);
+      
       if (response.ok) {
-        console.log('[Queridos Analytics] ✅ Evento enviado:', endpoint);
+        const result = await response.json();
+        console.log('[Queridos Analytics] ✅ Evento enviado com sucesso:', endpoint, result);
       } else {
-        console.warn('[Queridos Analytics] ⚠️ Erro ao enviar:', response.status);
+        console.warn('[Queridos Analytics] ⚠️ Erro HTTP:', response.status, response.statusText);
       }
     } catch (error) {
       console.error('[Queridos Analytics] ❌ Erro de rede:', error);
@@ -87,21 +94,23 @@ export const generateStandaloneScript = (apiBaseUrl: string) => `
       timestamp
     };
     
+    console.log('[Queridos Analytics] 🎯 Tracking evento:', eventType, eventData);
+    
     switch (eventType) {
       case 'visit':
-        await sendToAPI('/track/visit', { ...eventData, status: 'online', firstVisit: timestamp });
+        await sendToAPI('/api/track/visit', { ...eventData, status: 'online', firstVisit: timestamp });
         break;
       case 'online':
-        await sendToAPI('/track/online', { ...eventData, status: 'online', lastSeen: timestamp });
+        await sendToAPI('/api/track/online', { ...eventData, status: 'online', lastSeen: timestamp });
         break;
       case 'offline':
-        await sendToAPI('/track/offline', { ...eventData, status: 'offline', lastSeen: timestamp });
+        await sendToAPI('/api/track/offline', { ...eventData, status: 'offline', lastSeen: timestamp });
         break;
       case 'payment':
-        await sendToAPI('/track/payment', eventData);
+        await sendToAPI('/api/track/payment', eventData);
         break;
       case 'qrcode':
-        await sendToAPI('/track/qrcode', eventData);
+        await sendToAPI('/api/track/qrcode', eventData);
         break;
     }
   }
@@ -109,6 +118,7 @@ export const generateStandaloneScript = (apiBaseUrl: string) => `
   // API pública para desenvolvedores
   window.queridosAnalytics = {
     trackPayment: function(amount, method = "PIX", product = "Produto", status = "Gerado") {
+      console.log('[Queridos Analytics] 💰 Tracking pagamento:', amount, method, product, status);
       trackEvent("payment", {
         amount: amount,
         method: method,
@@ -118,6 +128,7 @@ export const generateStandaloneScript = (apiBaseUrl: string) => `
     },
     
     trackQRCode: function(product = "QR Code", value = "N/A", type = "produto") {
+      console.log('[Queridos Analytics] 📱 Tracking QR Code:', product, value, type);
       trackEvent("qrcode", {
         product: product,
         value: value,
@@ -137,6 +148,7 @@ export const generateStandaloneScript = (apiBaseUrl: string) => `
       console.log("🧪 TESTE QUERIDOS ANALYTICS");
       console.log("Domínio:", currentDomain);
       console.log("Session:", sessionId);
+      console.log("API Base URL:", API_BASE_URL);
       this.trackPayment("R$ 99,90", "PIX", "Teste Pagamento", "Teste");
       this.trackQRCode("QR Teste", "https://teste.com", "url");
       console.log("✅ Eventos de teste enviados!");
@@ -144,7 +156,12 @@ export const generateStandaloneScript = (apiBaseUrl: string) => `
   };
   
   // Inicialização automática
+  console.log('[Queridos Analytics] 🚀 Inicializando...');
+  console.log('[Queridos Analytics] 🌐 Domínio:', currentDomain);
+  console.log('[Queridos Analytics] 🔗 API URL:', API_BASE_URL);
+  
   detectLocation().then(() => {
+    console.log('[Queridos Analytics] 📍 Localização detectada, iniciando tracking...');
     trackEvent("visit");
     
     // Ping online a cada 30 segundos
