@@ -51,10 +51,10 @@ export const generateStandaloneScript = (apiBaseUrl: string) => `
     }
   }
   
-  // Função para enviar eventos para API
+  // Função para enviar eventos para API REAL
   async function sendToAPI(endpoint, data) {
     const fullUrl = API_BASE_URL + endpoint;
-    console.log('[Queridos Analytics] 📡 Enviando para:', fullUrl);
+    console.log('[Queridos Analytics] 📡 Enviando para API REAL:', fullUrl);
     console.log('[Queridos Analytics] 📊 Dados:', data);
     
     try {
@@ -63,7 +63,8 @@ export const generateStandaloneScript = (apiBaseUrl: string) => `
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(data)
+        body: JSON.stringify(data),
+        mode: 'cors' // Permitir CORS
       });
       
       console.log('[Queridos Analytics] 📡 Response status:', response.status);
@@ -71,11 +72,19 @@ export const generateStandaloneScript = (apiBaseUrl: string) => `
       if (response.ok) {
         const result = await response.json();
         console.log('[Queridos Analytics] ✅ Evento enviado com sucesso:', endpoint, result);
+        return result;
       } else {
-        console.warn('[Queridos Analytics] ⚠️ Erro HTTP:', response.status, response.statusText);
+        const errorText = await response.text();
+        console.warn('[Queridos Analytics] ⚠️ Erro HTTP:', response.status, errorText);
+        throw new Error(\`HTTP \${response.status}: \${errorText}\`);
       }
     } catch (error) {
       console.error('[Queridos Analytics] ❌ Erro de rede:', error);
+      // Tentar novamente após 5 segundos em caso de erro
+      setTimeout(() => {
+        console.log('[Queridos Analytics] 🔄 Tentando reenviar:', endpoint);
+        sendToAPI(endpoint, data);
+      }, 5000);
     }
   }
   
@@ -145,23 +154,23 @@ export const generateStandaloneScript = (apiBaseUrl: string) => `
     },
     
     test: function() {
-      console.log("🧪 TESTE QUERIDOS ANALYTICS");
+      console.log("🧪 TESTE QUERIDOS ANALYTICS - API REAL");
       console.log("Domínio:", currentDomain);
       console.log("Session:", sessionId);
       console.log("API Base URL:", API_BASE_URL);
       this.trackPayment("R$ 99,90", "PIX", "Teste Pagamento", "Teste");
       this.trackQRCode("QR Teste", "https://teste.com", "url");
-      console.log("✅ Eventos de teste enviados!");
+      console.log("✅ Eventos de teste enviados para API REAL!");
     }
   };
   
   // Inicialização automática
-  console.log('[Queridos Analytics] 🚀 Inicializando...');
+  console.log('[Queridos Analytics] 🚀 Inicializando com API REAL...');
   console.log('[Queridos Analytics] 🌐 Domínio:', currentDomain);
   console.log('[Queridos Analytics] 🔗 API URL:', API_BASE_URL);
   
   detectLocation().then(() => {
-    console.log('[Queridos Analytics] 📍 Localização detectada, iniciando tracking...');
+    console.log('[Queridos Analytics] 📍 Localização detectada, iniciando tracking com API REAL...');
     trackEvent("visit");
     
     // Ping online a cada 30 segundos
@@ -181,6 +190,6 @@ export const generateStandaloneScript = (apiBaseUrl: string) => `
     }
   });
   
-  console.log('[Queridos Analytics] 🚀 Inicializado - Domínio:', currentDomain);
+  console.log('[Queridos Analytics] 🚀 Inicializado com API REAL - Domínio:', currentDomain);
 })();
 `;
