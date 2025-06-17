@@ -18,8 +18,15 @@
     <meta name="twitter:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
     
     <script>
-      // Redirecionar para o index.html principal
-      window.location.replace('/');
+      // Para HashRouter, simplesmente redireciona para o index.html
+      // O React Router irá lidar com as rotas hash
+      const path = window.location.pathname;
+      const hash = window.location.hash;
+      
+      // Se não está no index.html, redireciona mantendo o hash
+      if (path !== '/' && path !== '/index.html') {
+        window.location.replace('/' + hash);
+      }
     </script>
   </head>
 
