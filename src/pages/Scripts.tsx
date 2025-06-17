@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Copy, ExternalLink, Code, Globe, Zap, CheckCircle, AlertTriangle, FileText, Database, Eye, Wrench, TestTube, BookOpen, CreditCard, QrCode, Monitor, Settings, Webhook, LineChart, ShoppingCart, Users, Activity, HelpCircle, Lightbulb, ArrowRight, Play, Pause, Download, Rocket } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { generateStandaloneScript } from "@/utils/standaloneTrackingScript";
 
 const Scripts = () => {
   const { toast } = useToast();
@@ -17,6 +18,16 @@ const Scripts = () => {
       description: description,
     });
   };
+
+  // URL base para a API (pode ser configurada para produção)
+  const apiBaseUrl = `${window.location.origin}/api/track`;
+  
+  // Script standalone que funciona em qualquer site
+  const standaloneScript = `<!-- 🎯 QUERIDOS ANALYTICS - SCRIPT STANDALONE -->
+<!-- ✅ FUNCIONA EM QUALQUER SITE SEM ERROS -->
+<script>
+${generateStandaloneScript(apiBaseUrl)}
+</script>`;
 
   const completeTrackingScript = `<!-- 🎯 QUERIDOS ANALYTICS - SCRIPT COMPLETO ATUALIZADO -->
 <script>
@@ -458,6 +469,71 @@ Se nada funcionar:
               </p>
             </div>
 
+            {/* SEÇÃO SCRIPT STANDALONE - NOVO E MELHORADO */}
+            <Card className="bg-gradient-to-br from-green-500/20 via-blue-500/20 to-purple-500/20 border-2 border-green-400/50 mb-8 shadow-2xl">
+              <CardHeader>
+                <CardTitle className="text-white flex items-center space-x-3 text-2xl">
+                  <Rocket className="h-8 w-8 text-yellow-400" />
+                  <span>🚀 SCRIPT STANDALONE - SEM ERROS!</span>
+                  <Badge className="bg-green-500 text-white animate-pulse">✨ JAVASCRIPT PURO</Badge>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="grid gap-4">
+                  <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-4">
+                    <div className="flex items-center space-x-2 mb-3">
+                      <CheckCircle className="h-5 w-5 text-green-400" />
+                      <span className="text-green-300 font-semibold">✅ Script corrigido - Funciona em qualquer site sem erros!</span>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
+                      <div className="flex items-center space-x-2">
+                        <Zap className="h-4 w-4 text-yellow-400" />
+                        <span className="text-gray-300">JavaScript puro (sem React)</span>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Users className="h-4 w-4 text-blue-400" />
+                        <span className="text-gray-300">Zero dependências externas</span>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <CreditCard className="h-4 w-4 text-green-400" />
+                        <span className="text-gray-300">API interna para dados</span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="bg-gray-900/90 rounded-lg p-4 relative border border-gray-600">
+                    <Button
+                      size="lg"
+                      className="absolute top-3 right-3 bg-green-600 hover:bg-green-700 text-white font-semibold"
+                      onClick={() => copyToClipboard(standaloneScript, "🚀 Script standalone copiado! Agora funciona sem erros em qualquer site!")}
+                    >
+                      <Download className="h-5 w-5 mr-2" />
+                      COPIAR SCRIPT STANDALONE
+                    </Button>
+                    <pre className="text-sm text-gray-300 overflow-x-auto pr-48 max-h-96">
+                      <code>{standaloneScript}</code>
+                    </pre>
+                  </div>
+                </div>
+
+                <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4">
+                  <h4 className="text-blue-400 font-semibold mb-3 flex items-center space-x-2">
+                    <AlertTriangle className="h-5 w-5" />
+                    <span>🔧 PROBLEMA RESOLVIDO!</span>
+                  </h4>
+                  <p className="text-sm text-gray-300 mb-3">
+                    ❌ <strong>Antes:</strong> Erros de React, Firebase e dependências não encontradas<br/>
+                    ✅ <strong>Agora:</strong> JavaScript puro que funciona em qualquer site
+                  </p>
+                  <div className="bg-gray-900/80 rounded-lg p-3">
+                    <code className="text-green-300 text-sm">
+                      // Teste: window.queridosAnalytics.test()
+                    </code>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
             {/* SEÇÃO SCRIPT PRONTO - DESTAQUE NO TOPO */}
             <Card className="bg-gradient-to-br from-green-500/20 via-blue-500/20 to-purple-500/20 border-2 border-green-400/50 mb-8 shadow-2xl">
               <CardHeader>
@@ -717,14 +793,14 @@ Se nada funcionar:
                   <CardHeader>
                     <CardTitle className="text-white flex items-center space-x-2">
                       <Code className="h-6 w-6 text-green-400" />
-                      <span>📄 Script Completo - Copie e Cole</span>
-                      <Badge className="bg-green-500/20 text-green-300">✨ Atualizado</Badge>
+                      <span>📄 Script Standalone - JavaScript Puro</span>
+                      <Badge className="bg-green-500/20 text-green-300">✨ SEM ERROS</Badge>
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-4">
                       <p className="text-green-300 text-sm">
-                        ✅ <strong>Cole este script no &lt;head&gt; do seu site</strong> - Ele detecta automaticamente o domínio e funciona em qualquer plataforma!
+                        ✅ <strong>Script corrigido!</strong> Agora usa JavaScript puro e API interna - sem mais erros de React ou Firebase!
                       </p>
                     </div>
                     
@@ -733,12 +809,12 @@ Se nada funcionar:
                         size="sm"
                         variant="outline"
                         className="absolute top-2 right-2 text-gray-400 border-gray-600 hover:bg-gray-700"
-                        onClick={() => copyToClipboard(completeTrackingScript, "Script completo copiado! Cole no <head> do seu site.")}
+                        onClick={() => copyToClipboard(standaloneScript, "Script standalone copiado! Funciona sem erros.")}
                       >
                         <Copy className="h-4 w-4" />
                       </Button>
                       <pre className="text-sm text-gray-300 overflow-x-auto pr-12 max-h-96">
-                        <code>{completeTrackingScript}</code>
+                        <code>{standaloneScript}</code>
                       </pre>
                     </div>
                   </CardContent>

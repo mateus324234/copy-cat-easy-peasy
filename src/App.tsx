@@ -1,40 +1,25 @@
-
+import { QueryClient } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { SiteProvider } from "@/context/SiteContext";
-import Login from "./pages/Login";
-import Dashboard from "./pages/Dashboard";
-import Payments from "./pages/Payments";
-import QRCodePage from "./pages/QRCode";
-import Scripts from "./pages/Scripts";
-import NotFound from "./pages/NotFound";
+import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import Home from "@/pages/Home";
+import Scripts from "@/pages/Scripts";
+import Analytics from "@/pages/Analytics";
+import TrackingAPISimulator from "@/components/TrackingAPISimulator";
 
-const queryClient = new QueryClient();
-
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <SiteProvider>
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Navigate to="/login" replace />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/payments" element={<Payments />} />
-            <Route path="/qrcode" element={<QRCodePage />} />
-            <Route path="/scripts" element={<Scripts />} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </SiteProvider>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+function App() {
+  return (
+    <QueryClient>
+      <Router>
+        <Toaster />
+        <TrackingAPISimulator />
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/scripts" element={<Scripts />} />
+          <Route path="/analytics" element={<Analytics />} />
+        </Routes>
+      </Router>
+    </QueryClient>
+  );
+}
 
 export default App;
