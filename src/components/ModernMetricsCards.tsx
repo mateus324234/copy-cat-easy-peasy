@@ -1,3 +1,4 @@
+
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Eye, Users, CreditCard, QrCode, Trash2 } from "lucide-react";
@@ -139,7 +140,7 @@ export const ModernMetricsCards = () => {
         {metricsData.map((metric, index) => (
           <Card 
             key={index}
-            className={`group bg-gray-800/50 backdrop-blur-lg border-gray-700 hover:border-${metric.color}-500/50 transition-all duration-500 hover:shadow-2xl hover:shadow-${metric.color}-500/25 hover:-translate-y-2 cursor-pointer animate-fade-in ${
+            className={`group bg-gray-800/50 backdrop-blur-lg border-gray-700 hover:border-${metric.color}-500/50 transition-all duration-500 hover:shadow-2xl hover:shadow-${metric.color}-500/25 hover:-translate-y-2 cursor-pointer animate-fade-in rounded-2xl ${
               expandedCard === index ? `border-${metric.color}-500/50 shadow-xl shadow-${metric.color}-500/25` : ''
             }`}
             style={{ animationDelay: `${index * 100}ms` }}
@@ -174,7 +175,7 @@ export const ModernMetricsCards = () => {
                         )}
                       </Button>
                     </AlertDialogTrigger>
-                    <AlertDialogContent className="bg-gray-800 border-gray-700">
+                    <AlertDialogContent className="bg-gray-800 border-gray-700 rounded-2xl">
                       <AlertDialogHeader>
                         <AlertDialogTitle className="text-white">Confirmar Limpeza</AlertDialogTitle>
                         <AlertDialogDescription className="text-gray-300">
@@ -182,11 +183,11 @@ export const ModernMetricsCards = () => {
                         </AlertDialogDescription>
                       </AlertDialogHeader>
                       <AlertDialogFooter>
-                        <AlertDialogCancel className="bg-gray-700 text-white border-gray-600 hover:bg-gray-600">
+                        <AlertDialogCancel className="bg-gray-700 text-white border-gray-600 hover:bg-gray-600 rounded-xl">
                           Cancelar
                         </AlertDialogCancel>
                         <AlertDialogAction
-                          className="bg-red-600 hover:bg-red-700"
+                          className="bg-red-600 hover:bg-red-700 rounded-xl"
                           onClick={(e) => handleClearData(index, e)}
                         >
                           Limpar Dados
@@ -210,7 +211,7 @@ export const ModernMetricsCards = () => {
 
       {loadingCard !== null && (
         <div className="animate-fade-in">
-          <Card className="bg-gray-800/50 backdrop-blur-lg border-gray-700">
+          <Card className="bg-gray-800/50 backdrop-blur-lg border-gray-700 rounded-2xl">
             <CardContent className="p-6">
               <div className="space-y-4">
                 <div className="flex items-center space-x-4">

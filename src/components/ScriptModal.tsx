@@ -46,7 +46,7 @@ export const ScriptModal = ({ isOpen, onClose }: ScriptModalProps) => {
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-md bg-gray-900 border-gray-700">
+      <DialogContent className="sm:max-w-md bg-gray-900 border-gray-700 rounded-2xl">
         <DialogHeader>
           <DialogTitle className="text-white">Configurar Script de Redirecionamento</DialogTitle>
         </DialogHeader>
@@ -62,7 +62,7 @@ export const ScriptModal = ({ isOpen, onClose }: ScriptModalProps) => {
               placeholder="https://meusite.com"
               value={domain}
               onChange={(e) => setDomain(e.target.value)}
-              className="bg-gray-800 border-gray-600 text-white placeholder-gray-400"
+              className="bg-gray-800 border-gray-600 text-white placeholder-gray-400 rounded-xl"
             />
           </div>
           
@@ -71,7 +71,7 @@ export const ScriptModal = ({ isOpen, onClose }: ScriptModalProps) => {
               Script gerado:
             </label>
             <div className="relative">
-              <div className="bg-gray-800 border border-gray-600 rounded-md p-3 pr-12">
+              <div className="bg-gray-800 border border-gray-600 rounded-2xl p-3 pr-12">
                 <code className="text-sm text-green-400 break-all">
                   {generatedScript}
                 </code>
@@ -79,7 +79,7 @@ export const ScriptModal = ({ isOpen, onClose }: ScriptModalProps) => {
               <Button
                 size="sm"
                 variant="ghost"
-                className="absolute right-2 top-2 h-8 w-8 p-0 text-gray-400 hover:text-white"
+                className="absolute right-2 top-2 h-8 w-8 p-0 text-gray-400 hover:text-white rounded-lg"
                 onClick={handleCopyScript}
               >
                 {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
@@ -88,10 +88,10 @@ export const ScriptModal = ({ isOpen, onClose }: ScriptModalProps) => {
           </div>
           
           <div className="flex justify-end space-x-2">
-            <Button variant="outline" onClick={handleClose} className="border-gray-600 text-gray-300 hover:bg-gray-800">
+            <Button variant="outline" onClick={handleClose} className="border-gray-600 text-gray-300 hover:bg-gray-800 rounded-xl">
               Fechar
             </Button>
-            <Button onClick={handleCopyScript} className="bg-blue-600 hover:bg-blue-700 text-white">
+            <Button onClick={handleCopyScript} className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl">
               {copied ? "Copiado!" : "Copiar Script"}
             </Button>
           </div>
