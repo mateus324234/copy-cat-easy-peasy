@@ -6,21 +6,24 @@ import Index from "@/pages/Index";
 import Scripts from "@/pages/Scripts";
 import Dashboard from "@/pages/Dashboard";
 import TrackingAPISimulator from "@/components/TrackingAPISimulator";
+import { SiteProvider } from "@/context/SiteContext";
 
 const queryClient = new QueryClient();
 
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <Router>
-        <Toaster />
-        <TrackingAPISimulator />
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/scripts" element={<Scripts />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-        </Routes>
-      </Router>
+      <SiteProvider>
+        <Router>
+          <Toaster />
+          <TrackingAPISimulator />
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/scripts" element={<Scripts />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+          </Routes>
+        </Router>
+      </SiteProvider>
     </QueryClientProvider>
   );
 }
