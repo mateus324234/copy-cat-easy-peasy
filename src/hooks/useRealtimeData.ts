@@ -36,10 +36,14 @@ export const useRealtimeData = () => {
               const visitor = newVisitors[key];
               console.log(`[useRealtimeData] Disparando notificação para visitante:`, visitor);
               if ((window as any).notifyNewVisit) {
+                const eventTimestamp = visitor.timestamp?.seconds ? 
+                  visitor.timestamp.seconds * 1000 : 
+                  (typeof visitor.timestamp === 'number' ? visitor.timestamp : Date.now());
+                
                 (window as any).notifyNewVisit({
                   ...visitor,
                   sessionId: key,
-                  timestamp: visitor.timestamp || Date.now()
+                  timestamp: eventTimestamp
                 });
               }
               notifiedVisitorsRef.current.add(key);
@@ -63,10 +67,14 @@ export const useRealtimeData = () => {
               const payment = newPayments[key];
               console.log(`[useRealtimeData] Disparando notificação para pagamento:`, payment);
               if ((window as any).notifyNewPayment) {
+                const eventTimestamp = payment.timestamp?.seconds ? 
+                  payment.timestamp.seconds * 1000 : 
+                  (typeof payment.timestamp === 'number' ? payment.timestamp : Date.now());
+                
                 (window as any).notifyNewPayment({
                   ...payment,
                   sessionId: key,
-                  timestamp: payment.timestamp || Date.now()
+                  timestamp: eventTimestamp
                 });
               }
               notifiedPaymentsRef.current.add(key);
@@ -90,10 +98,14 @@ export const useRealtimeData = () => {
               const qrcode = newQrcodes[key];
               console.log(`[useRealtimeData] Disparando notificação para QR code:`, qrcode);
               if ((window as any).notifyNewQRCode) {
+                const eventTimestamp = qrcode.timestamp?.seconds ? 
+                  qrcode.timestamp.seconds * 1000 : 
+                  (typeof qrcode.timestamp === 'number' ? qrcode.timestamp : Date.now());
+                
                 (window as any).notifyNewQRCode({
                   ...qrcode,
                   sessionId: key,
-                  timestamp: qrcode.timestamp || Date.now()
+                  timestamp: eventTimestamp
                 });
               }
               notifiedQrcodesRef.current.add(key);
@@ -118,7 +130,6 @@ export const useRealtimeData = () => {
   const totalPayments = Object.keys(payments).length;
   const totalQRCodes = Object.keys(qrcodes).length;
 
-  // Melhorar o cálculo de pagamentos com tipagem correta
   console.log(`[useRealtimeData] Calculando total de pagamentos...`);
   console.log(`[useRealtimeData] Dados de pagamentos:`, payments);
   
@@ -130,19 +141,14 @@ export const useRealtimeData = () => {
       const amountStr = payment.amount.toString().trim();
       console.log(`[useRealtimeData] Valor original:`, amountStr);
       
-      // Melhor parsing para valores monetários brasileiros
       let cleanAmount = amountStr;
       
-      // Remover "R$" e espaços
       cleanAmount = cleanAmount.replace(/R\$\s*/g, '');
       
-      // Se contém vírgula, assumir que é o separador decimal brasileiro
       if (cleanAmount.includes(',')) {
-        // Remover pontos (separadores de milhares) e trocar vírgula por ponto
         cleanAmount = cleanAmount.replace(/\./g, '').replace(',', '.');
       }
       
-      // Remover qualquer caractere não numérico exceto ponto e hífen
       cleanAmount = cleanAmount.replace(/[^\d.-]/g, '');
       
       console.log(`[useRealtimeData] Valor limpo:`, cleanAmount);

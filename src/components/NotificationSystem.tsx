@@ -1,4 +1,3 @@
-
 import { useEffect, useState, useRef } from "react";
 import { X, MapPin, CreditCard, QrCode, Globe } from "lucide-react";
 import { CountryFlag } from "./CountryFlag";
@@ -15,7 +14,7 @@ interface Notification {
   product?: string;
   timestamp: Date;
   count: number;
-  totalAmount?: number; // Para somar valores de pagamentos
+  totalAmount?: number;
 }
 
 interface NotificationSystemProps {
@@ -29,6 +28,25 @@ export const NotificationSystem = ({ onNewVisit, onNewPayment, onNewQRCode }: No
   const processedItemsRef = useRef<Set<string>>(new Set());
   const lastProcessedRef = useRef<{ [key: string]: number }>({});
   const timeoutRefs = useRef<{ [key: string]: NodeJS.Timeout }>({});
+  const sessionStartTimeRef = useRef<number>(Date.now());
+
+  // Inicializar timestamp da sessão
+  useEffect(() => {
+    const sessionKey = 'dashboard_session_start';
+    const existingSession = sessionStorage.getItem(sessionKey);
+    
+    if (!existingSession) {
+      // Nova sessão - marcar timestamp
+      const now = Date.now();
+      sessionStartTimeRef.current = now;
+      sessionStorage.setItem(sessionKey, now.toString());
+      console.log('[NotificationSystem] Nova sessão iniciada:', new Date(now).toLocaleString());
+    } else {
+      // Sessão existente - usar timestamp anterior
+      sessionStartTimeRef.current = parseInt(existingSession);
+      console.log('[NotificationSystem] Sessão existente:', new Date(sessionStartTimeRef.current).toLocaleString());
+    }
+  }, []);
 
   const playNotificationSound = () => {
     try {
@@ -56,8 +74,14 @@ export const NotificationSystem = ({ onNewVisit, onNewPayment, onNewQRCode }: No
     }
   };
 
-  const addNotification = (notification: Omit<Notification, 'id' | 'timestamp' | 'count'>, uniqueId: string) => {
+  const addNotification = (notification: Omit<Notification, 'id' | 'timestamp' | 'count'>, uniqueId: string, eventTimestamp?: number) => {
     const now = Date.now();
+    
+    // Verificar se o evento é anterior ao início da sessão
+    if (eventTimestamp && eventTimestamp <= sessionStartTimeRef.current) {
+      console.log('[NotificationSystem] Evento anterior à sessão, ignorando:', new Date(eventTimestamp).toLocaleString());
+      return;
+    }
     
     // Verificar se já processamos este item recentemente (últimos 5 segundos)
     if (processedItemsRef.current.has(uniqueId)) {
@@ -184,6 +208,7 @@ export const NotificationSystem = ({ onNewVisit, onNewPayment, onNewQRCode }: No
     (window as any).notifyNewVisit = (visitor: any) => {
       console.log('[NotificationSystem] Recebendo notificação de visita:', visitor);
       const uniqueId = `visit_${visitor.sessionId || visitor.id}_${visitor.timestamp || Date.now()}`;
+      const eventTime = visitor.timestamp || Date.now();
       addNotification({
         type: 'visit',
         title: 'Nova Visita',
@@ -191,13 +216,14 @@ export const NotificationSystem = ({ onNewVisit, onNewPayment, onNewQRCode }: No
         country: visitor.country,
         city: visitor.city,
         state: visitor.state,
-      }, uniqueId);
+      }, uniqueId, eventTime);
       if (onNewVisit) onNewVisit(visitor);
     };
     
     (window as any).notifyNewPayment = (payment: any) => {
       console.log('[NotificationSystem] Recebendo notificação de pagamento:', payment);
       const uniqueId = `payment_${payment.sessionId || payment.id}_${payment.timestamp || Date.now()}`;
+      const eventTime = payment.timestamp || Date.now();
       addNotification({
         type: 'payment',
         title: 'Novo Pagamento',
@@ -206,13 +232,14 @@ export const NotificationSystem = ({ onNewVisit, onNewPayment, onNewQRCode }: No
         city: payment.city,
         state: payment.state,
         amount: payment.amount,
-      }, uniqueId);
+      }, uniqueId, eventTime);
       if (onNewPayment) onNewPayment(payment);
     };
     
     (window as any).notifyNewQRCode = (qr: any) => {
       console.log('[NotificationSystem] Recebendo notificação de QR code:', qr);
       const uniqueId = `qrcode_${qr.sessionId || qr.id}_${qr.timestamp || Date.now()}`;
+      const eventTime = qr.timestamp || Date.now();
       addNotification({
         type: 'qrcode',
         title: 'QR Code Copiado',
@@ -221,7 +248,7 @@ export const NotificationSystem = ({ onNewVisit, onNewPayment, onNewQRCode }: No
         city: qr.city,
         state: qr.state,
         product: qr.product,
-      }, uniqueId);
+      }, uniqueId, eventTime);
       if (onNewQRCode) onNewQRCode(qr);
     };
 
