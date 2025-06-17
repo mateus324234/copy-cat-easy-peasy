@@ -27,7 +27,9 @@ export const NotificationSystem = ({ onNewVisit, onNewPayment, onNewQRCode }: No
 
   const playNotificationSound = () => {
     try {
-      // Create a simple beep sound using Web Audio API
+      console.log('[NotificationSystem] Tentando reproduzir som de notificação...');
+      
+      // Primeiro, tentar usar Web Audio API
       const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
       const oscillator = audioContext.createOscillator();
       const gainNode = audioContext.createGain();
@@ -43,12 +45,25 @@ export const NotificationSystem = ({ onNewVisit, onNewPayment, onNewQRCode }: No
       
       oscillator.start(audioContext.currentTime);
       oscillator.stop(audioContext.currentTime + 0.3);
+      
+      console.log('[NotificationSystem] Som reproduzido com sucesso!');
     } catch (error) {
-      console.log('Could not play notification sound:', error);
+      console.log('[NotificationSystem] Erro ao reproduzir som:', error);
+      
+      // Fallback: tentar criar um beep simples
+      try {
+        const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmYeCC5+zPC4Gg');
+        audio.play();
+        console.log('[NotificationSystem] Som de fallback reproduzido!');
+      } catch (fallbackError) {
+        console.log('[NotificationSystem] Fallback de som também falhou:', fallbackError);
+      }
     }
   };
 
   const addNotification = (notification: Omit<Notification, 'id' | 'timestamp'>) => {
+    console.log('[NotificationSystem] Adicionando nova notificação:', notification);
+    
     const newNotification: Notification = {
       ...notification,
       id: Date.now().toString(),
@@ -97,48 +112,52 @@ export const NotificationSystem = ({ onNewVisit, onNewPayment, onNewQRCode }: No
     }).format(numValue);
   };
 
-  // Expose functions to parent component
+  // Configurar as funções globais de notificação
   useEffect(() => {
-    if (onNewVisit) {
-      (window as any).notifyNewVisit = (visitor: any) => {
-        addNotification({
-          type: 'visit',
-          title: 'Nova Visita',
-          message: `${visitor.city || 'Cidade'}, ${visitor.state || 'Estado'}`,
-          country: visitor.country,
-          city: visitor.city,
-          state: visitor.state,
-        });
-      };
-    }
+    console.log('[NotificationSystem] Configurando funções globais de notificação...');
     
-    if (onNewPayment) {
-      (window as any).notifyNewPayment = (payment: any) => {
-        addNotification({
-          type: 'payment',
-          title: 'Novo Pagamento',
-          message: `${payment.city || 'São Paulo'}, ${payment.state || 'SP'}`,
-          country: payment.country || 'Brasil',
-          city: payment.city,
-          state: payment.state,
-          amount: payment.amount,
-        });
-      };
-    }
+    (window as any).notifyNewVisit = (visitor: any) => {
+      console.log('[NotificationSystem] Recebendo notificação de visita:', visitor);
+      addNotification({
+        type: 'visit',
+        title: 'Nova Visita',
+        message: `${visitor.city || 'Cidade'}, ${visitor.state || 'Estado'}`,
+        country: visitor.country,
+        city: visitor.city,
+        state: visitor.state,
+      });
+      if (onNewVisit) onNewVisit(visitor);
+    };
     
-    if (onNewQRCode) {
-      (window as any).notifyNewQRCode = (qr: any) => {
-        addNotification({
-          type: 'qrcode',
-          title: 'QR Code Copiado',
-          message: `${qr.city || 'São Paulo'}, ${qr.state || 'SP'}`,
-          country: qr.country || 'Brasil',
-          city: qr.city,
-          state: qr.state,
-          product: qr.product,
-        });
-      };
-    }
+    (window as any).notifyNewPayment = (payment: any) => {
+      console.log('[NotificationSystem] Recebendo notificação de pagamento:', payment);
+      addNotification({
+        type: 'payment',
+        title: 'Novo Pagamento',
+        message: `${payment.city || 'São Paulo'}, ${payment.state || 'SP'}`,
+        country: payment.country || 'Brasil',
+        city: payment.city,
+        state: payment.state,
+        amount: payment.amount,
+      });
+      if (onNewPayment) onNewPayment(payment);
+    };
+    
+    (window as any).notifyNewQRCode = (qr: any) => {
+      console.log('[NotificationSystem] Recebendo notificação de QR code:', qr);
+      addNotification({
+        type: 'qrcode',
+        title: 'QR Code Copiado',
+        message: `${qr.city || 'São Paulo'}, ${qr.state || 'SP'}`,
+        country: qr.country || 'Brasil',
+        city: qr.city,
+        state: qr.state,
+        product: qr.product,
+      });
+      if (onNewQRCode) onNewQRCode(qr);
+    };
+
+    console.log('[NotificationSystem] Funções globais configuradas com sucesso!');
   }, [onNewVisit, onNewPayment, onNewQRCode]);
 
   const renderNotificationIcon = (type: string) => {
