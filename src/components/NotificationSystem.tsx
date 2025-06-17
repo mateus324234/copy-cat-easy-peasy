@@ -14,6 +14,8 @@ interface Notification {
   amount?: string;
   product?: string;
   timestamp: Date;
+  count: number;
+  totalAmount?: number; // Para somar valores de pagamentos
 }
 
 interface NotificationSystemProps {
@@ -26,6 +28,7 @@ export const NotificationSystem = ({ onNewVisit, onNewPayment, onNewQRCode }: No
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const processedItemsRef = useRef<Set<string>>(new Set());
   const lastProcessedRef = useRef<{ [key: string]: number }>({});
+  const timeoutRefs = useRef<{ [key: string]: NodeJS.Timeout }>({});
 
   const playNotificationSound = () => {
     try {
@@ -53,7 +56,7 @@ export const NotificationSystem = ({ onNewVisit, onNewPayment, onNewQRCode }: No
     }
   };
 
-  const addNotification = (notification: Omit<Notification, 'id' | 'timestamp'>, uniqueId: string) => {
+  const addNotification = (notification: Omit<Notification, 'id' | 'timestamp' | 'count'>, uniqueId: string) => {
     const now = Date.now();
     
     // Verificar se já processamos este item recentemente (últimos 5 segundos)
@@ -69,24 +72,61 @@ export const NotificationSystem = ({ onNewVisit, onNewPayment, onNewQRCode }: No
       return;
     }
 
-    console.log('[NotificationSystem] Adicionando nova notificação:', notification);
+    console.log('[NotificationSystem] Processando notificação:', notification);
     
-    const newNotification: Notification = {
-      ...notification,
-      id: uniqueId + '_' + now,
-      timestamp: new Date(),
-    };
+    // Verificar se já existe uma notificação do mesmo tipo
+    const existingNotificationIndex = notifications.findIndex(n => n.type === notification.type);
+    
+    if (existingNotificationIndex !== -1) {
+      // Atualizar notificação existente
+      setNotifications(prev => {
+        const updated = [...prev];
+        const existing = updated[existingNotificationIndex];
+        
+        // Limpar timeout anterior
+        if (timeoutRefs.current[existing.id]) {
+          clearTimeout(timeoutRefs.current[existing.id]);
+        }
+        
+        // Atualizar contadores e valores
+        existing.count += 1;
+        existing.timestamp = new Date();
+        
+        // Para pagamentos, somar os valores
+        if (notification.type === 'payment' && notification.amount) {
+          const newAmount = parseFloat(notification.amount.toString().replace(/[^\d.-]/g, ''));
+          existing.totalAmount = (existing.totalAmount || 0) + (isNaN(newAmount) ? 0 : newAmount);
+        }
+        
+        return updated;
+      });
+      
+      console.log('[NotificationSystem] Notificação existente atualizada, contador incrementado');
+    } else {
+      // Criar nova notificação
+      const newNotification: Notification = {
+        ...notification,
+        id: notification.type + '_' + now,
+        timestamp: new Date(),
+        count: 1,
+        totalAmount: notification.type === 'payment' && notification.amount ? 
+          parseFloat(notification.amount.toString().replace(/[^\d.-]/g, '')) : undefined
+      };
+      
+      setNotifications(prev => [...prev.slice(0, 4), newNotification]);
+      playNotificationSound();
+      
+      console.log('[NotificationSystem] Nova notificação criada:', newNotification);
+    }
     
     processedItemsRef.current.add(uniqueId);
     lastProcessedRef.current[uniqueId] = now;
     
-    setNotifications(prev => [...prev.slice(0, 4), newNotification]); // Keep only 5 notifications, newest at the end
-    playNotificationSound();
-    
-    // Auto remove after 5 seconds
-    setTimeout(() => {
-      removeNotification(newNotification.id);
-    }, 5000);
+    // Configurar auto-remoção
+    const notificationId = notification.type + '_' + now;
+    timeoutRefs.current[notificationId] = setTimeout(() => {
+      removeNotification(notificationId);
+    }, 8000);
 
     // Clean up old processed items after 10 seconds
     setTimeout(() => {
@@ -96,6 +136,12 @@ export const NotificationSystem = ({ onNewVisit, onNewPayment, onNewQRCode }: No
   };
 
   const removeNotification = (id: string) => {
+    // Limpar timeout se existir
+    if (timeoutRefs.current[id]) {
+      clearTimeout(timeoutRefs.current[id]);
+      delete timeoutRefs.current[id];
+    }
+    
     setNotifications(prev => prev.filter(n => n.id !== id));
   };
 
@@ -119,13 +165,16 @@ export const NotificationSystem = ({ onNewVisit, onNewPayment, onNewQRCode }: No
     return countryMap[country] || 'br';
   };
 
-  const formatCurrency = (value: string) => {
-    if (!value) return '';
-    const numValue = parseFloat(value.toString().replace(/[^\d.-]/g, ''));
+  const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
       currency: 'BRL'
-    }).format(numValue);
+    }).format(value);
+  };
+
+  const getNotificationTitle = (notification: Notification) => {
+    const baseTitle = notification.title;
+    return notification.count > 1 ? `${baseTitle} (${notification.count})` : baseTitle;
   };
 
   // Configurar as funções globais de notificação
@@ -216,7 +265,7 @@ export const NotificationSystem = ({ onNewVisit, onNewPayment, onNewQRCode }: No
             <div className="flex items-center space-x-2">
               {renderNotificationIcon(notification.type)}
               <span className="font-semibold text-white text-sm">
-                {notification.title}
+                {getNotificationTitle(notification)}
               </span>
             </div>
             <button
@@ -241,9 +290,9 @@ export const NotificationSystem = ({ onNewVisit, onNewPayment, onNewQRCode }: No
             </div>
           </div>
           
-          {notification.amount && (
+          {notification.type === 'payment' && notification.totalAmount && (
             <div className="text-lg font-bold text-green-400">
-              {formatCurrency(notification.amount)}
+              {formatCurrency(notification.totalAmount)}
             </div>
           )}
           
