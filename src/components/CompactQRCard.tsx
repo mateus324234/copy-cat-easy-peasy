@@ -80,27 +80,6 @@ export const CompactQRCard = ({ qr }: CompactQRCardProps) => {
     }
   };
 
-  const formatValue = (value: string) => {
-    if (!value || value === '0') return '';
-    
-    // Limpar o valor de caracteres não numéricos, exceto vírgula e ponto
-    let cleanValue = value.toString().replace(/[^\d,.-]/g, '');
-    
-    // Se contém vírgula, assumir formato brasileiro (vírgula = decimal)
-    if (cleanValue.includes(',')) {
-      // Remover pontos (separadores de milhares) e trocar vírgula por ponto
-      cleanValue = cleanValue.replace(/\./g, '').replace(',', '.');
-    }
-    
-    const numValue = parseFloat(cleanValue);
-    if (isNaN(numValue) || numValue === 0) return '';
-    
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL'
-    }).format(numValue);
-  };
-
   const country = qr.country || 'Brasil';
   const city = qr.city || 'São Paulo';
   const state = qr.state || 'SP';
@@ -112,7 +91,7 @@ export const CompactQRCard = ({ qr }: CompactQRCardProps) => {
       {/* Shimmer Effect */}
       <div className="absolute inset-0 -translate-x-full animate-[shimmer_2s_infinite] bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
       
-      {/* Primeira linha: Ícone Principal + Bandeira + Localização + Tipo + Status */}
+      {/* Primeira linha: Ícone Principal + Bandeira + Localização + Site + Status */}
       <div className="relative z-10 flex items-center justify-between mb-2">
         <div className="flex items-center space-x-3">
           <div className="flex items-center space-x-1 text-orange-400">
@@ -127,6 +106,13 @@ export const CompactQRCard = ({ qr }: CompactQRCardProps) => {
             <MapPin className="h-3 w-3" />
             <span className="text-white font-medium">{city}, {state}</span>
           </div>
+          
+          {displayUrl && (
+            <div className="flex items-center space-x-1 text-orange-400">
+              <Link className="h-3 w-3" />
+              <span className="font-bold text-orange-300">{displayUrl}</span>
+            </div>
+          )}
         </div>
         
         <div className="flex items-center space-x-3">
@@ -143,20 +129,13 @@ export const CompactQRCard = ({ qr }: CompactQRCardProps) => {
         </div>
       </div>
 
-      {/* Segunda linha: Produto + Link + Cliente + Data (REMOVIDO o valor) */}
+      {/* Segunda linha: Produto + Cliente + Data */}
       <div className="relative z-10 flex items-center justify-between text-xs">
         <div className="flex items-center space-x-4">
           <div className="flex items-center space-x-1 text-orange-400">
             <Package className="h-3 w-3" />
             <span className="font-medium">{qr.product || 'QR Code'}</span>
           </div>
-          
-          {displayUrl && (
-            <div className="flex items-center space-x-1 text-orange-400">
-              <Link className="h-3 w-3" />
-              <span className="font-medium">{displayUrl}</span>
-            </div>
-          )}
           
           {qr.clientEmail && (
             <div className="flex items-center space-x-1 text-gray-400">

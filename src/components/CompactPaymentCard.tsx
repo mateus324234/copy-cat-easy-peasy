@@ -1,4 +1,3 @@
-
 import { CreditCard, Clock, MapPin, User, Mail, Link } from "lucide-react";
 import { CountryFlag } from "./CountryFlag";
 import { getDisplayUrl } from "../utils/urlUtils";
@@ -93,7 +92,7 @@ export const CompactPaymentCard = ({ payment }: CompactPaymentCardProps) => {
       {/* Shimmer Effect */}
       <div className="absolute inset-0 -translate-x-full animate-[shimmer_2s_infinite] bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
       
-      {/* Primeira linha: Ícone Principal + Bandeira + Localização + Valor + Status */}
+      {/* Primeira linha: Ícone Principal + Bandeira + Localização + Site + Status */}
       <div className="relative z-10 flex items-center justify-between mb-2">
         <div className="flex items-center space-x-3">
           <div className="flex items-center space-x-1 text-purple-400">
@@ -108,6 +107,13 @@ export const CompactPaymentCard = ({ payment }: CompactPaymentCardProps) => {
             <MapPin className="h-3 w-3" />
             <span className="text-white font-medium">{city}, {state}</span>
           </div>
+          
+          {displayUrl && (
+            <div className="flex items-center space-x-1 text-purple-400">
+              <Link className="h-3 w-3" />
+              <span className="font-bold text-purple-300">{displayUrl}</span>
+            </div>
+          )}
         </div>
         
         <div className="flex items-center space-x-3">
@@ -120,7 +126,7 @@ export const CompactPaymentCard = ({ payment }: CompactPaymentCardProps) => {
         </div>
       </div>
 
-      {/* Segunda linha: Método + Produto + Link + Cliente + Data */}
+      {/* Segunda linha: Método + Produto + Cliente + Data */}
       <div className="relative z-10 flex items-center justify-between text-xs">
         <div className="flex items-center space-x-4">
           <div className="flex items-center space-x-1 text-purple-400">
@@ -131,13 +137,6 @@ export const CompactPaymentCard = ({ payment }: CompactPaymentCardProps) => {
           <div className="flex items-center space-x-1 text-gray-300">
             <span>{payment.product || 'Produto'}</span>
           </div>
-          
-          {displayUrl && (
-            <div className="flex items-center space-x-1 text-purple-400">
-              <Link className="h-3 w-3" />
-              <span className="font-medium">{displayUrl}</span>
-            </div>
-          )}
           
           {payment.clientEmail && (
             <div className="flex items-center space-x-1 text-gray-400">
