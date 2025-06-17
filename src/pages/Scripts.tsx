@@ -1,11 +1,10 @@
-
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Copy, ExternalLink, Code, Globe, Zap, CheckCircle, AlertTriangle, FileText, Database, Eye, Wrench, TestTube, BookOpen, CreditCard, QrCode, Monitor, Settings, Webhook, LineChart, ShoppingCart, Users, Activity, HelpCircle, Lightbulb, ArrowRight, Play, Pause } from "lucide-react";
+import { Copy, ExternalLink, Code, Globe, Zap, CheckCircle, AlertTriangle, FileText, Database, Eye, Wrench, TestTube, BookOpen, CreditCard, QrCode, Monitor, Settings, Webhook, LineChart, ShoppingCart, Users, Activity, HelpCircle, Lightbulb, ArrowRight, Play, Pause, Download, Rocket } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 const Scripts = () => {
@@ -458,6 +457,106 @@ Se nada funcionar:
                 Guia completo para implementar o sistema de analytics no seu site em <span className="text-green-400 font-semibold">5 passos simples</span>
               </p>
             </div>
+
+            {/* SEÇÃO SCRIPT PRONTO - DESTAQUE NO TOPO */}
+            <Card className="bg-gradient-to-br from-green-500/20 via-blue-500/20 to-purple-500/20 border-2 border-green-400/50 mb-8 shadow-2xl">
+              <CardHeader>
+                <CardTitle className="text-white flex items-center space-x-3 text-2xl">
+                  <Rocket className="h-8 w-8 text-yellow-400" />
+                  <span>🎯 SCRIPT PRONTO - COPIE E COLE AGORA!</span>
+                  <Badge className="bg-green-500 text-white animate-pulse">✨ FUNCIONA EM QUALQUER SITE</Badge>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="grid gap-4">
+                  <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-4">
+                    <div className="flex items-center space-x-2 mb-3">
+                      <CheckCircle className="h-5 w-5 text-green-400" />
+                      <span className="text-green-300 font-semibold">✅ Cole este script no &lt;head&gt; do seu site - Pronto!</span>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
+                      <div className="flex items-center space-x-2">
+                        <Zap className="h-4 w-4 text-yellow-400" />
+                        <span className="text-gray-300">Detecta domínio automaticamente</span>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Users className="h-4 w-4 text-blue-400" />
+                        <span className="text-gray-300">Rastreia visitantes em tempo real</span>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <CreditCard className="h-4 w-4 text-green-400" />
+                        <span className="text-gray-300">Monitora pagamentos e QR codes</span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="bg-gray-900/90 rounded-lg p-4 relative border border-gray-600">
+                    <Button
+                      size="lg"
+                      className="absolute top-3 right-3 bg-green-600 hover:bg-green-700 text-white font-semibold"
+                      onClick={() => copyToClipboard(completeTrackingScript, "🚀 Script completo copiado! Cole no <head> do seu site e está pronto!")}
+                    >
+                      <Download className="h-5 w-5 mr-2" />
+                      COPIAR SCRIPT COMPLETO
+                    </Button>
+                    <pre className="text-sm text-gray-300 overflow-x-auto pr-48 max-h-96">
+                      <code>{completeTrackingScript}</code>
+                    </pre>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4">
+                    <h4 className="text-blue-400 font-semibold mb-3 flex items-center space-x-2">
+                      <TestTube className="h-5 w-5" />
+                      <span>🧪 TESTE RÁPIDO (Console F12)</span>
+                    </h4>
+                    <div className="bg-gray-900/80 rounded-lg p-3 mb-3">
+                      <code className="text-green-300">window.queridosAnalytics.test()</code>
+                    </div>
+                    <p className="text-sm text-gray-400">
+                      ✅ Deve aparecer: "Eventos de teste enviados!"
+                    </p>
+                  </div>
+
+                  <div className="bg-purple-500/10 border border-purple-500/30 rounded-lg p-4">
+                    <h4 className="text-purple-400 font-semibold mb-3 flex items-center space-x-2">
+                      <CreditCard className="h-5 w-5" />
+                      <span>💳 EXEMPLO PAGAMENTO</span>
+                    </h4>
+                    <div className="bg-gray-900/80 rounded-lg p-3 mb-2">
+                      <code className="text-yellow-300 text-xs">window.queridosAnalytics.trackPayment("R$ 99,90", "PIX", "Produto", "Gerado")</code>
+                    </div>
+                    <div className="bg-gray-900/80 rounded-lg p-3">
+                      <code className="text-pink-300 text-xs">window.queridosAnalytics.trackQRCode("QR Link", "https://meusite.com", "url")</code>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-4">
+                  <h4 className="text-yellow-300 font-semibold mb-3 text-lg flex items-center space-x-2">
+                    <ArrowRight className="h-5 w-5" />
+                    <span>⚡ IMPLEMENTAÇÃO EM 30 SEGUNDOS</span>
+                  </h4>
+                  <div className="flex items-center justify-between text-sm">
+                    <div className="flex items-center space-x-2">
+                      <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center text-white text-sm font-bold">1</div>
+                      <span className="text-gray-300">Copiar script ⬆️</span>
+                    </div>
+                    <ArrowRight className="h-5 w-5 text-gray-400" />
+                    <div className="flex items-center space-x-2">
+                      <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm font-bold">2</div>
+                      <span className="text-gray-300">Colar no &lt;head&gt;</span>
+                    </div>
+                    <ArrowRight className="h-5 w-5 text-gray-400" />
+                    <div className="flex items-center space-x-2">
+                      <div className="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center text-white text-sm font-bold">3</div>
+                      <span className="text-gray-300">Funcionando! 🎉</span>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
 
             <Tabs defaultValue="overview" className="space-y-6">
               <TabsList className="grid w-full grid-cols-8 bg-gray-800/50">
