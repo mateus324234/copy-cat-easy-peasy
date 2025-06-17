@@ -11,6 +11,11 @@ export const useRealtimeData = () => {
   const prevVisitorsRef = useRef<any>({});
   const prevPaymentsRef = useRef<any>({});
   const prevQrcodesRef = useRef<any>({});
+  
+  // Set para rastrear IDs únicos já notificados
+  const notifiedVisitorsRef = useRef<Set<string>>(new Set());
+  const notifiedPaymentsRef = useRef<Set<string>>(new Set());
+  const notifiedQrcodesRef = useRef<Set<string>>(new Set());
 
   useEffect(() => {
     const unsubscribe = listenToRealtimeData((update) => {
@@ -19,9 +24,10 @@ export const useRealtimeData = () => {
       switch (update.type) {
         case 'visitors':
           const newVisitors = update.data;
-          // Detectar novos visitantes
+          // Detectar novos visitantes com ID único
           const newVisitorKeys = Object.keys(newVisitors).filter(
-            key => !prevVisitorsRef.current[key] && newVisitors[key].status === 'online'
+            key => !notifiedVisitorsRef.current.has(key) && 
+                   newVisitors[key].status === 'online'
           );
           
           if (newVisitorKeys.length > 0) {
@@ -36,6 +42,7 @@ export const useRealtimeData = () => {
                   timestamp: visitor.timestamp || Date.now()
                 });
               }
+              notifiedVisitorsRef.current.add(key);
             });
           }
           
@@ -45,9 +52,9 @@ export const useRealtimeData = () => {
           
         case 'payments':
           const newPayments = update.data;
-          // Detectar novos pagamentos
+          // Detectar novos pagamentos com ID único
           const newPaymentKeys = Object.keys(newPayments).filter(
-            key => !prevPaymentsRef.current[key]
+            key => !notifiedPaymentsRef.current.has(key)
           );
           
           if (newPaymentKeys.length > 0) {
@@ -62,6 +69,7 @@ export const useRealtimeData = () => {
                   timestamp: payment.timestamp || Date.now()
                 });
               }
+              notifiedPaymentsRef.current.add(key);
             });
           }
           
@@ -71,9 +79,9 @@ export const useRealtimeData = () => {
           
         case 'qrcodes':
           const newQrcodes = update.data;
-          // Detectar novos QR codes
+          // Detectar novos QR codes com ID único
           const newQrcodeKeys = Object.keys(newQrcodes).filter(
-            key => !prevQrcodesRef.current[key]
+            key => !notifiedQrcodesRef.current.has(key)
           );
           
           if (newQrcodeKeys.length > 0) {
@@ -88,6 +96,7 @@ export const useRealtimeData = () => {
                   timestamp: qrcode.timestamp || Date.now()
                 });
               }
+              notifiedQrcodesRef.current.add(key);
             });
           }
           
@@ -109,11 +118,11 @@ export const useRealtimeData = () => {
   const totalPayments = Object.keys(payments).length;
   const totalQRCodes = Object.keys(qrcodes).length;
 
-  // Melhorar o cálculo de pagamentos
+  // Melhorar o cálculo de pagamentos com tipagem correta
   console.log(`[useRealtimeData] Calculando total de pagamentos...`);
   console.log(`[useRealtimeData] Dados de pagamentos:`, payments);
   
-  const paymentTotal = Object.values(payments).reduce((sum: number, payment: any) => {
+  const paymentTotal: number = Object.values(payments).reduce((sum: number, payment: any) => {
     console.log(`[useRealtimeData] Processando pagamento:`, payment);
     
     let amount = 0;
