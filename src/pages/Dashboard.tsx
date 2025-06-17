@@ -4,7 +4,6 @@ import { ModernMetricsCards } from "@/components/ModernMetricsCards";
 import { HeaderNavigation } from "@/components/HeaderNavigation";
 import { NotificationSystem } from "@/components/NotificationSystem";
 import { initializeTracking } from "@/utils/trackingScript";
-import { listenToRealtimeData } from "@/services/firebase";
 
 const Dashboard = () => {
   useEffect(() => {
@@ -12,21 +11,6 @@ const Dashboard = () => {
     
     // Inicializar tracking do dashboard (mas não contar visitas)
     initializeTracking();
-    
-    // Escutar dados em tempo real do Firebase
-    try {
-      const unsubscribe = listenToRealtimeData((update) => {
-        console.log('[Dashboard] Dados atualizados em tempo real:', update);
-        // Os componentes de métricas serão atualizados automaticamente
-      });
-
-      return () => {
-        console.log('[Dashboard] Limpando listeners...');
-        // Cleanup se necessário
-      };
-    } catch (error) {
-      console.error('[Dashboard] Erro ao conectar Firebase:', error);
-    }
   }, []);
 
   return (

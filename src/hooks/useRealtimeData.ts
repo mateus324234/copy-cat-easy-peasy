@@ -97,7 +97,7 @@ export const useRealtimeData = () => {
   const totalPayments = Object.keys(payments).length;
   const totalQRCodes = Object.keys(qrcodes).length;
 
-  // Debug detalhado para pagamentos
+  // Debug detalhado para pagamentos com parsing melhorado
   console.log(`[useRealtimeData] Calculando total de pagamentos...`);
   console.log(`[useRealtimeData] Dados de pagamentos:`, payments);
   
@@ -106,27 +106,42 @@ export const useRealtimeData = () => {
     
     let amount = 0;
     if (payment.amount) {
-      // Tentar diferentes formatos de valor
       const amountStr = payment.amount.toString();
       console.log(`[useRealtimeData] Valor original:`, amountStr);
       
-      // Remover caracteres não numéricos exceto ponto e vírgula
-      const cleanAmount = amountStr.replace(/[^\d.,]/g, '');
+      // Melhor parsing para valores monetários brasileiros
+      let cleanAmount = amountStr;
+      
+      // Remover "R$" e espaços
+      cleanAmount = cleanAmount.replace(/R\$\s*/g, '');
+      
+      // Remover pontos de milhares (se houver vírgula decimal depois)
+      if (cleanAmount.includes(',') && cleanAmount.lastIndexOf(',') > cleanAmount.lastIndexOf('.')) {
+        cleanAmount = cleanAmount.replace(/\./g, '');
+        cleanAmount = cleanAmount.replace(',', '.');
+      } else if (cleanAmount.includes('.') && !cleanAmount.includes(',')) {
+        // Se só tem ponto, assumir que é decimal se tiver 2 dígitos após o ponto
+        const parts = cleanAmount.split('.');
+        if (parts[parts.length - 1].length === 2) {
+          // É decimal
+        } else {
+          // É separador de milhares
+          cleanAmount = cleanAmount.replace(/\./g, '');
+        }
+      }
+      
       console.log(`[useRealtimeData] Valor limpo:`, cleanAmount);
-      
-      // Converter vírgula para ponto se necessário
-      const normalizedAmount = cleanAmount.replace(',', '.');
-      amount = parseFloat(normalizedAmount);
-      
+      amount = parseFloat(cleanAmount);
       console.log(`[useRealtimeData] Valor parseado:`, amount);
     }
     
-    const newSum = sum + (isNaN(amount) ? 0 : amount);
-    console.log(`[useRealtimeData] Soma atual: ${sum} + ${amount} = ${newSum}`);
+    const validAmount = isNaN(amount) ? 0 : amount;
+    const newSum = sum + validAmount;
+    console.log(`[useRealtimeData] Soma atual: ${sum} + ${validAmount} = ${newSum}`);
     return newSum;
   }, 0);
 
-  console.log(`[useRealtimeData] Total final de pagamentos: R$ ${paymentTotal}`);
+  console.log(`[useRealtimeData] Total final de pagamentos: R$ ${paymentTotal.toFixed(2)}`);
 
   return {
     visitors,

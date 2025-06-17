@@ -1,5 +1,5 @@
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { X, MapPin, CreditCard, QrCode, Globe } from "lucide-react";
 import { CountryFlag } from "./CountryFlag";
 
@@ -24,12 +24,12 @@ interface NotificationSystemProps {
 
 export const NotificationSystem = ({ onNewVisit, onNewPayment, onNewQRCode }: NotificationSystemProps) => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
+  const processedItemsRef = useRef<Set<string>>(new Set());
 
   const playNotificationSound = () => {
     try {
       console.log('[NotificationSystem] Tentando reproduzir som de notificação...');
       
-      // Primeiro, tentar usar Web Audio API
       const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
       const oscillator = audioContext.createOscillator();
       const gainNode = audioContext.createGain();
@@ -50,7 +50,6 @@ export const NotificationSystem = ({ onNewVisit, onNewPayment, onNewQRCode }: No
     } catch (error) {
       console.log('[NotificationSystem] Erro ao reproduzir som:', error);
       
-      // Fallback: tentar criar um beep simples
       try {
         const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmYeCC5+zPC4Gg');
         audio.play();
@@ -61,14 +60,24 @@ export const NotificationSystem = ({ onNewVisit, onNewPayment, onNewQRCode }: No
     }
   };
 
-  const addNotification = (notification: Omit<Notification, 'id' | 'timestamp'>) => {
+  const addNotification = (notification: Omit<Notification, 'id' | 'timestamp'>, uniqueId?: string) => {
+    // Verificar se já processamos este item específico
+    if (uniqueId && processedItemsRef.current.has(uniqueId)) {
+      console.log('[NotificationSystem] Item já processado, ignorando:', uniqueId);
+      return;
+    }
+
     console.log('[NotificationSystem] Adicionando nova notificação:', notification);
     
     const newNotification: Notification = {
       ...notification,
-      id: Date.now().toString(),
+      id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
       timestamp: new Date(),
     };
+    
+    if (uniqueId) {
+      processedItemsRef.current.add(uniqueId);
+    }
     
     setNotifications(prev => [newNotification, ...prev.slice(0, 4)]); // Keep only 5 notifications
     playNotificationSound();
@@ -118,6 +127,7 @@ export const NotificationSystem = ({ onNewVisit, onNewPayment, onNewQRCode }: No
     
     (window as any).notifyNewVisit = (visitor: any) => {
       console.log('[NotificationSystem] Recebendo notificação de visita:', visitor);
+      const uniqueId = `visit_${visitor.sessionId}_${visitor.timestamp}`;
       addNotification({
         type: 'visit',
         title: 'Nova Visita',
@@ -125,12 +135,13 @@ export const NotificationSystem = ({ onNewVisit, onNewPayment, onNewQRCode }: No
         country: visitor.country,
         city: visitor.city,
         state: visitor.state,
-      });
+      }, uniqueId);
       if (onNewVisit) onNewVisit(visitor);
     };
     
     (window as any).notifyNewPayment = (payment: any) => {
       console.log('[NotificationSystem] Recebendo notificação de pagamento:', payment);
+      const uniqueId = `payment_${payment.sessionId}_${payment.timestamp}`;
       addNotification({
         type: 'payment',
         title: 'Novo Pagamento',
@@ -139,12 +150,13 @@ export const NotificationSystem = ({ onNewVisit, onNewPayment, onNewQRCode }: No
         city: payment.city,
         state: payment.state,
         amount: payment.amount,
-      });
+      }, uniqueId);
       if (onNewPayment) onNewPayment(payment);
     };
     
     (window as any).notifyNewQRCode = (qr: any) => {
       console.log('[NotificationSystem] Recebendo notificação de QR code:', qr);
+      const uniqueId = `qrcode_${qr.sessionId}_${qr.timestamp}`;
       addNotification({
         type: 'qrcode',
         title: 'QR Code Copiado',
@@ -153,7 +165,7 @@ export const NotificationSystem = ({ onNewVisit, onNewPayment, onNewQRCode }: No
         city: qr.city,
         state: qr.state,
         product: qr.product,
-      });
+      }, uniqueId);
       if (onNewQRCode) onNewQRCode(qr);
     };
 
@@ -187,7 +199,7 @@ export const NotificationSystem = ({ onNewVisit, onNewPayment, onNewQRCode }: No
   };
 
   return (
-    <div className="fixed top-20 right-4 z-50 space-y-2 max-w-sm">
+    <div className="fixed bottom-4 right-4 z-50 space-y-2 max-w-sm">
       {notifications.map((notification) => (
         <div
           key={notification.id}
