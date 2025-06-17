@@ -1,4 +1,3 @@
-
 import { QrCode, Clock, MapPin, User, Mail, Package, Link } from "lucide-react";
 import { CountryFlag } from "./CountryFlag";
 import { getDisplayUrl } from "../utils/urlUtils";
@@ -144,19 +143,13 @@ export const CompactQRCard = ({ qr }: CompactQRCardProps) => {
         </div>
       </div>
 
-      {/* Segunda linha: Produto + Valor + Link + Cliente + Data */}
+      {/* Segunda linha: Produto + Link + Cliente + Data (REMOVIDO o valor) */}
       <div className="relative z-10 flex items-center justify-between text-xs">
         <div className="flex items-center space-x-4">
           <div className="flex items-center space-x-1 text-orange-400">
             <Package className="h-3 w-3" />
             <span className="font-medium">{qr.product || 'QR Code'}</span>
           </div>
-          
-          {formatValue(qr.value) && (
-            <div className="flex items-center space-x-1 text-gray-300">
-              <span className="text-white font-semibold">{formatValue(qr.value)}</span>
-            </div>
-          )}
           
           {displayUrl && (
             <div className="flex items-center space-x-1 text-orange-400">
