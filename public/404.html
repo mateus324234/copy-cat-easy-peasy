@@ -18,23 +18,8 @@
     <meta name="twitter:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
     
     <script>
-      // Redirect to hash-based routing for SPA
-      const currentUrl = window.location.href;
-      const baseUrl = window.location.origin;
-      
-      // Se já tem hash, não faz nada
-      if (window.location.hash) {
-        window.location.replace(baseUrl + '/' + window.location.hash);
-      } else {
-        // Se não tem hash e não está na raiz, redireciona com hash
-        const path = window.location.pathname;
-        if (path !== '/') {
-          window.location.replace(baseUrl + '/#' + path);
-        } else {
-          // Se está na raiz, vai para index
-          window.location.replace(baseUrl + '/');
-        }
-      }
+      // Redirecionar para o index.html principal
+      window.location.replace('/');
     </script>
   </head>
 
